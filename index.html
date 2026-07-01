@@ -1265,7 +1265,7 @@
         <div class="panel-heading">
           <div>
             <h2 id="expenseFormTitle">Nuevo gasto</h2>
-            <p>Adjunta ticket o factura PDF seg&uacute;n el comprobante disponible.</p>
+            <p>Los comprobantes son opcionales; puedes registrar el gasto sin ticket ni factura.</p>
           </div>
         </div>
 
@@ -1921,12 +1921,6 @@
 
       if (!concepto || monto <= 0 || !fecha) {
         setMessage("error", "Completa concepto, monto y fecha.");
-        return;
-      }
-
-      const hasAnyCurrentFile = Boolean(getTicketList(existingExpense).length || existingExpense?.invoiceUrl);
-      if (!ticketFiles.length && !invoiceFile && !hasAnyCurrentFile) {
-        setMessage("error", "Adjunta al menos una foto de ticket o una factura PDF.");
         return;
       }
 
