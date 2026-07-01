@@ -1,0 +1,1638 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control de Viáticos</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      --bg: #eef3f8;
+      --surface: #ffffff;
+      --surface-2: #f5f8fb;
+      --input-bg: #ffffff;
+      --table-head: #f4f7fa;
+      --empty-bg: #fbfdff;
+      --text: #0b1724;
+      --heading: #0d2b45;
+      --muted: #617082;
+      --line: #d8e1ea;
+      --primary: #00796b;
+      --primary-dark: #005f56;
+      --primary-soft: #e0f4f1;
+      --navy: #0d2b45;
+      --blue: #1f5eff;
+      --green: #14804a;
+      --orange: #c05a12;
+      --red: #c4311a;
+      --red-soft: #fff0ed;
+      --shadow: 0 18px 50px rgba(13, 43, 69, 0.11);
+      --radius: 8px;
+      --focus: 0 0 0 4px rgba(0, 121, 107, 0.17);
+    }
+
+    [data-theme="dark"] {
+      --bg: #07111d;
+      --surface: #101c2b;
+      --surface-2: #172638;
+      --input-bg: #0b1624;
+      --table-head: #152235;
+      --empty-bg: #0b1624;
+      --text: #e8eef6;
+      --heading: #f6f9fc;
+      --muted: #9fb0c3;
+      --line: #27384c;
+      --primary: #2dd4bf;
+      --primary-dark: #14b8a6;
+      --primary-soft: #0f3d3b;
+      --blue: #6ea8ff;
+      --green: #4ade80;
+      --orange: #fb923c;
+      --red: #fb7185;
+      --red-soft: #351821;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
+      --focus: 0 0 0 4px rgba(45, 212, 191, 0.18);
+    }
+
+    [data-theme="dark"] .summary-label,
+    [data-theme="dark"] th,
+    [data-theme="dark"] label {
+      color: #c7d5e6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, #f8fbfd 0%, var(--bg) 42%, #e9eff5 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    [data-theme="dark"] body {
+      background:
+        linear-gradient(180deg, #091524 0%, var(--bg) 42%, #050b13 100%);
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .app {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 44px;
+    }
+
+    .topbar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 170px;
+      margin-bottom: 18px;
+      padding: 26px;
+      overflow: hidden;
+      border: 1px solid rgba(13, 43, 69, 0.12);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(13, 43, 69, 0.98) 0%, rgba(0, 121, 107, 0.92) 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar::after {
+      content: "";
+      position: absolute;
+      right: 26px;
+      bottom: 22px;
+      width: min(36vw, 420px);
+      height: 84px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px) 0 0 / 48px 100%,
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px) 0 0 / 100% 28px;
+      opacity: 0.62;
+      pointer-events: none;
+    }
+
+    .title-group,
+    .status-pill,
+    .theme-toggle {
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar-actions {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .title-group h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      line-height: 1.08;
+      font-weight: 820;
+      color: #ffffff;
+    }
+
+    .title-group p {
+      max-width: 620px;
+      margin: 12px 0 0;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 9px 13px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 0.86rem;
+      font-weight: 760;
+      white-space: nowrap;
+      backdrop-filter: blur(10px);
+    }
+
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 9px 13px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 0.86rem;
+      font-weight: 760;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255, 255, 255, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .theme-toggle .icon {
+      width: 16px;
+      height: 16px;
+      flex-basis: 16px;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--orange);
+      box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.12);
+    }
+
+    .status-pill.ready .status-dot {
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(23, 128, 61, 0.12);
+    }
+
+    .notice {
+      display: none;
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border: 1px solid #fed7aa;
+      border-radius: var(--radius);
+      background: #fff7ed;
+      color: #7c2d12;
+      line-height: 1.5;
+      font-size: 0.94rem;
+    }
+
+    [data-theme="dark"] .notice {
+      border-color: #7c3f18;
+      background: #28170d;
+      color: #fed7aa;
+    }
+
+    .notice.show {
+      display: block;
+    }
+
+    .budget-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 220px;
+      gap: 14px;
+      align-items: end;
+      margin: -42px 22px 18px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 2;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    label {
+      color: var(--heading);
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid #c9d6e2;
+      border-radius: var(--radius);
+      background: var(--input-bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: var(--focus);
+    }
+
+    input[type="file"] {
+      padding: 8px 10px;
+      color: var(--muted);
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .file-picker {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      min-width: 0;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid #c9d6e2;
+      border-radius: var(--radius);
+      background: var(--input-bg);
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .file-picker:hover,
+    .visually-hidden:focus + .file-picker {
+      border-color: var(--primary);
+      box-shadow: var(--focus);
+    }
+
+    .file-picker .file-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.94rem;
+      font-weight: 600;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: #ffffff;
+      font-size: 0.93rem;
+      font-weight: 760;
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, box-shadow 160ms ease;
+      white-space: nowrap;
+    }
+
+    .button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px rgba(0, 121, 107, 0.18);
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .button.secondary {
+      min-height: 36px;
+      padding: 8px 11px;
+      border: 1px solid #b8c7d6;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.84rem;
+    }
+
+    .button.secondary:hover {
+      background: var(--surface-2);
+      box-shadow: none;
+    }
+
+    .button.danger {
+      min-height: 36px;
+      padding: 8px 11px;
+      border: 1px solid #fecaca;
+      background: var(--surface);
+      color: #991b1b;
+      font-size: 0.84rem;
+    }
+
+    .button.danger:hover {
+      background: #fee2e2;
+      box-shadow: none;
+    }
+
+    .button.ghost {
+      display: none;
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .button.ghost.show {
+      display: inline-flex;
+    }
+
+    .button.ghost:hover {
+      background: var(--surface-2);
+      box-shadow: none;
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .summary-card,
+    .form-panel,
+    .history-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .summary-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 150px;
+      padding: 20px;
+    }
+
+    .summary-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: var(--blue);
+    }
+
+    .summary-card::after {
+      content: "";
+      position: absolute;
+      inset: 14px 14px auto auto;
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius);
+      background: rgba(31, 94, 255, 0.09);
+    }
+
+    .summary-card.spent::after {
+      background: rgba(192, 90, 18, 0.11);
+    }
+
+    .summary-card.balance::after {
+      background: rgba(20, 128, 74, 0.11);
+    }
+
+    .summary-card.spent::before {
+      background: var(--orange);
+    }
+
+    .summary-card.balance::before {
+      background: var(--green);
+    }
+
+    .summary-card.balance.low::before,
+    .summary-card.balance.negative::before {
+      background: var(--red);
+    }
+
+    .summary-label {
+      margin: 0 0 10px;
+      color: #52657a;
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .summary-value {
+      margin: 0;
+      color: var(--heading);
+      font-size: clamp(1.55rem, 3vw, 2.15rem);
+      line-height: 1.05;
+      font-weight: 800;
+    }
+
+    .summary-note {
+      margin: 13px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .balance.low,
+    .balance.negative {
+      background: linear-gradient(180deg, var(--surface) 0%, var(--red-soft) 100%);
+      border-color: #fecaca;
+    }
+
+    .balance.low .summary-value,
+    .balance.negative .summary-value {
+      color: var(--red);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e5edf4;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--primary);
+      transition: width 240ms ease, background 240ms ease;
+    }
+
+    .progress-bar.warning {
+      background: var(--red);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .form-panel,
+    .history-panel {
+      padding: 20px;
+    }
+
+    .form-panel {
+      position: static;
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .panel-heading h2 {
+      margin: 0;
+      color: var(--heading);
+      font-size: 1.16rem;
+      line-height: 1.2;
+    }
+
+    .panel-heading p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .expense-form {
+      display: grid;
+      grid-template-columns: minmax(170px, 1.35fr) minmax(110px, 0.75fr) minmax(140px, 0.85fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(150px, 0.8fr);
+      gap: 14px;
+      align-items: end;
+    }
+
+    .expense-form .button {
+      width: 100%;
+    }
+
+    .file-grid {
+      display: grid;
+      grid-template-columns: subgrid;
+      grid-column: 4 / 6;
+      gap: 12px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-column: 2 / 4;
+      gap: 12px;
+    }
+
+    .form-actions {
+      display: grid;
+      gap: 10px;
+      grid-column: 6 / 7;
+    }
+
+    .expense-form > .field:first-child {
+      grid-column: 1 / 2;
+    }
+
+    .expense-form .message {
+      grid-column: 1 / -1;
+    }
+
+    .message {
+      display: none;
+      margin: 2px 0 0;
+      padding: 12px 13px;
+      border-radius: var(--radius);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.success {
+      border: 1px solid #bbf7d0;
+      background: #f0fdf4;
+      color: #14532d;
+    }
+
+    .message.error {
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: #7f1d1d;
+    }
+
+    [data-theme="dark"] .message.success {
+      border-color: #166534;
+      background: #092417;
+      color: #bbf7d0;
+    }
+
+    [data-theme="dark"] .message.error {
+      border-color: #7f1d1d;
+      background: #2a1012;
+      color: #fecaca;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      min-width: 920px;
+      border-collapse: collapse;
+      background: var(--surface);
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 0.92rem;
+    }
+
+    th {
+      background: var(--table-head);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .concept-cell {
+      max-width: 250px;
+      color: var(--heading);
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .amount-cell {
+      color: var(--heading);
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .date-cell {
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .file-actions,
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .muted-cell {
+      color: var(--muted);
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      display: none;
+      padding: 34px 18px;
+      border: 1px dashed #b8c7d6;
+      border-radius: var(--radius);
+      background: var(--empty-bg);
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .empty-state.show {
+      display: block;
+    }
+
+    .loader {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid #cbd5e1;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 900ms linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .topbar,
+      .budget-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        display: grid;
+        min-height: auto;
+        padding: 22px;
+      }
+
+      .topbar::after {
+        display: none;
+      }
+
+      .status-pill {
+        justify-self: start;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .budget-panel {
+        margin: -28px 12px 16px;
+      }
+
+      .expense-form {
+        grid-template-columns: 1fr;
+      }
+
+      .expense-form > .field:first-child,
+      .form-row,
+      .file-grid,
+      .form-actions,
+      .expense-form .message {
+        grid-column: auto;
+      }
+
+      .file-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        width: min(100% - 22px, 1180px);
+        padding-top: 12px;
+      }
+
+      .topbar {
+        padding: 20px;
+      }
+
+      .title-group h1 {
+        font-size: 2rem;
+      }
+
+      .title-group p {
+        font-size: 0.94rem;
+      }
+
+      .budget-panel,
+      .summary-card,
+      .form-panel,
+      .history-panel {
+        padding: 15px;
+      }
+
+      .budget-panel {
+        margin-inline: 0;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .file-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .button {
+        width: 100%;
+      }
+
+      .panel-heading {
+        display: grid;
+      }
+
+      .table-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+      }
+
+      table,
+      thead,
+      tbody,
+      tr,
+      th,
+      td {
+        display: block;
+      }
+
+      table {
+        min-width: 0;
+        background: transparent;
+      }
+
+      thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+      }
+
+      tbody {
+        display: grid;
+        gap: 12px;
+      }
+
+      tbody tr {
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+      background: var(--surface);
+        box-shadow: 0 12px 28px rgba(13, 43, 69, 0.08);
+      }
+
+      td {
+        display: grid;
+        grid-template-columns: minmax(92px, 34%) minmax(0, 1fr);
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 0.9rem;
+      }
+
+      td:last-child {
+        border-bottom: 0;
+      }
+
+      td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .file-actions,
+      .row-actions {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="title-group">
+        <h1>Control de Viáticos</h1>
+        <p>Administra el monto depositado, registra comprobantes y consulta el historial de gastos guardado en Firebase.</p>
+      </div>
+      <div class="topbar-actions">
+        <div class="status-pill" id="firebaseStatus">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="firebaseStatusText">Configuración pendiente</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span id="themeToggleText">Modo oscuro</span>
+        </button>
+      </div>
+    </header>
+
+    <p class="notice" id="configNotice">
+      Pega tus credenciales en el objeto <strong>firebaseConfig</strong> dentro del script para activar Realtime Database.
+    </p>
+
+    <section class="budget-panel" aria-labelledby="budgetTitle">
+      <div class="field">
+        <label id="budgetTitle" for="budgetInput">Monto Total Depositado</label>
+        <input id="budgetInput" type="number" min="0" step="0.01" placeholder="Ej. 15000.00" inputmode="decimal">
+      </div>
+      <button class="button" id="saveBudgetBtn" type="button">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        Guardar presupuesto
+      </button>
+    </section>
+
+    <section class="summary-grid" aria-label="Resumen de viáticos">
+      <article class="summary-card">
+        <p class="summary-label">Presupuesto Total</p>
+        <p class="summary-value" id="budgetValue">$0.00</p>
+        <p class="summary-note">Monto depositado disponible para comprobar.</p>
+      </article>
+      <article class="summary-card spent">
+        <p class="summary-label">Total Gastado</p>
+        <p class="summary-value" id="spentValue">$0.00</p>
+        <p class="summary-note" id="expenseCount">0 gastos registrados.</p>
+      </article>
+      <article class="summary-card balance" id="balanceCard">
+        <p class="summary-label">Saldo Restante</p>
+        <p class="summary-value" id="balanceValue">$0.00</p>
+        <p class="summary-note" id="balanceNote">Sin presupuesto registrado.</p>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-bar" id="spentProgress"></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="workspace">
+      <aside class="form-panel" aria-labelledby="expenseFormTitle">
+        <div class="panel-heading">
+          <div>
+            <h2 id="expenseFormTitle">Nuevo gasto</h2>
+            <p>Adjunta ticket o factura PDF seg&uacute;n el comprobante disponible.</p>
+          </div>
+        </div>
+
+        <form class="expense-form" id="expenseForm">
+          <div class="field">
+            <label for="conceptInput">Concepto</label>
+            <input id="conceptInput" type="text" placeholder="Ej. Comida, taxi, hospedaje" required maxlength="90">
+          </div>
+
+          <div class="form-row">
+            <div class="field">
+              <label for="amountInput">Monto</label>
+              <input id="amountInput" type="number" min="0.01" step="0.01" placeholder="0.00" required inputmode="decimal">
+            </div>
+            <div class="field">
+              <label for="dateInput">Fecha</label>
+              <input id="dateInput" type="date" required>
+            </div>
+          </div>
+
+          <div class="file-grid">
+            <div class="field">
+              <label for="ticketInput">Foto del ticket opcional</label>
+              <input class="visually-hidden" id="ticketInput" type="file" accept="image/*" capture="environment">
+              <label class="file-picker" for="ticketInput">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="file-name" id="ticketFileName">Seleccionar foto</span>
+              </label>
+            </div>
+
+            <div class="field">
+              <label for="invoiceInput">Factura PDF opcional</label>
+              <input class="visually-hidden" id="invoiceInput" type="file" accept="application/pdf,.pdf">
+              <label class="file-picker" for="invoiceInput">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                  <path d="M14 2v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="file-name" id="invoiceFileName">Seleccionar PDF</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="button" id="saveExpenseBtn" type="submit">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+              </svg>
+              Registrar gasto
+            </button>
+            <button class="button ghost" id="cancelEditBtn" type="button">Cancelar edición</button>
+          </div>
+
+          <p class="message" id="formMessage" role="status"></p>
+        </form>
+      </aside>
+
+      <section class="history-panel" aria-labelledby="historyTitle">
+        <div class="panel-heading">
+          <div>
+            <h2 id="historyTitle">Historial de gastos</h2>
+            <p>Ordenado por fecha, con acceso a ticket, factura y acciones.</p>
+          </div>
+          <div class="loader" id="historyLoader">
+            <span class="spinner" aria-hidden="true"></span>
+            Cargando
+          </div>
+        </div>
+
+        <div class="empty-state" id="emptyState">
+          Aún no hay gastos registrados. Agrega el primer comprobante desde el formulario.
+        </div>
+
+        <div class="table-wrap" id="tableWrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Concepto</th>
+                <th>Monto</th>
+                <th>Ticket</th>
+                <th>Factura</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="expensesBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module">
+    // 1) Pega aquí tus credenciales del proyecto Firebase.
+    const firebaseConfig = {
+      apiKey: "AIzaSyATnOv8KxNjz5bwf4IZ6Y38pr_x4yDSaGo",
+      authDomain: "viaticos-dd48a.firebaseapp.com",
+      databaseURL: "https://viaticos-dd48a-default-rtdb.firebaseio.com",
+      projectId: "viaticos-dd48a",
+      storageBucket: "viaticos-dd48a.firebasestorage.app",
+      messagingSenderId: "273558023889",
+      appId: "1:273558023889:web:4a9664fbfdd284ce2a9ff0",
+      measurementId: "G-TVCML14S7W"
+    };
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+    import {
+      getDatabase,
+      ref as dbRef,
+      set,
+      get,
+      push,
+      update,
+      remove,
+      onValue
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+
+    const BUDGET_PATH = "settings/viaticos";
+    const EXPENSES_PATH = "expenses";
+    const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+
+    const formatter = new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN"
+    });
+
+    const state = {
+      budget: 0,
+      expenses: [],
+      editingId: null,
+      db: null,
+      isFirebaseReady: false
+    };
+
+    const elements = {
+      firebaseStatus: document.querySelector("#firebaseStatus"),
+      firebaseStatusText: document.querySelector("#firebaseStatusText"),
+      themeToggle: document.querySelector("#themeToggle"),
+      themeToggleText: document.querySelector("#themeToggleText"),
+      configNotice: document.querySelector("#configNotice"),
+      budgetInput: document.querySelector("#budgetInput"),
+      saveBudgetBtn: document.querySelector("#saveBudgetBtn"),
+      budgetValue: document.querySelector("#budgetValue"),
+      spentValue: document.querySelector("#spentValue"),
+      balanceValue: document.querySelector("#balanceValue"),
+      balanceCard: document.querySelector("#balanceCard"),
+      balanceNote: document.querySelector("#balanceNote"),
+      expenseCount: document.querySelector("#expenseCount"),
+      spentProgress: document.querySelector("#spentProgress"),
+      expenseForm: document.querySelector("#expenseForm"),
+      conceptInput: document.querySelector("#conceptInput"),
+      amountInput: document.querySelector("#amountInput"),
+      dateInput: document.querySelector("#dateInput"),
+      ticketInput: document.querySelector("#ticketInput"),
+      ticketFileName: document.querySelector("#ticketFileName"),
+      invoiceInput: document.querySelector("#invoiceInput"),
+      invoiceFileName: document.querySelector("#invoiceFileName"),
+      saveExpenseBtn: document.querySelector("#saveExpenseBtn"),
+      cancelEditBtn: document.querySelector("#cancelEditBtn"),
+      formMessage: document.querySelector("#formMessage"),
+      historyLoader: document.querySelector("#historyLoader"),
+      emptyState: document.querySelector("#emptyState"),
+      tableWrap: document.querySelector("#tableWrap"),
+      expensesBody: document.querySelector("#expensesBody")
+    };
+
+    elements.dateInput.valueAsDate = new Date();
+
+    function getPreferredTheme() {
+      const savedTheme = localStorage.getItem("viaticos-theme");
+      if (savedTheme === "dark" || savedTheme === "light") return savedTheme;
+      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+
+    function applyTheme(theme) {
+      const isDark = theme === "dark";
+      document.documentElement.dataset.theme = theme;
+      elements.themeToggleText.textContent = isDark ? "Modo claro" : "Modo oscuro";
+      elements.themeToggle.setAttribute("aria-label", isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+      elements.themeToggle.setAttribute("aria-pressed", String(isDark));
+      localStorage.setItem("viaticos-theme", theme);
+    }
+
+    function toggleTheme() {
+      const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(nextTheme);
+    }
+
+    applyTheme(getPreferredTheme());
+
+    function hasFirebaseConfig(config) {
+      return Boolean(
+        config.apiKey &&
+        config.projectId &&
+        config.databaseURL &&
+        !config.apiKey.startsWith("TU_") &&
+        !config.projectId.startsWith("TU_")
+      );
+    }
+
+    function setFirebaseStatus(isReady) {
+      elements.firebaseStatus.classList.toggle("ready", isReady);
+      elements.firebaseStatusText.textContent = isReady ? "Firebase conectado" : "Configuración pendiente";
+      elements.configNotice.classList.toggle("show", !isReady);
+      elements.saveBudgetBtn.disabled = !isReady;
+      elements.saveExpenseBtn.disabled = !isReady;
+    }
+
+    function parseMoney(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function formatDate(value) {
+      if (!value) return "Sin fecha";
+      return new Intl.DateTimeFormat("es-MX", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      }).format(new Date(`${value}T00:00:00`));
+    }
+
+    function sanitizeFileName(fileName) {
+      return fileName
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9._-]/g, "-")
+        .replace(/-+/g, "-")
+        .toLowerCase();
+    }
+
+    function setMessage(type, text) {
+      elements.formMessage.className = `message show ${type}`;
+      elements.formMessage.textContent = text;
+    }
+
+    function clearMessage() {
+      elements.formMessage.className = "message";
+      elements.formMessage.textContent = "";
+    }
+
+    function getFirebaseErrorMessage(error) {
+      const code = error?.code || "";
+
+      if (code.includes("permission-denied")) {
+        return "Realtime Database rechazo la operacion. Revisa que tus reglas permitan leer y escribir.";
+      }
+
+      if (code.includes("network-request-failed") || code.includes("unavailable")) {
+        return "No se pudo conectar con Realtime Database. Revisa tu conexion e intenta de nuevo.";
+      }
+
+      return `No se pudo registrar el gasto. ${code ? `Codigo: ${code}. ` : ""}Revisa Realtime Database y sus reglas.`;
+    }
+
+    function setBusy(isBusy) {
+      elements.saveExpenseBtn.disabled = isBusy || !state.isFirebaseReady;
+      elements.saveBudgetBtn.disabled = isBusy || !state.isFirebaseReady;
+      elements.saveExpenseBtn.innerHTML = isBusy
+        ? '<span class="spinner" aria-hidden="true"></span> Guardando'
+        : getSubmitButtonContent();
+    }
+
+    function getSubmitButtonContent() {
+      const label = state.editingId ? "Actualizar gasto" : "Registrar gasto";
+      return `<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="${state.editingId ? "M20 6 9 17l-5-5" : "M12 5v14M5 12h14"}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> ${label}`;
+    }
+
+    function resetExpenseForm() {
+      state.editingId = null;
+      elements.expenseForm.reset();
+      elements.dateInput.valueAsDate = new Date();
+      elements.ticketFileName.textContent = "Seleccionar foto";
+      elements.invoiceFileName.textContent = "Seleccionar PDF";
+      elements.cancelEditBtn.classList.remove("show");
+      elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
+    }
+
+    function setEditingExpense(expenseId) {
+      const expense = state.expenses.find((item) => item.id === expenseId);
+      if (!expense) return;
+
+      state.editingId = expense.id;
+      elements.conceptInput.value = expense.concepto || "";
+      elements.amountInput.value = parseMoney(expense.monto) || "";
+      elements.dateInput.value = expense.fecha || "";
+      elements.ticketFileName.textContent = expense.ticketUrl ? "Conservar ticket" : "Seleccionar foto";
+      elements.invoiceFileName.textContent = expense.invoiceUrl ? "Conservar factura" : "Seleccionar PDF";
+      elements.cancelEditBtn.classList.add("show");
+      elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
+      elements.expenseForm.scrollIntoView({ behavior: "smooth", block: "start" });
+      setMessage("success", "Editando gasto. Puedes cambiar los datos y reemplazar archivos si lo necesitas.");
+    }
+
+    function renderSummary() {
+      const spent = state.expenses.reduce((total, expense) => total + parseMoney(expense.monto), 0);
+      const balance = state.budget - spent;
+      const budgetExists = state.budget > 0;
+      const remainingRatio = budgetExists ? balance / state.budget : 1;
+      const spentRatio = budgetExists ? Math.min(Math.max((spent / state.budget) * 100, 0), 100) : 0;
+      const isLowBalance = budgetExists && remainingRatio < 0.15;
+
+      elements.budgetValue.textContent = formatter.format(state.budget);
+      elements.spentValue.textContent = formatter.format(spent);
+      elements.balanceValue.textContent = formatter.format(balance);
+      elements.expenseCount.textContent = `${state.expenses.length} ${state.expenses.length === 1 ? "gasto registrado" : "gastos registrados"}.`;
+      elements.spentProgress.style.width = `${spentRatio}%`;
+      elements.spentProgress.classList.toggle("warning", isLowBalance);
+
+      elements.balanceCard.classList.toggle("low", isLowBalance && balance >= 0);
+      elements.balanceCard.classList.toggle("negative", balance < 0);
+
+      if (!budgetExists) {
+        elements.balanceNote.textContent = "Sin presupuesto registrado.";
+      } else if (balance < 0) {
+        elements.balanceNote.textContent = "El gasto superó el monto depositado.";
+      } else if (isLowBalance) {
+        elements.balanceNote.textContent = "Saldo por debajo del 15% del presupuesto.";
+      } else {
+        elements.balanceNote.textContent = `${Math.round(remainingRatio * 100)}% del presupuesto disponible.`;
+      }
+    }
+
+    function renderExpenses() {
+      elements.expensesBody.innerHTML = "";
+
+      const hasExpenses = state.expenses.length > 0;
+      elements.emptyState.classList.toggle("show", !hasExpenses);
+      elements.tableWrap.style.display = hasExpenses ? "block" : "none";
+
+      const fragment = document.createDocumentFragment();
+
+      state.expenses.forEach((expense) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td class="date-cell">${formatDate(expense.fecha)}</td>
+          <td class="concept-cell"></td>
+          <td class="amount-cell">${formatter.format(parseMoney(expense.monto))}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+        `;
+
+        row.querySelector(".concept-cell").textContent = expense.concepto || "Sin concepto";
+
+        const cells = row.querySelectorAll("td");
+        ["Fecha", "Concepto", "Monto", "Ticket", "Factura", "Acciones"].forEach((label, index) => {
+          cells[index].dataset.label = label;
+        });
+        renderFileCell(cells[3], expense.ticketUrl, "Ver ticket");
+        renderFileCell(cells[4], expense.invoiceUrl, "Descargar PDF", true);
+        renderActionCell(cells[5], expense.id);
+
+        fragment.appendChild(row);
+      });
+
+      elements.expensesBody.appendChild(fragment);
+    }
+
+    function renderFileCell(cell, url, label, download = false) {
+      if (!url) {
+        cell.className = "muted-cell";
+        cell.textContent = "Sin archivo";
+        return;
+      }
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "file-actions";
+
+      const link = document.createElement("a");
+      link.className = "button secondary";
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      if (download) link.setAttribute("download", "");
+      link.innerHTML = `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="${download ? "M12 3v12M7 10l5 5 5-5M5 21h14" : "M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ${label}
+      `;
+      wrapper.appendChild(link);
+      cell.appendChild(wrapper);
+    }
+
+    function renderActionCell(cell, expenseId) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "row-actions";
+
+      const editButton = document.createElement("button");
+      editButton.className = "button secondary";
+      editButton.type = "button";
+      editButton.innerHTML = `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Editar
+      `;
+      editButton.addEventListener("click", () => setEditingExpense(expenseId));
+
+      const deleteButton = document.createElement("button");
+      deleteButton.className = "button danger";
+      deleteButton.type = "button";
+      deleteButton.innerHTML = `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 6h18M8 6V4h8v2M10 11v6M14 11v6M6 6l1 15h10l1-15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Eliminar
+      `;
+      deleteButton.addEventListener("click", () => deleteExpense(expenseId));
+
+      wrapper.append(editButton, deleteButton);
+      cell.appendChild(wrapper);
+    }
+
+    async function saveBudget() {
+      if (!state.isFirebaseReady) return;
+
+      const totalDeposit = parseMoney(elements.budgetInput.value);
+      if (totalDeposit < 0) {
+        setMessage("error", "El presupuesto no puede ser negativo.");
+        return;
+      }
+
+      elements.saveBudgetBtn.disabled = true;
+      try {
+        await set(dbRef(state.db, BUDGET_PATH), {
+          totalDeposit,
+          updatedAt: Date.now()
+        });
+        clearMessage();
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudo guardar el presupuesto. Revisa las reglas de Realtime Database.");
+      } finally {
+        elements.saveBudgetBtn.disabled = false;
+      }
+    }
+
+    async function saveExpense(event) {
+      event.preventDefault();
+      if (!state.isFirebaseReady) return;
+      clearMessage();
+
+      const concepto = elements.conceptInput.value.trim();
+      const monto = parseMoney(elements.amountInput.value);
+      const fecha = elements.dateInput.value;
+      const ticketFile = elements.ticketInput.files[0];
+      const invoiceFile = elements.invoiceInput.files[0];
+      const existingExpense = state.editingId
+        ? state.expenses.find((item) => item.id === state.editingId)
+        : null;
+
+      if (!concepto || monto <= 0 || !fecha) {
+        setMessage("error", "Completa concepto, monto y fecha.");
+        return;
+      }
+
+      const hasAnyCurrentFile = Boolean(existingExpense?.ticketUrl || existingExpense?.invoiceUrl);
+      if (!ticketFile && !invoiceFile && !hasAnyCurrentFile) {
+        setMessage("error", "Adjunta al menos una foto de ticket o una factura PDF.");
+        return;
+      }
+
+      if (invoiceFile && invoiceFile.type !== "application/pdf") {
+        setMessage("error", "La factura debe ser un archivo PDF.");
+        return;
+      }
+
+      if (!validateFileSize(ticketFile) || !validateFileSize(invoiceFile)) {
+        setMessage("error", "Cada archivo debe pesar 2 MB o menos para guardarlo en Realtime Database.");
+        return;
+      }
+
+      setBusy(true);
+
+      try {
+        const payload = {
+          concepto,
+          monto,
+          fecha,
+          updatedAt: Date.now()
+        };
+
+        if (ticketFile) {
+          const ticketData = await readFileData(ticketFile);
+          payload.ticketUrl = ticketData.dataUrl;
+          payload.ticketName = ticketData.name;
+          payload.ticketType = ticketData.type;
+          payload.ticketSize = ticketData.size;
+        }
+
+        if (invoiceFile) {
+          const invoiceData = await readFileData(invoiceFile);
+          payload.invoiceUrl = invoiceData.dataUrl;
+          payload.invoiceName = invoiceData.name;
+          payload.invoiceType = invoiceData.type;
+          payload.invoiceSize = invoiceData.size;
+        }
+
+        if (state.editingId) {
+          await update(dbRef(state.db, `${EXPENSES_PATH}/${state.editingId}`), payload);
+          resetExpenseForm();
+          setMessage("success", "Gasto actualizado correctamente.");
+        } else {
+          const newExpenseRef = push(dbRef(state.db, EXPENSES_PATH));
+          await set(newExpenseRef, {
+            ...payload,
+            createdAt: Date.now()
+          });
+          resetExpenseForm();
+          setMessage("success", "Gasto registrado correctamente.");
+        }
+      } catch (error) {
+        console.error(error);
+        setMessage("error", getFirebaseErrorMessage(error));
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function validateFileSize(file) {
+      return !file || file.size <= MAX_FILE_SIZE_BYTES;
+    }
+
+    function readFileData(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({
+          dataUrl: reader.result,
+          name: sanitizeFileName(file.name || "archivo"),
+          type: file.type || "application/octet-stream",
+          size: file.size
+        });
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function deleteExpense(expenseId) {
+      const expense = state.expenses.find((item) => item.id === expenseId);
+      if (!expense) return;
+
+      const confirmed = window.confirm(`¿Eliminar el gasto "${expense.concepto || "sin concepto"}"? Esta acción no se puede deshacer.`);
+      if (!confirmed) return;
+
+      clearMessage();
+      try {
+        await remove(dbRef(state.db, `${EXPENSES_PATH}/${expenseId}`));
+        if (state.editingId === expenseId) resetExpenseForm();
+        setMessage("success", "Gasto eliminado correctamente.");
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudo eliminar el gasto. Revisa permisos de Realtime Database.");
+      }
+    }
+
+    function listenBudget() {
+      const budgetRef = dbRef(state.db, BUDGET_PATH);
+
+      onValue(budgetRef, (snapshot) => {
+        const data = snapshot.exists() ? snapshot.val() : {};
+        state.budget = parseMoney(data.totalDeposit);
+        elements.budgetInput.value = state.budget || "";
+        renderSummary();
+      }, (error) => {
+        console.error(error);
+        setMessage("error", "No se pudo consultar el presupuesto en Realtime Database.");
+      });
+    }
+
+    async function loadBudgetOnce() {
+      const budgetSnapshot = await get(dbRef(state.db, BUDGET_PATH));
+      if (budgetSnapshot.exists()) {
+        state.budget = parseMoney(budgetSnapshot.val().totalDeposit);
+        elements.budgetInput.value = state.budget || "";
+      }
+      renderSummary();
+    }
+
+    function listenExpenses() {
+      const expensesRef = dbRef(state.db, EXPENSES_PATH);
+
+      onValue(expensesRef, (snapshot) => {
+        const data = snapshot.exists() ? snapshot.val() : {};
+        state.expenses = Object.entries(data)
+          .map(([id, expense]) => ({ id, ...expense }))
+          .sort((a, b) => String(b.fecha || "").localeCompare(String(a.fecha || "")));
+        elements.historyLoader.style.display = "none";
+        renderExpenses();
+        renderSummary();
+      }, (error) => {
+        console.error(error);
+        elements.historyLoader.style.display = "none";
+        elements.emptyState.textContent = "No se pudo cargar el historial. Revisa las reglas de Realtime Database.";
+        elements.emptyState.classList.add("show");
+        elements.tableWrap.style.display = "none";
+      });
+    }
+
+    async function initFirebase() {
+      state.isFirebaseReady = hasFirebaseConfig(firebaseConfig);
+      setFirebaseStatus(state.isFirebaseReady);
+
+      if (!state.isFirebaseReady) {
+        elements.historyLoader.style.display = "none";
+        elements.tableWrap.style.display = "none";
+        elements.emptyState.textContent = "Configura Firebase para cargar y guardar gastos.";
+        elements.emptyState.classList.add("show");
+        renderSummary();
+        return;
+      }
+
+      const app = initializeApp(firebaseConfig);
+      getAnalytics(app);
+      state.db = getDatabase(app);
+
+      try {
+        await loadBudgetOnce();
+        listenBudget();
+        listenExpenses();
+      } catch (error) {
+        console.error(error);
+        elements.historyLoader.style.display = "none";
+        setMessage("error", "Firebase inició, pero hubo un problema leyendo los datos.");
+      }
+    }
+
+    elements.saveBudgetBtn.addEventListener("click", saveBudget);
+    elements.themeToggle.addEventListener("click", toggleTheme);
+    elements.expenseForm.addEventListener("submit", saveExpense);
+    elements.cancelEditBtn.addEventListener("click", () => {
+      resetExpenseForm();
+      clearMessage();
+    });
+    elements.ticketInput.addEventListener("change", () => {
+      const file = elements.ticketInput.files[0];
+      const editingExpense = state.expenses.find((item) => item.id === state.editingId);
+      elements.ticketFileName.textContent = file
+        ? file.name
+        : editingExpense?.ticketUrl
+          ? "Conservar ticket"
+          : "Seleccionar foto";
+    });
+    elements.invoiceInput.addEventListener("change", () => {
+      const file = elements.invoiceInput.files[0];
+      const editingExpense = state.expenses.find((item) => item.id === state.editingId);
+      elements.invoiceFileName.textContent = file
+        ? file.name
+        : editingExpense?.invoiceUrl
+          ? "Conservar factura"
+          : "Seleccionar PDF";
+    });
+
+    initFirebase();
+  </script>
+</body>
+</html>
