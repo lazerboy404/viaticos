@@ -60,6 +60,23 @@
       color: #c7d5e6;
     }
 
+    [data-theme="dark"] .summary-card {
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0.18)),
+        var(--surface);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -22px 44px rgba(0, 0, 0, 0.18),
+        0 18px 40px rgba(0, 0, 0, 0.28);
+    }
+
+    [data-theme="dark"] .summary-card:hover {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -26px 48px rgba(0, 0, 0, 0.2),
+        0 24px 48px rgba(0, 0, 0, 0.34);
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -436,6 +453,24 @@
       min-height: 172px;
       padding: 20px;
       isolation: isolate;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(0, 0, 0, 0.035) 54%, rgba(255, 255, 255, 0.04)),
+        var(--surface);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.36),
+        inset 0 -18px 34px rgba(13, 43, 69, 0.065),
+        inset 0 14px 28px rgba(255, 255, 255, 0.08),
+        0 18px 34px rgba(13, 43, 69, 0.1);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .summary-card:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.45),
+        inset 0 -24px 42px rgba(13, 43, 69, 0.08),
+        inset 0 16px 32px rgba(255, 255, 255, 0.1),
+        0 24px 44px rgba(13, 43, 69, 0.14);
     }
 
     .summary-card::before {
@@ -455,6 +490,26 @@
       border-radius: var(--radius);
       background: radial-gradient(circle, rgba(31, 94, 255, 0.2), transparent 66%);
       z-index: -1;
+    }
+
+    .summary-card:active {
+      transform: translateY(0) scale(0.995);
+      box-shadow:
+        inset 0 2px 8px rgba(13, 43, 69, 0.08),
+        inset 0 -14px 28px rgba(13, 43, 69, 0.07),
+        0 12px 26px rgba(13, 43, 69, 0.09);
+    }
+
+    .summary-top::after {
+      content: "";
+      position: absolute;
+      inset: 12px 14px auto auto;
+      width: 74px;
+      height: 42px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent);
+      opacity: 0.7;
+      pointer-events: none;
     }
 
     .summary-card.spent::after {
@@ -504,6 +559,10 @@
       background: rgba(31, 94, 255, 0.12);
       color: var(--blue);
       flex: 0 0 42px;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        inset 0 -11px 18px rgba(13, 43, 69, 0.1),
+        0 8px 18px rgba(13, 43, 69, 0.08);
     }
 
     .spent .summary-icon {
@@ -527,6 +586,7 @@
       font-size: clamp(1.55rem, 3vw, 2.15rem);
       line-height: 1.05;
       font-weight: 800;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
     }
 
     .summary-note {
@@ -566,13 +626,14 @@
       overflow: hidden;
       border-radius: 999px;
       background: #e5edf4;
+      box-shadow: inset 0 2px 5px rgba(13, 43, 69, 0.15);
     }
 
     .progress-bar {
       width: 0%;
       height: 100%;
       border-radius: inherit;
-      background: var(--primary);
+      background: linear-gradient(90deg, var(--primary), #67e8f9);
       transition: width 240ms ease, background 240ms ease;
     }
 
@@ -893,6 +954,14 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+    }
+
+    .invoice-actions {
+      align-items: center;
+    }
+
+    .invoice-actions .button {
+      white-space: nowrap;
     }
 
     .muted-cell {
@@ -1688,7 +1757,7 @@
           cells[index].dataset.label = label;
         });
         renderTicketsCell(cells[3], expense);
-        renderFileCell(cells[4], expense.invoiceUrl, "Descargar PDF", true);
+        renderInvoiceCell(cells[4], expense);
         renderActionCell(cells[5], expense.id);
 
         fragment.appendChild(row);
@@ -1716,6 +1785,44 @@
       `;
       button.addEventListener("click", () => openTicketsDialog(expense.id));
       cell.appendChild(button);
+    }
+
+    function renderInvoiceCell(cell, expense) {
+      const invoice = getInvoiceData(expense);
+      if (!invoice) {
+        cell.className = "muted-cell";
+        cell.textContent = "Sin archivo";
+        return;
+      }
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "file-actions invoice-actions";
+
+      const viewLink = document.createElement("a");
+      viewLink.className = "button secondary";
+      viewLink.href = invoice.dataUrl;
+      viewLink.target = "_blank";
+      viewLink.rel = "noopener noreferrer";
+      viewLink.innerHTML = `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Ver PDF
+      `;
+
+      const downloadLink = document.createElement("a");
+      downloadLink.className = "button secondary";
+      downloadLink.href = invoice.dataUrl;
+      downloadLink.download = invoice.name || "factura.pdf";
+      downloadLink.innerHTML = `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v12M7 10l5 5 5-5M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Descargar
+      `;
+
+      wrapper.append(viewLink, downloadLink);
+      cell.appendChild(wrapper);
     }
 
     function renderFileCell(cell, url, label, download = false) {
