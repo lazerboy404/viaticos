@@ -433,8 +433,9 @@
     .summary-card {
       position: relative;
       overflow: hidden;
-      min-height: 150px;
+      min-height: 172px;
       padding: 20px;
+      isolation: isolate;
     }
 
     .summary-card::before {
@@ -448,19 +449,20 @@
     .summary-card::after {
       content: "";
       position: absolute;
-      inset: 14px 14px auto auto;
-      width: 42px;
-      height: 42px;
+      inset: auto -22px -26px auto;
+      width: 120px;
+      height: 120px;
       border-radius: var(--radius);
-      background: rgba(31, 94, 255, 0.09);
+      background: radial-gradient(circle, rgba(31, 94, 255, 0.2), transparent 66%);
+      z-index: -1;
     }
 
     .summary-card.spent::after {
-      background: rgba(192, 90, 18, 0.11);
+      background: radial-gradient(circle, rgba(192, 90, 18, 0.24), transparent 66%);
     }
 
     .summary-card.balance::after {
-      background: rgba(20, 128, 74, 0.11);
+      background: radial-gradient(circle, rgba(20, 128, 74, 0.24), transparent 66%);
     }
 
     .summary-card.spent::before {
@@ -476,12 +478,47 @@
       background: var(--red);
     }
 
+    .summary-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
     .summary-label {
-      margin: 0 0 10px;
+      margin: 0;
       color: #52657a;
       font-size: 0.82rem;
       font-weight: 800;
       text-transform: uppercase;
+    }
+
+    .summary-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius);
+      background: rgba(31, 94, 255, 0.12);
+      color: var(--blue);
+      flex: 0 0 42px;
+    }
+
+    .spent .summary-icon {
+      background: rgba(192, 90, 18, 0.13);
+      color: var(--orange);
+    }
+
+    .balance .summary-icon {
+      background: rgba(20, 128, 74, 0.13);
+      color: var(--green);
+    }
+
+    .summary-icon svg {
+      width: 22px;
+      height: 22px;
     }
 
     .summary-value {
@@ -499,6 +536,18 @@
       line-height: 1.45;
     }
 
+    .summary-meter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
     .balance.low,
     .balance.negative {
       background: linear-gradient(180deg, var(--surface) 0%, var(--red-soft) 100%);
@@ -513,7 +562,7 @@
     .progress-track {
       width: 100%;
       height: 8px;
-      margin-top: 14px;
+      margin-top: 8px;
       overflow: hidden;
       border-radius: 999px;
       background: #e5edf4;
@@ -605,6 +654,147 @@
 
     .expense-form .message {
       grid-column: 1 / -1;
+    }
+
+    .attachment-preview {
+      display: none;
+      grid-column: 1 / -1;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+    }
+
+    .attachment-preview.show {
+      display: grid;
+    }
+
+    .preview-section {
+      display: grid;
+      gap: 10px;
+    }
+
+    .preview-title {
+      margin: 0;
+      color: var(--heading);
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .ticket-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+      gap: 10px;
+    }
+
+    .ticket-thumb {
+      display: grid;
+      gap: 7px;
+      min-width: 0;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .ticket-thumb img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: calc(var(--radius) - 2px);
+      background: var(--input-bg);
+    }
+
+    .ticket-thumb span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pdf-preview {
+      display: grid;
+      gap: 10px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .pdf-preview embed {
+      width: 100%;
+      min-height: 240px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--input-bg);
+    }
+
+    .pdf-preview a {
+      color: var(--primary);
+      font-weight: 800;
+    }
+
+    .media-dialog {
+      width: min(920px, calc(100% - 28px));
+      max-height: min(88vh, 860px);
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: var(--shadow);
+    }
+
+    .media-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.62);
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .dialog-header h3 {
+      margin: 0;
+      color: var(--heading);
+      font-size: 1rem;
+    }
+
+    .dialog-body {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      max-height: calc(88vh - 70px);
+      overflow: auto;
+      padding: 16px;
+    }
+
+    .dialog-ticket {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .dialog-ticket img {
+      width: 100%;
+      max-height: 62vh;
+      object-fit: contain;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--input-bg);
+    }
+
+    .dialog-ticket a {
+      color: var(--primary);
+      font-weight: 800;
     }
 
     .message {
@@ -949,19 +1139,52 @@
 
     <section class="summary-grid" aria-label="Resumen de viáticos">
       <article class="summary-card">
-        <p class="summary-label">Presupuesto Total</p>
+        <div class="summary-top">
+          <p class="summary-label">Presupuesto Total</p>
+          <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 7h16v12H4zM7 7V5h10v2M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
         <p class="summary-value" id="budgetValue">$0.00</p>
         <p class="summary-note">Monto depositado disponible para comprobar.</p>
+        <div class="summary-meter">
+          <span>Asignado</span>
+          <span id="budgetMeter">100%</span>
+        </div>
       </article>
       <article class="summary-card spent">
-        <p class="summary-label">Total Gastado</p>
+        <div class="summary-top">
+          <p class="summary-label">Total Gastado</p>
+          <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 19V5M4 19h16M8 16l3-4 3 2 5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
         <p class="summary-value" id="spentValue">$0.00</p>
         <p class="summary-note" id="expenseCount">0 gastos registrados.</p>
+        <div class="summary-meter">
+          <span>Uso del presupuesto</span>
+          <span id="spentMeter">0%</span>
+        </div>
       </article>
       <article class="summary-card balance" id="balanceCard">
-        <p class="summary-label">Saldo Restante</p>
+        <div class="summary-top">
+          <p class="summary-label">Saldo Restante</p>
+          <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3v18M17 7.5c-.7-1.1-2-1.8-4-1.8-2.4 0-4 1.1-4 2.8 0 4.3 8 1.6 8 6 0 1.8-1.7 3-4.2 3-2.1 0-3.8-.8-4.8-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
         <p class="summary-value" id="balanceValue">$0.00</p>
         <p class="summary-note" id="balanceNote">Sin presupuesto registrado.</p>
+        <div class="summary-meter">
+          <span>Disponible</span>
+          <span id="balanceMeter">0%</span>
+        </div>
         <div class="progress-track" aria-hidden="true">
           <div class="progress-bar" id="spentProgress"></div>
         </div>
@@ -997,7 +1220,7 @@
           <div class="file-grid">
             <div class="field">
               <label for="ticketInput">Foto del ticket opcional</label>
-              <input class="visually-hidden" id="ticketInput" type="file" accept="image/*" capture="environment">
+              <input class="visually-hidden" id="ticketInput" type="file" accept="image/*" capture="environment" multiple>
               <label class="file-picker" for="ticketInput">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1017,6 +1240,17 @@
                 <span class="file-name" id="invoiceFileName">Seleccionar PDF</span>
               </label>
             </div>
+          </div>
+
+          <div class="attachment-preview" id="attachmentPreview">
+            <section class="preview-section" id="ticketPreviewSection">
+              <p class="preview-title">Vista previa de tickets</p>
+              <div class="ticket-preview-grid" id="ticketPreview"></div>
+            </section>
+            <section class="preview-section" id="invoicePreviewSection">
+              <p class="preview-title">Vista previa de factura</p>
+              <div id="invoicePreview"></div>
+            </section>
           </div>
 
           <div class="form-actions">
@@ -1067,6 +1301,14 @@
       </section>
     </section>
   </main>
+
+  <dialog class="media-dialog" id="mediaDialog">
+    <div class="dialog-header">
+      <h3 id="mediaDialogTitle">Tickets</h3>
+      <button class="button secondary" id="closeMediaDialog" type="button">Cerrar</button>
+    </div>
+    <div class="dialog-body" id="mediaDialogBody"></div>
+  </dialog>
 
   <script type="module">
     // 1) Pega aquí tus credenciales del proyecto Firebase.
@@ -1124,6 +1366,9 @@
       balanceValue: document.querySelector("#balanceValue"),
       balanceCard: document.querySelector("#balanceCard"),
       balanceNote: document.querySelector("#balanceNote"),
+      budgetMeter: document.querySelector("#budgetMeter"),
+      spentMeter: document.querySelector("#spentMeter"),
+      balanceMeter: document.querySelector("#balanceMeter"),
       expenseCount: document.querySelector("#expenseCount"),
       spentProgress: document.querySelector("#spentProgress"),
       expenseForm: document.querySelector("#expenseForm"),
@@ -1134,13 +1379,22 @@
       ticketFileName: document.querySelector("#ticketFileName"),
       invoiceInput: document.querySelector("#invoiceInput"),
       invoiceFileName: document.querySelector("#invoiceFileName"),
+      attachmentPreview: document.querySelector("#attachmentPreview"),
+      ticketPreviewSection: document.querySelector("#ticketPreviewSection"),
+      ticketPreview: document.querySelector("#ticketPreview"),
+      invoicePreviewSection: document.querySelector("#invoicePreviewSection"),
+      invoicePreview: document.querySelector("#invoicePreview"),
       saveExpenseBtn: document.querySelector("#saveExpenseBtn"),
       cancelEditBtn: document.querySelector("#cancelEditBtn"),
       formMessage: document.querySelector("#formMessage"),
       historyLoader: document.querySelector("#historyLoader"),
       emptyState: document.querySelector("#emptyState"),
       tableWrap: document.querySelector("#tableWrap"),
-      expensesBody: document.querySelector("#expensesBody")
+      expensesBody: document.querySelector("#expensesBody"),
+      mediaDialog: document.querySelector("#mediaDialog"),
+      mediaDialogTitle: document.querySelector("#mediaDialogTitle"),
+      mediaDialogBody: document.querySelector("#mediaDialogBody"),
+      closeMediaDialog: document.querySelector("#closeMediaDialog")
     };
 
     elements.dateInput.valueAsDate = new Date();
@@ -1208,6 +1462,107 @@
         .toLowerCase();
     }
 
+    function getTicketList(expense) {
+      if (!expense) return [];
+      if (Array.isArray(expense.tickets) && expense.tickets.length > 0) return expense.tickets;
+      if (expense.ticketUrl) {
+        return [{
+          dataUrl: expense.ticketUrl,
+          name: expense.ticketName || "ticket",
+          type: expense.ticketType || "image/*",
+          size: expense.ticketSize || 0
+        }];
+      }
+      return [];
+    }
+
+    function getInvoiceData(expense) {
+      if (!expense?.invoiceUrl) return null;
+      return {
+        dataUrl: expense.invoiceUrl,
+        name: expense.invoiceName || "factura.pdf",
+        type: expense.invoiceType || "application/pdf",
+        size: expense.invoiceSize || 0
+      };
+    }
+
+    function formatFileCount(count, singular, plural) {
+      if (count === 0) return "";
+      return `${count} ${count === 1 ? singular : plural}`;
+    }
+
+    function renderAttachmentPreviews(expense = null) {
+      const selectedTickets = Array.from(elements.ticketInput.files || []).map((file) => ({
+        dataUrl: URL.createObjectURL(file),
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        isObjectUrl: true
+      }));
+      const tickets = selectedTickets.length > 0 ? selectedTickets : getTicketList(expense);
+
+      const selectedInvoice = elements.invoiceInput.files[0];
+      const invoice = selectedInvoice
+        ? {
+          dataUrl: URL.createObjectURL(selectedInvoice),
+          name: selectedInvoice.name,
+          type: selectedInvoice.type,
+          size: selectedInvoice.size,
+          isObjectUrl: true
+        }
+        : getInvoiceData(expense);
+
+      elements.ticketPreview.innerHTML = "";
+      tickets.forEach((ticket, index) => {
+        const item = document.createElement("article");
+        item.className = "ticket-thumb";
+        item.innerHTML = `
+          <img src="${ticket.dataUrl}" alt="Ticket ${index + 1}">
+          <span title="${ticket.name || `Ticket ${index + 1}`}">${ticket.name || `Ticket ${index + 1}`}</span>
+        `;
+        elements.ticketPreview.appendChild(item);
+      });
+
+      elements.invoicePreview.innerHTML = "";
+      if (invoice) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "pdf-preview";
+        wrapper.innerHTML = `
+          <strong>${invoice.name || "factura.pdf"}</strong>
+          <embed src="${invoice.dataUrl}" type="application/pdf">
+          <a href="${invoice.dataUrl}" target="_blank" rel="noopener noreferrer">Abrir PDF en otra pestaña</a>
+        `;
+        elements.invoicePreview.appendChild(wrapper);
+      }
+
+      elements.ticketPreviewSection.style.display = tickets.length ? "grid" : "none";
+      elements.invoicePreviewSection.style.display = invoice ? "grid" : "none";
+      elements.attachmentPreview.classList.toggle("show", tickets.length > 0 || Boolean(invoice));
+    }
+
+    function openTicketsDialog(expenseId) {
+      const expense = state.expenses.find((item) => item.id === expenseId);
+      const tickets = getTicketList(expense);
+      if (!tickets.length) return;
+
+      elements.mediaDialogTitle.textContent = `Tickets de ${expense?.concepto || "gasto"}`;
+      elements.mediaDialogBody.innerHTML = "";
+
+      tickets.forEach((ticket, index) => {
+        const item = document.createElement("article");
+        item.className = "dialog-ticket";
+        item.innerHTML = `
+          <img src="${ticket.dataUrl}" alt="Ticket ${index + 1}">
+          <a href="${ticket.dataUrl}" target="_blank" rel="noopener noreferrer">${ticket.name || `Abrir ticket ${index + 1}`}</a>
+        `;
+        elements.mediaDialogBody.appendChild(item);
+      });
+
+      if (typeof elements.mediaDialog.showModal === "function") {
+        elements.mediaDialog.showModal();
+      }
+    }
+
     function setMessage(type, text) {
       elements.formMessage.className = `message show ${type}`;
       elements.formMessage.textContent = text;
@@ -1251,6 +1606,7 @@
       elements.dateInput.valueAsDate = new Date();
       elements.ticketFileName.textContent = "Seleccionar foto";
       elements.invoiceFileName.textContent = "Seleccionar PDF";
+      renderAttachmentPreviews();
       elements.cancelEditBtn.classList.remove("show");
       elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
     }
@@ -1263,8 +1619,9 @@
       elements.conceptInput.value = expense.concepto || "";
       elements.amountInput.value = parseMoney(expense.monto) || "";
       elements.dateInput.value = expense.fecha || "";
-      elements.ticketFileName.textContent = expense.ticketUrl ? "Conservar ticket" : "Seleccionar foto";
+      elements.ticketFileName.textContent = getTicketList(expense).length ? "Conservar tickets" : "Seleccionar foto";
       elements.invoiceFileName.textContent = expense.invoiceUrl ? "Conservar factura" : "Seleccionar PDF";
+      renderAttachmentPreviews(expense);
       elements.cancelEditBtn.classList.add("show");
       elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
       elements.expenseForm.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1283,6 +1640,9 @@
       elements.spentValue.textContent = formatter.format(spent);
       elements.balanceValue.textContent = formatter.format(balance);
       elements.expenseCount.textContent = `${state.expenses.length} ${state.expenses.length === 1 ? "gasto registrado" : "gastos registrados"}.`;
+      elements.budgetMeter.textContent = budgetExists ? "100%" : "0%";
+      elements.spentMeter.textContent = budgetExists ? `${Math.round(spentRatio)}%` : "0%";
+      elements.balanceMeter.textContent = budgetExists ? `${Math.max(Math.round(remainingRatio * 100), 0)}%` : "0%";
       elements.spentProgress.style.width = `${spentRatio}%`;
       elements.spentProgress.classList.toggle("warning", isLowBalance);
 
@@ -1327,7 +1687,7 @@
         ["Fecha", "Concepto", "Monto", "Ticket", "Factura", "Acciones"].forEach((label, index) => {
           cells[index].dataset.label = label;
         });
-        renderFileCell(cells[3], expense.ticketUrl, "Ver ticket");
+        renderTicketsCell(cells[3], expense);
         renderFileCell(cells[4], expense.invoiceUrl, "Descargar PDF", true);
         renderActionCell(cells[5], expense.id);
 
@@ -1335,6 +1695,27 @@
       });
 
       elements.expensesBody.appendChild(fragment);
+    }
+
+    function renderTicketsCell(cell, expense) {
+      const tickets = getTicketList(expense);
+      if (!tickets.length) {
+        cell.className = "muted-cell";
+        cell.textContent = "Sin archivo";
+        return;
+      }
+
+      const button = document.createElement("button");
+      button.className = "button secondary";
+      button.type = "button";
+      button.innerHTML = `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 5h16v14H4zM8 9h3M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Ver tickets (${tickets.length})
+      `;
+      button.addEventListener("click", () => openTicketsDialog(expense.id));
+      cell.appendChild(button);
     }
 
     function renderFileCell(cell, url, label, download = false) {
@@ -1425,7 +1806,7 @@
       const concepto = elements.conceptInput.value.trim();
       const monto = parseMoney(elements.amountInput.value);
       const fecha = elements.dateInput.value;
-      const ticketFile = elements.ticketInput.files[0];
+      const ticketFiles = Array.from(elements.ticketInput.files || []);
       const invoiceFile = elements.invoiceInput.files[0];
       const existingExpense = state.editingId
         ? state.expenses.find((item) => item.id === state.editingId)
@@ -1436,8 +1817,8 @@
         return;
       }
 
-      const hasAnyCurrentFile = Boolean(existingExpense?.ticketUrl || existingExpense?.invoiceUrl);
-      if (!ticketFile && !invoiceFile && !hasAnyCurrentFile) {
+      const hasAnyCurrentFile = Boolean(getTicketList(existingExpense).length || existingExpense?.invoiceUrl);
+      if (!ticketFiles.length && !invoiceFile && !hasAnyCurrentFile) {
         setMessage("error", "Adjunta al menos una foto de ticket o una factura PDF.");
         return;
       }
@@ -1447,7 +1828,7 @@
         return;
       }
 
-      if (!validateFileSize(ticketFile) || !validateFileSize(invoiceFile)) {
+      if (!ticketFiles.every(validateFileSize) || !validateFileSize(invoiceFile)) {
         setMessage("error", "Cada archivo debe pesar 2 MB o menos para guardarlo en Realtime Database.");
         return;
       }
@@ -1462,12 +1843,13 @@
           updatedAt: Date.now()
         };
 
-        if (ticketFile) {
-          const ticketData = await readFileData(ticketFile);
-          payload.ticketUrl = ticketData.dataUrl;
-          payload.ticketName = ticketData.name;
-          payload.ticketType = ticketData.type;
-          payload.ticketSize = ticketData.size;
+        if (ticketFiles.length) {
+          const ticketData = await Promise.all(ticketFiles.map(readFileData));
+          payload.tickets = ticketData;
+          payload.ticketUrl = ticketData[0]?.dataUrl || "";
+          payload.ticketName = ticketData[0]?.name || "";
+          payload.ticketType = ticketData[0]?.type || "";
+          payload.ticketSize = ticketData[0]?.size || 0;
         }
 
         if (invoiceFile) {
@@ -1614,13 +1996,14 @@
       clearMessage();
     });
     elements.ticketInput.addEventListener("change", () => {
-      const file = elements.ticketInput.files[0];
+      const files = Array.from(elements.ticketInput.files || []);
       const editingExpense = state.expenses.find((item) => item.id === state.editingId);
-      elements.ticketFileName.textContent = file
-        ? file.name
-        : editingExpense?.ticketUrl
-          ? "Conservar ticket"
+      elements.ticketFileName.textContent = files.length
+        ? formatFileCount(files.length, "foto", "fotos")
+        : getTicketList(editingExpense).length
+          ? "Conservar tickets"
           : "Seleccionar foto";
+      renderAttachmentPreviews(editingExpense);
     });
     elements.invoiceInput.addEventListener("change", () => {
       const file = elements.invoiceInput.files[0];
@@ -1630,6 +2013,10 @@
         : editingExpense?.invoiceUrl
           ? "Conservar factura"
           : "Seleccionar PDF";
+      renderAttachmentPreviews(editingExpense);
+    });
+    elements.closeMediaDialog.addEventListener("click", () => {
+      elements.mediaDialog.close();
     });
 
     initFirebase();
