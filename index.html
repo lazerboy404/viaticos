@@ -2149,6 +2149,408 @@
         text-transform: uppercase;
       }
     }
+
+    /* Final responsive polish: no sidebar, compact dashboard KPIs, mobile-first tables. */
+    .dashboard-shell {
+      display: block;
+      min-height: 100vh;
+      padding: clamp(10px, 2vw, 18px);
+    }
+
+    .sidebar {
+      display: none;
+    }
+
+    .app {
+      width: min(100%, 1280px);
+      padding: 0;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      width: calc(100% - 48px);
+      min-height: auto;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      margin: 0 auto 14px;
+      border: 1px solid rgba(91, 139, 177, 0.32);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(0, 229, 255, 0.08), transparent 42%),
+        rgba(4, 14, 26, 0.72);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 40px rgba(0, 0, 0, 0.24);
+    }
+
+    .topbar::after {
+      display: none;
+    }
+
+    .topbar-title,
+    .topbar-actions {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .topbar-title p {
+      margin: 0;
+      color: #f8fbff;
+      font-size: clamp(1.1rem, 1.8vw, 1.55rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .topbar-title strong {
+      display: block;
+      margin-top: 3px;
+      color: #8fdcff;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .topbar .brand-icon {
+      width: 44px;
+      height: 44px;
+      flex: 0 0 auto;
+    }
+
+    .notice,
+    .project-panel,
+    .budget-panel,
+    .summary-grid,
+    .workspace {
+      width: calc(100% - 48px);
+      max-width: none;
+    }
+
+    .project-panel {
+      grid-template-columns: minmax(210px, 1fr) minmax(210px, 1fr) minmax(136px, 0.6fr) minmax(136px, 0.6fr);
+      grid-template-areas:
+        "project newlabel start end"
+        "save newbutton hint hint";
+      align-items: end;
+    }
+
+    #saveProjectBtn,
+    #createProjectBtn {
+      min-height: 44px;
+    }
+
+    .budget-panel {
+      grid-template-columns: minmax(220px, 1fr) minmax(170px, auto);
+      align-items: end;
+    }
+
+    .summary-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .summary-card {
+      min-height: 218px;
+      grid-template-rows: auto auto auto auto;
+      padding: 18px;
+    }
+
+    .summary-value {
+      margin-top: 8px;
+      font-size: clamp(2rem, 3vw, 2.65rem);
+      line-height: 1;
+    }
+
+    .gauge-wrap {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 58px;
+      aspect-ratio: auto;
+      margin: 14px 0 10px;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--gauge-color, #00e5ff) 55%, transparent);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent),
+        rgba(2, 10, 20, 0.82);
+      box-shadow:
+        inset 0 0 18px color-mix(in srgb, var(--gauge-color, #00e5ff) 20%, transparent),
+        0 0 24px color-mix(in srgb, var(--gauge-color, #00e5ff) 13%, transparent);
+    }
+
+    .gauge-wrap::before {
+      content: "";
+      position: absolute;
+      inset: 8px auto 8px 8px;
+      width: var(--metric-fill, 0%);
+      max-width: calc(100% - 16px);
+      border-radius: 6px;
+      background:
+        linear-gradient(90deg, color-mix(in srgb, var(--gauge-color, #00e5ff) 48%, transparent), var(--gauge-color, #00e5ff)),
+        repeating-linear-gradient(90deg, transparent 0 18px, rgba(255, 255, 255, 0.16) 18px 19px);
+      box-shadow: 0 0 18px color-mix(in srgb, var(--gauge-color, #00e5ff) 42%, transparent);
+      transition: width 220ms ease;
+    }
+
+    .gauge-wrap::after,
+    .gauge-shell,
+    .gauge-needle {
+      display: none;
+    }
+
+    .gauge-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 16px;
+      transform: none;
+      color: #f8fbff;
+      text-shadow: 0 1px 8px rgba(0, 0, 0, 0.45);
+    }
+
+    .gauge-center span,
+    .gauge-center strong {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+    }
+
+    .gauge-center span {
+      color: #c9e9ff;
+      font-size: 0.74rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .gauge-center strong {
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    input,
+    select,
+    textarea {
+      min-width: 0;
+    }
+
+    input[type="date"] {
+      color-scheme: dark;
+    }
+
+    .field:has(> input[type="date"])::after {
+      background: #d7e4f5;
+      opacity: 0.95;
+    }
+
+    .concept-text {
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 980px) {
+      .project-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-areas:
+          "project project"
+          "newlabel newlabel"
+          "start end"
+          "save newbutton"
+          "hint hint";
+      }
+
+      .summary-grid,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-card {
+        min-height: 190px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      body {
+        overflow-x: hidden;
+      }
+
+      .dashboard-shell {
+        padding: 8px;
+      }
+
+      .topbar,
+      .notice,
+      .project-panel,
+      .budget-panel,
+      .summary-grid,
+      .workspace {
+        width: 100%;
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+
+      .topbar-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        width: 100%;
+      }
+
+      .status-pill,
+      .theme-toggle {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .project-panel,
+      .budget-panel,
+      .expense-form,
+      .form-row,
+      .file-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .project-panel {
+        grid-template-areas:
+          "project"
+          "newlabel"
+          "start"
+          "end"
+          "save"
+          "newbutton"
+          "hint";
+      }
+
+      .budget-panel,
+      .project-panel,
+      .summary-card,
+      .form-panel,
+      .history-panel {
+        padding: 13px;
+      }
+
+      .summary-card {
+        min-height: auto;
+      }
+
+      .summary-value {
+        font-size: 2rem;
+      }
+
+      .gauge-wrap {
+        height: 50px;
+      }
+
+      .table-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+      }
+
+      table,
+      thead,
+      tbody,
+      tr,
+      th,
+      td {
+        display: block;
+      }
+
+      table {
+        min-width: 0;
+      }
+
+      thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+      }
+
+      tbody {
+        display: grid;
+        gap: 12px;
+      }
+
+      tbody tr {
+        padding: 12px;
+        border: 1px solid rgba(91, 139, 177, 0.32);
+        border-radius: 8px;
+        background: rgba(7, 20, 34, 0.86);
+      }
+
+      td {
+        display: grid;
+        grid-template-columns: 94px minmax(0, 1fr);
+        gap: 10px;
+        width: 100%;
+        padding: 9px 0;
+        border-bottom: 1px solid rgba(91, 139, 177, 0.22);
+      }
+
+      td:last-child {
+        border-bottom: 0;
+      }
+
+      td::before {
+        content: attr(data-label);
+        color: #8fa2ba;
+        font-size: 0.7rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .file-actions,
+      .row-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .history-panel .row-actions .button,
+      .file-actions .button {
+        width: 100%;
+        min-width: 0;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .topbar-title {
+        align-items: flex-start;
+      }
+
+      .topbar .brand-icon {
+        width: 40px;
+        height: 40px;
+      }
+
+      .topbar-title p {
+        font-size: 1.15rem;
+      }
+
+      .summary-top {
+        align-items: flex-start;
+      }
+
+      .summary-icon {
+        width: 42px;
+        height: 42px;
+      }
+
+      td {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2190,25 +2592,35 @@
         </a>
       </nav>
 
-      <div class="sidebar-bottom">
-    <header class="topbar">
-      <div class="topbar-actions">
-        <div class="status-pill" id="firebaseStatus">
-          <span class="status-dot" aria-hidden="true"></span>
-          <span id="firebaseStatusText">Configuración pendiente</span>
-        </div>
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span id="themeToggleText">Modo oscuro</span>
-        </button>
-      </div>
-    </header>
-      </div>
+      <div class="sidebar-bottom"></div>
     </aside>
 
     <main class="app" id="dashboardTop">
+      <header class="topbar" aria-label="Estado de la aplicacion">
+        <div class="topbar-title">
+          <span class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 7h16v13H4zM8 7V5h8v2M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <div>
+            <p>Control de Vi&aacute;ticos</p>
+            <strong>Dashboard de comprobaci&oacute;n</strong>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <div class="status-pill" id="firebaseStatus">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="firebaseStatusText">Configuraci&oacute;n pendiente</span>
+          </div>
+          <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="themeToggleText">Modo oscuro</span>
+          </button>
+        </div>
+      </header>
 
     <p class="notice" id="configNotice">
       Pega tus credenciales en el objeto <strong>firebaseConfig</strong> dentro del script para activar Realtime Database.
@@ -2223,7 +2635,7 @@
       </div>
       <div class="field">
         <label for="projectNameInput">Nombre del proyecto</label>
-        <input id="projectNameInput" type="text" placeholder="Ej. Quer&eacute;taro - julio" maxlength="80">
+        <input id="projectNameInput" type="text" placeholder="Ej. QUERETARO - JULIO" maxlength="80">
       </div>
       <div class="field">
         <label for="periodStartInput">Periodo inicio</label>
@@ -2353,7 +2765,7 @@
         <form class="expense-form" id="expenseForm">
           <div class="field">
             <label for="conceptInput">Concepto</label>
-            <input id="conceptInput" type="text" placeholder="Ej. Comida, taxi, hospedaje" required maxlength="90">
+            <input id="conceptInput" type="text" placeholder="Ej. COMIDA" required maxlength="90">
           </div>
 
           <div class="form-row">
@@ -2369,13 +2781,13 @@
 
           <div class="file-grid">
             <div class="field">
-              <label for="ticketInput">Foto del ticket opcional</label>
+              <label for="ticketInput">Fotos del ticket opcionales</label>
               <input class="visually-hidden" id="ticketInput" type="file" accept="image/*" capture="environment" multiple>
               <label class="file-picker" for="ticketInput">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <span class="file-name" id="ticketFileName">Seleccionar foto</span>
+                <span class="file-name" id="ticketFileName">Seleccionar fotos</span>
               </label>
             </div>
 
@@ -2491,7 +2903,11 @@
     const PROJECTS_PATH = "settings/viaticos/projects";
     const EXPENSES_PATH = "expenses";
     const LEGACY_PROJECT_ID = "__general__";
-    const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+    const MAX_TICKET_SOURCE_BYTES = 8 * 1024 * 1024;
+    const MAX_STORED_TICKET_BYTES = 950 * 1024;
+    const MAX_PDF_SIZE_BYTES = 2 * 1024 * 1024;
+    const TICKET_MAX_DIMENSION = 1280;
+    const TICKET_IMAGE_QUALITY = 0.72;
 
     const formatter = new Intl.NumberFormat("es-MX", {
       style: "currency",
@@ -2615,11 +3031,16 @@
 
     function formatDate(value) {
       if (!value) return "Sin fecha";
-      return new Intl.DateTimeFormat("es-MX", {
+      const date = new Date(`${value}T00:00:00`);
+      const weekday = new Intl.DateTimeFormat("es-MX", {
+        weekday: "long"
+      }).format(date);
+      const formattedDate = new Intl.DateTimeFormat("es-MX", {
         day: "2-digit",
         month: "short",
         year: "numeric"
-      }).format(new Date(`${value}T00:00:00`));
+      }).format(date).replace(".", "");
+      return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${formattedDate}`;
     }
 
     function getPeriodLabel(project) {
@@ -2713,16 +3134,17 @@
     function getConceptMeta(concept = "") {
       const text = concept.toLowerCase();
       const catalog = [
-        { keys: ["comida", "restaurante", "desayuno", "cena", "alimento", "cafe"], color: "#22d3ee", path: "M4 3v8a4 4 0 0 0 4 4h1v6M16 3v18M20 3v6a4 4 0 0 1-4 4" },
-        { keys: ["hotel", "hospedaje", "hostal", "airbnb"], color: "#a78bfa", path: "M4 21V8a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v13M7 21v-5h10v5M8 9h1M12 9h1M16 9h1M8 13h1M12 13h1M16 13h1" },
-        { keys: ["oxxo", "tienda", "super", "compra", "farmacia"], color: "#facc15", path: "M4 10h16l-1-5H5l-1 5ZM5 10v10h14V10M8 14h8M8 18h5" },
-        { keys: ["taxi", "uber", "did", "transporte", "camion", "autobus", "bus", "gasolina", "caseta"], color: "#38bdf8", path: "M5 17h14M7 17v2M17 17v2M6 14l2-6h8l2 6M8 14h8M8 11h8" },
-        { keys: ["vuelo", "avion", "aeropuerto"], color: "#60a5fa", path: "M2 16l20-8-8 20-3-9-9-3ZM11 19l3-3" },
+        { keys: ["comida", "restaurante", "desayuno", "cena", "alimento", "cafe"], color: "#f472ff", path: "M6 3v8M9 3v8M6 7h3M7.5 11v10M17 3v18M14 3v7a3 3 0 0 0 6 0V3" },
+        { keys: ["hotel", "hospedaje", "hostal", "airbnb"], color: "#22d3ee", path: "M4 21V5M20 21V11a3 3 0 0 0-3-3H9a3 3 0 0 0-3 3v10M6 14h14M9 8V5h6v3M9 17h2M15 17h2" },
+        { keys: ["oxxo", "tienda", "super", "compra", "farmacia"], color: "#facc15", path: "M4 10h16l-1.2-5H5.2L4 10ZM5 10v10h14V10M8 14h8M8 18h5M7 5v5M12 5v5M17 5v5" },
+        { keys: ["autobus", "autobús", "bus", "camion", "camión"], color: "#60a5fa", path: "M6 4h12a2 2 0 0 1 2 2v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2ZM7 8h10M7 13h10M8 19v2M16 19v2M8 16h.01M16 16h.01" },
+        { keys: ["taxi", "uber", "didi", "transporte", "gasolina", "caseta"], color: "#fb923c", path: "M5 17h14M7 17v2M17 17v2M6 14l2-6h8l2 6M9 8l1-3h4l1 3M8 14h8M8 11h8" },
+        { keys: ["vuelo", "avion", "avión", "aeropuerto"], color: "#38bdf8", path: "M2 16l20-8-8 20-3-9-9-3ZM11 19l3-3" },
         { keys: ["pdf", "factura", "oficina", "papeleria"], color: "#34d399", path: "M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6ZM14 2v6h6M8 13h8M8 17h5" }
       ];
       return catalog.find((item) => item.keys.some((key) => text.includes(key))) || {
         color: "#2dd4bf",
-        path: "M12 3v18M17 7.5c-.7-1.1-2-1.8-4-1.8-2.4 0-4 1.1-4 2.8 0 4.3 8 1.6 8 6 0 1.8-1.7 3-4.2 3-2.1 0-3.8-.8-4.8-2.1"
+        path: "M5 6h14v14H5zM8 10h8M8 14h8M8 18h4M9 3h6l2 3H7l2-3Z"
       };
     }
 
@@ -2848,6 +3270,15 @@
 
     function getFirebaseErrorMessage(error) {
       const code = error?.code || "";
+      const message = error?.message || "";
+
+      if (message.includes("ticket-size-after-compression")) {
+        return "La foto sigue siendo muy pesada despues de comprimirla. Intenta recortarla o subir una captura mas ligera.";
+      }
+
+      if (message.includes("ticket-image-invalid")) {
+        return "No se pudo leer una foto del ticket. Intenta con otra imagen.";
+      }
 
       if (code.includes("permission-denied")) {
         return "Realtime Database rechazo la operacion. Revisa que tus reglas permitan leer y escribir.";
@@ -2877,7 +3308,7 @@
       state.editingId = null;
       elements.expenseForm.reset();
       elements.dateInput.valueAsDate = new Date();
-      elements.ticketFileName.textContent = "Seleccionar foto";
+      elements.ticketFileName.textContent = "Seleccionar fotos";
       elements.invoiceFileName.textContent = "Seleccionar PDF";
       renderAttachmentPreviews();
       elements.cancelEditBtn.classList.remove("show");
@@ -2892,7 +3323,7 @@
       elements.conceptInput.value = expense.concepto || "";
       elements.amountInput.value = parseMoney(expense.monto) || "";
       elements.dateInput.value = expense.fecha || "";
-      elements.ticketFileName.textContent = getTicketList(expense).length ? "Conservar tickets" : "Seleccionar foto";
+      elements.ticketFileName.textContent = getTicketList(expense).length ? "Conservar tickets" : "Seleccionar fotos";
       elements.invoiceFileName.textContent = expense.invoiceUrl ? "Conservar factura" : "Seleccionar PDF";
       renderAttachmentPreviews(expense);
       elements.cancelEditBtn.classList.add("show");
@@ -2919,9 +3350,12 @@
       elements.budgetGaugeText.textContent = budgetExists ? "100%" : "0%";
       elements.spentGaugeText.textContent = budgetExists ? `${Math.round(spentRatio)}%` : "0%";
       elements.balanceGaugeText.textContent = budgetExists ? `${Math.max(Math.round(remainingRatio * 100), 0)}%` : "0%";
-      document.querySelectorAll(".summary-card")[0]?.style.setProperty("--gauge-value", `${budgetExists ? 180 : 0}deg`);
-      document.querySelector(".summary-card.spent")?.style.setProperty("--gauge-value", `${Math.round((spentRatio / 100) * 180)}deg`);
-      elements.balanceCard.style.setProperty("--gauge-value", `${Math.round(Math.max(Math.min(remainingRatio, 1), 0) * 180)}deg`);
+      const budgetCard = document.querySelector(".summary-card:not(.spent):not(.balance)");
+      const spentCard = document.querySelector(".summary-card.spent");
+      const balanceFill = Math.max(Math.min(remainingRatio, 1), 0) * 100;
+      budgetCard?.style.setProperty("--metric-fill", budgetExists ? "100%" : "0%");
+      spentCard?.style.setProperty("--metric-fill", `${spentRatio}%`);
+      elements.balanceCard.style.setProperty("--metric-fill", `${balanceFill}%`);
       elements.spentProgress.style.width = `${spentRatio}%`;
       elements.spentProgress.classList.toggle("warning", isLowBalance);
 
@@ -2960,7 +3394,7 @@
           <td></td>
         `;
 
-        const conceptText = expense.concepto || "Sin concepto";
+        const conceptText = (expense.concepto || "Sin concepto").toUpperCase();
         const conceptMeta = getConceptMeta(conceptText);
         row.querySelector(".concept-cell").innerHTML = `
           <span class="concept-wrap" style="--concept-color: ${conceptMeta.color}">
@@ -3217,7 +3651,7 @@
       if (!state.isFirebaseReady) return;
       clearMessage();
 
-      const concepto = elements.conceptInput.value.trim();
+      const concepto = elements.conceptInput.value.trim().toUpperCase();
       const monto = parseMoney(elements.amountInput.value);
       const fecha = elements.dateInput.value;
       const ticketFiles = Array.from(elements.ticketInput.files || []);
@@ -3236,8 +3670,8 @@
         return;
       }
 
-      if (!ticketFiles.every(validateFileSize) || !validateFileSize(invoiceFile)) {
-        setMessage("error", "Cada archivo debe pesar 2 MB o menos para guardarlo en Realtime Database.");
+      if (!ticketFiles.every(validateTicketFile) || !validateInvoiceFile(invoiceFile)) {
+        setMessage("error", "Las fotos pueden pesar hasta 8 MB y se comprimen automaticamente. Cada PDF debe pesar 2 MB o menos.");
         return;
       }
 
@@ -3257,7 +3691,7 @@
         }
 
         if (ticketFiles.length) {
-          const ticketData = await Promise.all(ticketFiles.map(readFileData));
+          const ticketData = await Promise.all(ticketFiles.map(processTicketFile));
           payload.tickets = ticketData;
           payload.ticketUrl = ticketData[0]?.dataUrl || "";
           payload.ticketName = ticketData[0]?.name || "";
@@ -3294,8 +3728,20 @@
       }
     }
 
-    function validateFileSize(file) {
-      return !file || file.size <= MAX_FILE_SIZE_BYTES;
+    function validateTicketFile(file) {
+      return !file || ((!file.type || file.type.startsWith("image/")) && file.size <= MAX_TICKET_SOURCE_BYTES);
+    }
+
+    function validateInvoiceFile(file) {
+      return !file || file.size <= MAX_PDF_SIZE_BYTES;
+    }
+
+    async function processTicketFile(file) {
+      const compressed = await compressTicketImage(file);
+      if (compressed.size > MAX_STORED_TICKET_BYTES) {
+        throw new Error("ticket-size-after-compression");
+      }
+      return compressed;
     }
 
     function readFileData(file) {
@@ -3308,6 +3754,56 @@
           size: file.size
         });
         reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function compressTicketImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(reader.error);
+        reader.onload = () => {
+          const image = new Image();
+          image.onerror = () => reject(new Error("ticket-image-invalid"));
+          image.onload = () => {
+            const baseName = sanitizeFileName((file.name || "ticket").replace(/\.[^.]+$/, ""));
+            const attempts = [
+              { maxSide: TICKET_MAX_DIMENSION, quality: TICKET_IMAGE_QUALITY },
+              { maxSide: 1080, quality: 0.66 },
+              { maxSide: 900, quality: 0.58 },
+              { maxSide: 720, quality: 0.52 }
+            ];
+            let compressedTicket = null;
+
+            for (const attempt of attempts) {
+              const largestSide = Math.max(image.width, image.height);
+              const scale = largestSide > attempt.maxSide ? attempt.maxSide / largestSide : 1;
+              const canvas = document.createElement("canvas");
+              canvas.width = Math.max(1, Math.round(image.width * scale));
+              canvas.height = Math.max(1, Math.round(image.height * scale));
+
+              const context = canvas.getContext("2d");
+              context.fillStyle = "#ffffff";
+              context.fillRect(0, 0, canvas.width, canvas.height);
+              context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+              const dataUrl = canvas.toDataURL("image/jpeg", attempt.quality);
+              const base64Length = dataUrl.split(",")[1]?.length || 0;
+              const estimatedSize = Math.round(base64Length * 0.75);
+              compressedTicket = {
+                dataUrl,
+                name: `${baseName || "ticket"}.jpg`,
+                type: "image/jpeg",
+                size: estimatedSize
+              };
+
+              if (estimatedSize <= MAX_STORED_TICKET_BYTES) break;
+            }
+
+            resolve(compressedTicket);
+          };
+          image.src = reader.result;
+        };
         reader.readAsDataURL(file);
       });
     }
@@ -3458,7 +3954,7 @@
         ? formatFileCount(files.length, "foto", "fotos")
         : getTicketList(editingExpense).length
           ? "Conservar tickets"
-          : "Seleccionar foto";
+          : "Seleccionar fotos";
       renderAttachmentPreviews(editingExpense);
     });
     elements.invoiceInput.addEventListener("change", () => {
