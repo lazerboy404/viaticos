@@ -2154,7 +2154,7 @@
     .dashboard-shell {
       display: block;
       min-height: 100vh;
-      padding: clamp(10px, 2vw, 18px);
+      padding: clamp(10px, 1.4vw, 18px);
     }
 
     .sidebar {
@@ -2162,13 +2162,13 @@
     }
 
     .app {
-      width: min(100%, 1280px);
+      width: min(100%, 1760px);
       padding: 0;
       margin: 0 auto;
     }
 
     .topbar {
-      width: calc(100% - 48px);
+      width: 100%;
       min-height: auto;
       display: flex;
       gap: 16px;
@@ -2226,7 +2226,7 @@
     .budget-panel,
     .summary-grid,
     .workspace {
-      width: calc(100% - 48px);
+      width: 100%;
       max-width: none;
     }
 
@@ -2352,6 +2352,117 @@
 
     .concept-text {
       text-transform: uppercase;
+    }
+
+    @media (min-width: 981px) {
+      .workspace {
+        grid-template-columns: minmax(300px, 0.28fr) minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .form-panel,
+      .history-panel {
+        padding: 16px;
+      }
+
+      .table-wrap {
+        overflow-x: visible;
+      }
+
+      .history-panel table {
+        min-width: 0;
+        table-layout: fixed;
+      }
+
+      .history-panel th,
+      .history-panel td {
+        padding-inline: 12px;
+      }
+
+      .history-panel th:nth-child(1),
+      .history-panel td:nth-child(1) {
+        width: 150px;
+      }
+
+      .history-panel th:nth-child(3),
+      .history-panel td:nth-child(3) {
+        width: 104px;
+      }
+
+      .history-panel th:nth-child(4),
+      .history-panel td:nth-child(4) {
+        width: 112px;
+      }
+
+      .history-panel th:nth-child(5),
+      .history-panel td:nth-child(5) {
+        width: 142px;
+      }
+
+      .history-panel th:nth-child(6),
+      .history-panel td:nth-child(6) {
+        width: 104px;
+      }
+
+      .concept-cell {
+        max-width: none;
+      }
+
+      .concept-wrap {
+        align-items: flex-start;
+      }
+
+      .concept-text {
+        overflow-wrap: anywhere;
+        line-height: 1.15;
+      }
+
+      .history-panel .row-actions {
+        justify-content: flex-end;
+      }
+
+      .history-panel .row-actions .button {
+        width: 38px;
+        min-width: 38px;
+        min-height: 36px;
+      }
+
+      .invoice-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .invoice-actions .button {
+        min-width: 0;
+        padding-inline: 9px;
+      }
+    }
+
+    @media (min-width: 1500px) {
+      .workspace {
+        grid-template-columns: 340px minmax(0, 1fr);
+      }
+
+      .history-panel th:nth-child(1),
+      .history-panel td:nth-child(1) {
+        width: 170px;
+      }
+
+      .history-panel th:nth-child(3),
+      .history-panel td:nth-child(3) {
+        width: 120px;
+      }
+
+      .history-panel th:nth-child(4),
+      .history-panel td:nth-child(4) {
+        width: 128px;
+      }
+
+      .history-panel th:nth-child(5),
+      .history-panel td:nth-child(5) {
+        width: 160px;
+      }
     }
 
     @media (max-width: 980px) {
