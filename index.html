@@ -2356,7 +2356,7 @@
 
     @media (min-width: 981px) {
       .workspace {
-        grid-template-columns: minmax(300px, 0.28fr) minmax(0, 1fr);
+        grid-template-columns: 1fr;
         gap: 16px;
         align-items: start;
       }
@@ -2364,6 +2364,57 @@
       .form-panel,
       .history-panel {
         padding: 16px;
+      }
+
+      .form-panel {
+        display: grid;
+        gap: 12px;
+        position: static;
+        padding: 14px 16px;
+      }
+
+      .expense-form {
+        grid-template-columns: minmax(230px, 1fr) minmax(270px, 0.95fr) minmax(380px, 1.25fr) minmax(180px, 0.6fr);
+        align-items: end;
+      }
+
+      .expense-form > .field:first-child {
+        grid-column: 1 / 2;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: minmax(120px, 0.8fr) minmax(150px, 1fr);
+        grid-column: 2 / 3;
+      }
+
+      .file-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-column: 3 / 4;
+      }
+
+      .form-actions {
+        grid-column: 4 / 5;
+        align-self: stretch;
+      }
+
+      .form-actions .button {
+        min-height: 100%;
+      }
+
+      .form-panel .file-picker {
+        min-height: 66px;
+        padding-block: 10px;
+      }
+
+      .form-panel .file-picker .icon {
+        width: 26px;
+        height: 26px;
+      }
+
+      .attachment-preview,
+      .expense-form .message {
+        grid-column: 1 / -1;
       }
 
       .table-wrap {
@@ -2441,7 +2492,11 @@
 
     @media (min-width: 1500px) {
       .workspace {
-        grid-template-columns: 340px minmax(0, 1fr);
+        grid-template-columns: 1fr;
+      }
+
+      .expense-form {
+        grid-template-columns: minmax(300px, 1.1fr) minmax(320px, 0.95fr) minmax(440px, 1.25fr) minmax(210px, 0.6fr);
       }
 
       .history-panel th:nth-child(1),
