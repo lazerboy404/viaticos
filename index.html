@@ -3105,6 +3105,7 @@
     html,
     body {
       background-color: var(--glass-page-2);
+      overflow-x: hidden;
     }
 
     .dashboard-shell,
@@ -3346,6 +3347,203 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Final expense structure pass: split concept/name, matched file actions and global KPI. */
+    .summary-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .summary-card.global {
+      --gauge-color: #14b8a6;
+    }
+
+    .summary-value.compact {
+      font-size: clamp(1.65rem, 2.2vw, 2.35rem);
+    }
+
+    .global-money-line,
+    .global-balance-line {
+      display: grid;
+      gap: 4px;
+      margin: 6px 0;
+      padding: 12px;
+      border: 1px solid var(--glass-line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--glass-bg-soft), transparent 6%);
+    }
+
+    .global-money-line.primary {
+      background: color-mix(in srgb, var(--gauge-color), transparent 86%);
+    }
+
+    .global-money-line span,
+    .global-balance-line span {
+      color: var(--glass-muted);
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+
+    .global-money-line strong,
+    .global-balance-line strong {
+      color: var(--glass-heading);
+      font-size: clamp(1.25rem, 1.8vw, 1.7rem);
+      line-height: 1;
+    }
+
+    .history-panel th:nth-child(2),
+    .history-panel td:nth-child(2) {
+      width: 34%;
+    }
+
+    .history-panel .concept-wrap {
+      grid-template-columns: 52px minmax(0, 1fr);
+      justify-content: stretch;
+      width: min(360px, 100%);
+      margin-inline: auto;
+    }
+
+    .history-panel .concept-text {
+      display: grid;
+      gap: 3px;
+      align-self: center;
+      max-width: none;
+      min-width: 0;
+    }
+
+    .history-panel .concept-text strong,
+    .history-panel .concept-text small {
+      overflow-wrap: anywhere;
+    }
+
+    .history-panel .concept-text strong {
+      color: var(--glass-heading);
+      font-size: 0.94rem;
+      line-height: 1.1;
+    }
+
+    .history-panel .concept-text small {
+      color: var(--glass-muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    .history-panel .concept-text.single-line small {
+      display: none;
+    }
+
+    .history-panel .ticket-actions,
+    .history-panel .invoice-actions {
+      grid-template-columns: minmax(132px, 1fr);
+      align-content: center;
+      gap: 8px;
+    }
+
+    .history-panel .ticket-actions .button,
+    .history-panel .invoice-actions .button {
+      display: inline-flex;
+      justify-content: center;
+      width: 100%;
+      min-height: 36px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .attachment-preview.show {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+    }
+
+    .preview-section {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid var(--glass-line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--glass-bg-soft), transparent 10%);
+    }
+
+    .ticket-preview-grid {
+      grid-template-columns: repeat(auto-fill, minmax(190px, 240px));
+      align-items: start;
+    }
+
+    .ticket-thumb {
+      gap: 9px;
+      max-width: 240px;
+      background: color-mix(in srgb, var(--glass-input), transparent 10%);
+    }
+
+    .ticket-thumb img {
+      aspect-ratio: 4 / 3;
+      object-fit: contain;
+    }
+
+    .thumb-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .thumb-actions .button {
+      min-height: 34px;
+      padding-inline: 8px;
+      font-size: 0.72rem;
+    }
+
+    .attachment-preview .pdf-preview {
+      background: color-mix(in srgb, var(--glass-input), transparent 10%);
+    }
+
+    .attachment-preview .pdf-preview-frame {
+      min-height: 180px;
+      max-height: 220px;
+    }
+
+    @media (min-width: 981px) {
+      .expense-form {
+        grid-template-columns: minmax(150px, 0.75fr) minmax(220px, 1fr) minmax(310px, 0.95fr) minmax(430px, 1.3fr) minmax(210px, 0.58fr);
+      }
+
+      .expense-form > .field:first-child {
+        grid-column: 1 / 2;
+      }
+
+      .expense-name-field {
+        grid-column: 2 / 3;
+      }
+
+      .form-row {
+        grid-column: 3 / 4;
+      }
+
+      .file-grid {
+        grid-column: 4 / 5;
+      }
+
+      .form-actions {
+        grid-column: 5 / 6;
+      }
+    }
+
+    @media (max-width: 1240px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .summary-grid,
+      .attachment-preview.show,
+      .thumb-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .history-panel .concept-wrap {
+        width: 100%;
+        margin-inline: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -3550,6 +3748,29 @@
           <div class="progress-bar" id="spentProgress"></div>
         </div>
       </article>
+      <article class="summary-card global" id="globalCard">
+        <div class="summary-top">
+          <p class="summary-label">Total Global</p>
+          <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16M4 12h16M4 18h16M7 4v16M17 4v16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </div>
+        <div class="global-money-line primary">
+          <span>Presupuesto global</span>
+          <strong id="globalBudgetValue">$0.00</strong>
+        </div>
+        <div class="global-balance-line">
+          <span>Restante global</span>
+          <strong id="globalBalanceValue">$0.00</strong>
+        </div>
+        <p class="summary-note" id="globalNote">Suma de todos los proyectos.</p>
+        <div class="summary-meter">
+          <span>Disponible global</span>
+          <span id="globalMeter">0%</span>
+        </div>
+      </article>
     </section>
 
     <section class="workspace">
@@ -3565,6 +3786,11 @@
           <div class="field">
             <label for="conceptInput">Concepto</label>
             <input id="conceptInput" type="text" placeholder="Ej. COMIDA" required maxlength="90">
+          </div>
+
+          <div class="field expense-name-field">
+            <label for="expenseNameInput">Nombre / lugar</label>
+            <input id="expenseNameInput" type="text" placeholder="Ej. VIPS, PORTON, OXXO" maxlength="90">
           </div>
 
           <div class="form-row">
@@ -3746,6 +3972,11 @@
       balanceValue: document.querySelector("#balanceValue"),
       balanceCard: document.querySelector("#balanceCard"),
       balanceNote: document.querySelector("#balanceNote"),
+      globalCard: document.querySelector("#globalCard"),
+      globalBudgetValue: document.querySelector("#globalBudgetValue"),
+      globalBalanceValue: document.querySelector("#globalBalanceValue"),
+      globalNote: document.querySelector("#globalNote"),
+      globalMeter: document.querySelector("#globalMeter"),
       budgetMeter: document.querySelector("#budgetMeter"),
       spentMeter: document.querySelector("#spentMeter"),
       balanceMeter: document.querySelector("#balanceMeter"),
@@ -3754,8 +3985,10 @@
       balanceGaugeText: document.querySelector("#balanceGaugeText"),
       expenseCount: document.querySelector("#expenseCount"),
       spentProgress: document.querySelector("#spentProgress"),
+      expenseFormTitle: document.querySelector("#expenseFormTitle"),
       expenseForm: document.querySelector("#expenseForm"),
       conceptInput: document.querySelector("#conceptInput"),
+      expenseNameInput: document.querySelector("#expenseNameInput"),
       amountInput: document.querySelector("#amountInput"),
       dateInput: document.querySelector("#dateInput"),
       ticketInput: document.querySelector("#ticketInput"),
@@ -4000,6 +4233,31 @@
       };
     }
 
+    function getExpenseConceptParts(expense) {
+      const rawConcept = String(expense?.concepto || "").trim().toUpperCase();
+      const rawName = String(expense?.nombreGasto || expense?.expenseName || "").trim().toUpperCase();
+      if (rawName) {
+        return {
+          concept: rawConcept || "SIN CONCEPTO",
+          name: rawName,
+          combined: `${rawConcept || "SIN CONCEPTO"} ${rawName}`.trim()
+        };
+      }
+
+      const knownConcepts = ["COMIDA", "HOSPEDAJE", "OXXO", "TAXI", "UBER", "DIDI", "AUTOBUS", "AUTOB\u00daS", "TRANSPORTE", "GASOLINA", "CASETA", "VUELO", "AVION", "AVI\u00d3N", "LAVANDERIA", "FACTURA", "OFICINA"];
+      const normalized = rawConcept || "SIN CONCEPTO";
+      const match = knownConcepts.find((item) => normalized === item || normalized.startsWith(`${item} `));
+      if (!match || normalized === match) {
+        return { concept: normalized, name: "", combined: normalized };
+      }
+
+      return {
+        concept: match,
+        name: normalized.slice(match.length).trim(),
+        combined: normalized
+      };
+    }
+
     function formatFileCount(count, singular, plural) {
       if (count === 0) return "";
       return `${count} ${count === 1 ? singular : plural}`;
@@ -4030,9 +4288,14 @@
       tickets.forEach((ticket, index) => {
         const item = document.createElement("article");
         item.className = "ticket-thumb";
+        const title = ticket.name || `Ticket ${index + 1}`;
         item.innerHTML = `
           <img src="${ticket.dataUrl}" alt="Ticket ${index + 1}">
-          <span title="${ticket.name || `Ticket ${index + 1}`}">${ticket.name || `Ticket ${index + 1}`}</span>
+          <span title="${title}">${title}</span>
+          <div class="thumb-actions">
+            <a class="button secondary" href="${ticket.dataUrl}" target="_blank" rel="noopener noreferrer">Ver</a>
+            <a class="button secondary" href="${ticket.dataUrl}" download="${title}">Descargar</a>
+          </div>
         `;
         elements.ticketPreview.appendChild(item);
       });
@@ -4076,7 +4339,7 @@
       const tickets = getTicketList(expense);
       if (!tickets.length) return;
 
-      elements.mediaDialogTitle.textContent = `Tickets de ${expense?.concepto || "gasto"}`;
+      elements.mediaDialogTitle.textContent = `Tickets de ${getExpenseConceptParts(expense).combined || "gasto"}`;
       elements.mediaDialogBody.innerHTML = "";
       elements.mediaDialogBody.classList.remove("pdf-dialog-body");
 
@@ -4201,6 +4464,7 @@
       elements.ticketFileName.textContent = "Seleccionar fotos";
       elements.invoiceFileName.textContent = "Seleccionar PDF";
       renderAttachmentPreviews();
+      elements.expenseFormTitle.textContent = "Nuevo gasto";
       elements.cancelEditBtn.classList.remove("show");
       elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
     }
@@ -4210,16 +4474,19 @@
       if (!expense) return;
 
       state.editingId = expense.id;
-      elements.conceptInput.value = expense.concepto || "";
+      const conceptParts = getExpenseConceptParts(expense);
+      elements.conceptInput.value = conceptParts.concept === "SIN CONCEPTO" ? "" : conceptParts.concept;
+      elements.expenseNameInput.value = conceptParts.name || "";
       elements.amountInput.value = parseMoney(expense.monto) || "";
       elements.dateInput.value = expense.fecha || "";
       elements.ticketFileName.textContent = getTicketList(expense).length ? "Conservar tickets" : "Seleccionar fotos";
       elements.invoiceFileName.textContent = expense.invoiceUrl ? "Conservar factura" : "Seleccionar PDF";
       renderAttachmentPreviews(expense);
+      elements.expenseFormTitle.textContent = "Editar gasto";
       elements.cancelEditBtn.classList.add("show");
       elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
       elements.expenseForm.scrollIntoView({ behavior: "smooth", block: "start" });
-      setMessage("success", "Editando gasto. Puedes cambiar los datos y reemplazar archivos si lo necesitas.");
+      setMessage("success", "Editando gasto. Puedes cambiar datos y reemplazar comprobantes si lo necesitas.");
     }
 
     function renderSummary() {
@@ -4229,10 +4496,19 @@
       const remainingRatio = budgetExists ? balance / state.budget : 1;
       const spentRatio = budgetExists ? Math.min(Math.max((spent / state.budget) * 100, 0), 100) : 0;
       const isLowBalance = budgetExists && remainingRatio < 0.15;
+      const globalBudget = parseMoney(state.legacyBudget) + state.projects.reduce((total, project) => total + parseMoney(project.budget), 0);
+      const globalSpent = state.allExpenses.reduce((total, expense) => total + parseMoney(expense.monto), 0);
+      const globalBalance = globalBudget - globalSpent;
+      const globalRatio = globalBudget > 0 ? Math.max(Math.min(globalBalance / globalBudget, 1), 0) : 0;
+      const globalProjectCount = state.projects.length + (state.allExpenses.some((expense) => !expense.projectId || expense.projectId === LEGACY_PROJECT_ID) || state.legacyBudget > 0 ? 1 : 0);
 
       elements.budgetValue.textContent = formatter.format(state.budget);
       elements.spentValue.textContent = formatter.format(spent);
       elements.balanceValue.textContent = formatter.format(balance);
+      elements.globalBudgetValue.textContent = formatter.format(globalBudget);
+      elements.globalBalanceValue.textContent = formatter.format(globalBalance);
+      elements.globalMeter.textContent = globalBudget > 0 ? `${Math.round(globalRatio * 100)}%` : "0%";
+      elements.globalNote.textContent = `${globalProjectCount} ${globalProjectCount === 1 ? "proyecto considerado" : "proyectos considerados"}. Gasto global: ${formatter.format(globalSpent)}.`;
       elements.expenseCount.textContent = `${state.expenses.length} ${state.expenses.length === 1 ? "gasto registrado" : "gastos registrados"}.`;
       elements.budgetMeter.textContent = budgetExists ? "100%" : "0%";
       elements.spentMeter.textContent = budgetExists ? `${Math.round(spentRatio)}%` : "0%";
@@ -4246,11 +4522,13 @@
       budgetCard?.style.setProperty("--metric-fill", budgetExists ? "100%" : "0%");
       spentCard?.style.setProperty("--metric-fill", `${spentRatio}%`);
       elements.balanceCard.style.setProperty("--metric-fill", `${balanceFill}%`);
+      elements.globalCard.style.setProperty("--metric-fill", `${globalRatio * 100}%`);
       elements.spentProgress.style.width = `${spentRatio}%`;
       elements.spentProgress.classList.toggle("warning", isLowBalance);
 
       elements.balanceCard.classList.toggle("low", isLowBalance && balance >= 0);
       elements.balanceCard.classList.toggle("negative", balance < 0);
+      elements.globalCard.classList.toggle("negative", globalBalance < 0);
 
       if (!budgetExists) {
         elements.balanceNote.textContent = "Sin presupuesto registrado.";
@@ -4284,8 +4562,8 @@
           <td></td>
         `;
 
-        const conceptText = (expense.concepto || "Sin concepto").toUpperCase();
-        const conceptMeta = getConceptMeta(conceptText);
+        const conceptParts = getExpenseConceptParts(expense);
+        const conceptMeta = getConceptMeta(conceptParts.combined);
         row.querySelector(".concept-cell").innerHTML = `
           <span class="concept-wrap" style="--concept-color: ${conceptMeta.color}">
             <span class="concept-neon" aria-hidden="true">
@@ -4293,10 +4571,15 @@
                 <path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </span>
-            <span class="concept-text"></span>
+            <span class="concept-text">
+              <strong></strong>
+              <small></small>
+            </span>
           </span>
         `;
-        row.querySelector(".concept-text").textContent = conceptText;
+        row.querySelector(".concept-text strong").textContent = conceptParts.concept;
+        row.querySelector(".concept-text small").textContent = conceptParts.name || "Sin nombre";
+        row.querySelector(".concept-text").classList.toggle("single-line", !conceptParts.name);
 
         const cells = row.querySelectorAll("td");
         ["Fecha", "Concepto", "Monto", "Ticket", "Factura", "Acciones"].forEach((label, index) => {
@@ -4322,6 +4605,7 @@
 
       const wrapper = document.createElement("div");
       wrapper.className = "file-actions ticket-actions";
+      const firstTicket = tickets[0];
 
       const button = document.createElement("button");
       button.className = "button secondary";
@@ -4330,10 +4614,22 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M4 5h16v14H4zM8 9h3M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Ver / descargar (${tickets.length})
+        ${tickets.length > 1 ? `Ver tickets (${tickets.length})` : "Ver ticket"}
       `;
       button.addEventListener("click", () => openTicketsDialog(expense.id));
-      wrapper.appendChild(button);
+
+      const downloadLink = document.createElement("a");
+      downloadLink.className = "button secondary";
+      downloadLink.href = firstTicket.dataUrl;
+      downloadLink.download = firstTicket.name || "ticket.jpg";
+      downloadLink.innerHTML = `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 3v12M7 10l5 5 5-5M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Descargar
+      `;
+
+      wrapper.append(button, downloadLink);
       cell.appendChild(wrapper);
     }
 
@@ -4355,9 +4651,9 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Ver PDF
+        Ver factura
       `;
-      viewButton.addEventListener("click", () => openPdfDialog(invoice, `Factura de ${expense.concepto || "gasto"}`));
+      viewButton.addEventListener("click", () => openPdfDialog(invoice, `Factura de ${getExpenseConceptParts(expense).combined || "gasto"}`));
 
       const downloadLink = document.createElement("a");
       downloadLink.className = "button secondary";
@@ -4545,6 +4841,7 @@
       clearMessage();
 
       const concepto = elements.conceptInput.value.trim().toUpperCase();
+      const nombreGasto = elements.expenseNameInput.value.trim().toUpperCase();
       const monto = parseMoney(elements.amountInput.value);
       const fecha = elements.dateInput.value;
       const ticketFiles = Array.from(elements.ticketInput.files || []);
@@ -4573,6 +4870,8 @@
       try {
         const payload = {
           concepto,
+          nombreGasto,
+          conceptoCompleto: `${concepto} ${nombreGasto}`.trim(),
           monto,
           fecha,
           updatedAt: Date.now()
@@ -4705,7 +5004,7 @@
       const expense = state.expenses.find((item) => item.id === expenseId);
       if (!expense) return;
 
-      const confirmed = window.confirm(`¿Eliminar el gasto "${expense.concepto || "sin concepto"}"? Esta acción no se puede deshacer.`);
+      const confirmed = window.confirm(`¿Eliminar el gasto "${getExpenseConceptParts(expense).combined || "sin concepto"}"? Esta accion no se puede deshacer.`);
       if (!confirmed) return;
 
       clearMessage();
