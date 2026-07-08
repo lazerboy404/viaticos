@@ -3071,6 +3071,281 @@
         min-height: 78px;
       }
     }
+
+    /* Current visual pass: lighter crystal themes, aligned form rows and stronger table hierarchy. */
+    :root,
+    [data-theme="light"] {
+      --glass-page-1: #f7fbff;
+      --glass-page-2: #eaf5fb;
+      --glass-page-3: #f2f8fc;
+      --glass-bg: rgba(255, 255, 255, 0.46);
+      --glass-bg-strong: rgba(255, 255, 255, 0.62);
+      --glass-bg-soft: rgba(255, 255, 255, 0.34);
+      --glass-input: rgba(255, 255, 255, 0.72);
+      --glass-table-head: rgba(255, 255, 255, 0.52);
+      --glass-table-row: rgba(255, 255, 255, 0.30);
+      --glass-line: rgba(46, 85, 118, 0.24);
+      --glass-shadow: 0 20px 44px rgba(55, 91, 122, 0.13);
+    }
+
+    [data-theme="dark"] {
+      --glass-page-1: #233a52;
+      --glass-page-2: #1f344b;
+      --glass-page-3: #263f57;
+      --glass-bg: rgba(47, 72, 99, 0.42);
+      --glass-bg-strong: rgba(50, 77, 105, 0.52);
+      --glass-bg-soft: rgba(62, 91, 120, 0.34);
+      --glass-input: rgba(31, 53, 76, 0.58);
+      --glass-table-head: rgba(71, 101, 130, 0.42);
+      --glass-table-row: rgba(55, 82, 108, 0.24);
+      --glass-line: rgba(201, 226, 247, 0.27);
+      --glass-shadow: 0 18px 40px rgba(8, 20, 34, 0.15);
+    }
+
+    html,
+    body {
+      background-color: var(--glass-page-2);
+    }
+
+    .dashboard-shell,
+    .app {
+      background: transparent;
+    }
+
+    .app {
+      width: min(1520px, calc(100% - 28px));
+    }
+
+    .topbar,
+    .project-panel,
+    .budget-panel,
+    .summary-card,
+    .form-panel,
+    .history-panel,
+    .notice,
+    .table-wrap,
+    .attachment-preview,
+    .media-dialog {
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.05)),
+        var(--glass-bg);
+      border-color: var(--glass-line);
+      box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.20);
+    }
+
+    .summary-card,
+    .form-panel,
+    .history-panel,
+    .project-panel,
+    .budget-panel {
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.06)),
+        var(--glass-bg-strong);
+      backdrop-filter: blur(22px) saturate(145%);
+      -webkit-backdrop-filter: blur(22px) saturate(145%);
+    }
+
+    [data-theme="light"] .summary-card,
+    [data-theme="dark"] .summary-card {
+      background:
+        radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--gauge-color, var(--glass-primary)), transparent 78%), transparent 38%),
+        linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.07)),
+        var(--glass-bg-strong);
+      box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    }
+
+    [data-theme="light"] .summary-card:hover,
+    [data-theme="dark"] .summary-card:hover {
+      box-shadow: 0 24px 52px rgba(55, 91, 122, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+    }
+
+    .table-wrap {
+      background: color-mix(in srgb, var(--glass-bg), transparent 16%);
+    }
+
+    th {
+      background: var(--glass-table-head);
+      font-size: 0.92rem;
+      font-weight: 950;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    tbody tr {
+      background: var(--glass-table-row);
+    }
+
+    tbody tr:hover {
+      background: color-mix(in srgb, var(--glass-bg-strong), transparent 18%);
+    }
+
+    .history-panel th,
+    .history-panel td {
+      padding-block: 14px;
+    }
+
+    .history-panel .concept-wrap {
+      display: grid;
+      grid-template-columns: 44px minmax(0, max-content);
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .history-panel .concept-neon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      align-self: center;
+    }
+
+    .history-panel .concept-neon svg {
+      display: block;
+      width: 22px;
+      height: 22px;
+    }
+
+    .history-panel .concept-text {
+      align-self: center;
+      max-width: 320px;
+      text-align: left;
+    }
+
+    .history-panel .file-actions,
+    .history-panel .invoice-actions,
+    .history-panel .ticket-actions {
+      display: grid;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .history-panel .ticket-actions,
+    .history-panel .invoice-actions {
+      grid-template-columns: minmax(142px, 1fr);
+    }
+
+    .history-panel .file-actions .button,
+    .history-panel .invoice-actions .button,
+    .history-panel .ticket-actions .button {
+      min-height: 40px;
+      padding-inline: 12px;
+      line-height: 1.1;
+    }
+
+    .dialog-ticket-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .dialog-ticket-actions .button {
+      min-width: 0;
+      width: 100%;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+
+    @media (min-width: 981px) {
+      .expense-form {
+        grid-template-columns: minmax(280px, 1.15fr) minmax(320px, 0.95fr) minmax(460px, 1.35fr) minmax(216px, 0.64fr);
+        align-items: start;
+        column-gap: 14px;
+      }
+
+      .expense-form > .field:first-child,
+      .form-row,
+      .file-grid,
+      .form-actions {
+        align-self: stretch;
+      }
+
+      .expense-form .field {
+        display: grid;
+        grid-template-rows: 24px 58px;
+        align-content: start;
+        gap: 8px;
+      }
+
+      .expense-form label {
+        display: flex;
+        min-height: 24px;
+        align-items: end;
+        line-height: 1.08;
+      }
+
+      .expense-form input,
+      .expense-form select,
+      .expense-form .file-picker {
+        height: 58px;
+        min-height: 58px;
+      }
+
+      .form-row,
+      .file-grid {
+        align-items: start;
+        gap: 12px;
+      }
+
+      .file-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .form-actions {
+        display: grid;
+        grid-template-rows: 24px 58px;
+        align-content: start;
+        gap: 8px;
+      }
+
+      .form-actions::before {
+        content: "";
+        min-height: 24px;
+      }
+
+      .form-actions .button {
+        height: 58px;
+        min-height: 58px;
+        align-self: start;
+      }
+
+      .form-actions .button.ghost {
+        grid-row: auto;
+        min-height: 44px;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        width: min(100% - 20px, 760px);
+      }
+
+      .history-panel .concept-wrap {
+        grid-template-columns: 40px minmax(0, 1fr);
+        justify-content: stretch;
+      }
+    }
+
+    @media (max-width: 700px) {
+      th {
+        font-size: 0.86rem;
+      }
+
+      tbody tr {
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04)),
+          var(--glass-bg-strong);
+      }
+
+      .history-panel .file-actions,
+      .history-panel .invoice-actions,
+      .history-panel .ticket-actions,
+      .dialog-ticket-actions {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -3808,10 +4083,30 @@
       tickets.forEach((ticket, index) => {
         const item = document.createElement("article");
         item.className = "dialog-ticket";
-        item.innerHTML = `
-          <img src="${ticket.dataUrl}" alt="Ticket ${index + 1}">
-          <a href="${ticket.dataUrl}" target="_blank" rel="noopener noreferrer">${ticket.name || `Abrir ticket ${index + 1}`}</a>
-        `;
+
+        const image = document.createElement("img");
+        image.src = ticket.dataUrl;
+        image.alt = `Ticket ${index + 1}`;
+
+        const actions = document.createElement("div");
+        actions.className = "dialog-ticket-actions";
+
+        const viewLink = document.createElement("a");
+        viewLink.className = "button secondary";
+        viewLink.href = ticket.dataUrl;
+        viewLink.target = "_blank";
+        viewLink.rel = "noopener noreferrer";
+        viewLink.title = ticket.name || `Ticket ${index + 1}`;
+        viewLink.textContent = `Ver ticket ${index + 1}`;
+
+        const downloadLink = document.createElement("a");
+        downloadLink.className = "button secondary";
+        downloadLink.href = ticket.dataUrl;
+        downloadLink.download = ticket.name || `ticket-${index + 1}.jpg`;
+        downloadLink.textContent = "Descargar ticket";
+
+        actions.append(viewLink, downloadLink);
+        item.append(image, actions);
         elements.mediaDialogBody.appendChild(item);
       });
 
@@ -4025,6 +4320,9 @@
         return;
       }
 
+      const wrapper = document.createElement("div");
+      wrapper.className = "file-actions ticket-actions";
+
       const button = document.createElement("button");
       button.className = "button secondary";
       button.type = "button";
@@ -4032,10 +4330,11 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M4 5h16v14H4zM8 9h3M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Ver tickets (${tickets.length})
+        Ver / descargar (${tickets.length})
       `;
       button.addEventListener("click", () => openTicketsDialog(expense.id));
-      cell.appendChild(button);
+      wrapper.appendChild(button);
+      cell.appendChild(wrapper);
     }
 
     function renderInvoiceCell(cell, expense) {
