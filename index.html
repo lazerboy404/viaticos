@@ -2717,6 +2717,360 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* Final glass theme and layout polish. */
+    :root,
+    [data-theme="light"] {
+      --glass-page-1: #edf7ff;
+      --glass-page-2: #dbeaf5;
+      --glass-page-3: #f8fcff;
+      --glass-bg: rgba(255, 255, 255, 0.68);
+      --glass-bg-strong: rgba(255, 255, 255, 0.82);
+      --glass-bg-soft: rgba(255, 255, 255, 0.48);
+      --glass-input: rgba(255, 255, 255, 0.72);
+      --glass-line: rgba(44, 83, 116, 0.22);
+      --glass-text: #102235;
+      --glass-heading: #061a2e;
+      --glass-muted: #53687d;
+      --glass-table-head: rgba(222, 237, 249, 0.76);
+      --glass-table-row: rgba(255, 255, 255, 0.38);
+      --glass-shadow: 0 20px 60px rgba(20, 49, 80, 0.16);
+      --glass-primary: #008fa3;
+      --glass-primary-2: #16c7d7;
+      --glass-danger: #d83a4a;
+    }
+
+    [data-theme="dark"] {
+      --glass-page-1: #122235;
+      --glass-page-2: #172b42;
+      --glass-page-3: #0e1b2c;
+      --glass-bg: rgba(23, 42, 63, 0.70);
+      --glass-bg-strong: rgba(25, 48, 70, 0.84);
+      --glass-bg-soft: rgba(30, 54, 76, 0.48);
+      --glass-input: rgba(13, 29, 47, 0.76);
+      --glass-line: rgba(148, 190, 226, 0.28);
+      --glass-text: #edf7ff;
+      --glass-heading: #ffffff;
+      --glass-muted: #bdcde0;
+      --glass-table-head: rgba(37, 62, 86, 0.78);
+      --glass-table-row: rgba(13, 29, 47, 0.42);
+      --glass-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+      --glass-primary: #23d7e8;
+      --glass-primary-2: #2dd4bf;
+      --glass-danger: #ff6675;
+    }
+
+    body,
+    [data-theme="dark"] body {
+      background:
+        radial-gradient(circle at 14% 5%, color-mix(in srgb, var(--glass-primary), transparent 76%), transparent 27%),
+        radial-gradient(circle at 85% 10%, color-mix(in srgb, var(--glass-primary-2), transparent 80%), transparent 30%),
+        linear-gradient(135deg, var(--glass-page-1), var(--glass-page-2) 44%, var(--glass-page-3));
+      color: var(--glass-text);
+    }
+
+    .topbar,
+    .project-panel,
+    .budget-panel,
+    .summary-card,
+    .form-panel,
+    .history-panel,
+    .notice,
+    .table-wrap,
+    .attachment-preview,
+    .media-dialog {
+      border-color: var(--glass-line);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)),
+        var(--glass-bg);
+      color: var(--glass-text);
+      box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(18px) saturate(130%);
+      -webkit-backdrop-filter: blur(18px) saturate(130%);
+    }
+
+    .topbar {
+      min-height: 86px;
+    }
+
+    .topbar-title {
+      flex-wrap: wrap;
+    }
+
+    .topbar-title p,
+    .panel-heading h2,
+    .summary-label,
+    .history-panel h2,
+    .form-panel h2,
+    .amount-cell,
+    .concept-cell {
+      color: var(--glass-heading);
+    }
+
+    .topbar-title strong,
+    .panel-heading p,
+    .summary-note,
+    .date-cell,
+    .muted-cell,
+    .empty-state,
+    .project-hint {
+      color: var(--glass-muted);
+    }
+
+    .project-title-block {
+      display: grid;
+      gap: 2px;
+      min-width: min(420px, 100%);
+      padding-left: 18px;
+      margin-left: 10px;
+      border-left: 1px solid var(--glass-line);
+    }
+
+    .project-title-block span {
+      color: var(--glass-muted);
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .project-title-block strong {
+      color: var(--glass-heading);
+      font-size: clamp(1.25rem, 2.1vw, 2rem);
+      line-height: 1.08;
+      text-shadow: none;
+    }
+
+    input,
+    select,
+    .file-picker,
+    .status-pill,
+    .theme-toggle {
+      min-height: 44px;
+      border-color: var(--glass-line);
+      background-color: var(--glass-input);
+      color: var(--glass-text);
+      font-size: 0.95rem;
+    }
+
+    input::placeholder {
+      color: color-mix(in srgb, var(--glass-muted), transparent 18%);
+      font-size: 0.95rem;
+    }
+
+    label,
+    th,
+    [data-theme="dark"] th,
+    [data-theme="dark"] label {
+      color: var(--glass-heading);
+    }
+
+    .button,
+    .button.secondary,
+    .button.ghost,
+    .button.danger {
+      min-height: 44px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 900;
+    }
+
+    .button {
+      border-color: color-mix(in srgb, var(--glass-primary), transparent 18%);
+      background: linear-gradient(135deg, var(--glass-primary), var(--glass-primary-2));
+      color: #ffffff;
+    }
+
+    .button.secondary,
+    .button.ghost {
+      border-color: color-mix(in srgb, var(--glass-primary), transparent 18%);
+      background: color-mix(in srgb, var(--glass-bg-strong), transparent 6%);
+      color: var(--glass-heading);
+      box-shadow: none;
+    }
+
+    .button.danger {
+      border-color: color-mix(in srgb, var(--glass-danger), transparent 8%);
+      background: color-mix(in srgb, var(--glass-danger), transparent 86%);
+      color: var(--glass-danger);
+    }
+
+    .form-actions .button {
+      min-height: 66px;
+    }
+
+    .file-picker {
+      min-height: 66px;
+      padding: 10px 12px;
+    }
+
+    input[type="date"] {
+      cursor: pointer;
+      color-scheme: light;
+    }
+
+    [data-theme="dark"] input[type="date"] {
+      color-scheme: dark;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      opacity: 1;
+      cursor: pointer;
+    }
+
+    .field:has(> input[type="date"])::after {
+      display: none;
+      pointer-events: none;
+    }
+
+    table {
+      color: var(--glass-text);
+    }
+
+    th {
+      background: var(--glass-table-head);
+      color: var(--glass-heading);
+    }
+
+    tbody tr {
+      background: var(--glass-table-row);
+    }
+
+    .history-panel th,
+    .history-panel td {
+      vertical-align: middle;
+    }
+
+    .history-panel th:nth-child(1),
+    .history-panel td:nth-child(1) {
+      width: 190px;
+      text-align: center;
+    }
+
+    .history-panel th:nth-child(2),
+    .history-panel td:nth-child(2) {
+      text-align: center;
+    }
+
+    .history-panel .concept-wrap {
+      justify-content: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .history-panel .concept-text {
+      text-align: left;
+      line-height: 1.18;
+    }
+
+    .history-panel th:nth-child(4),
+    .history-panel td:nth-child(4),
+    .history-panel th:nth-child(5),
+    .history-panel td:nth-child(5) {
+      width: 180px;
+      text-align: center;
+      padding-inline: 18px;
+    }
+
+    .file-actions,
+    .invoice-actions {
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .invoice-actions {
+      display: grid;
+      grid-template-columns: minmax(116px, 1fr);
+    }
+
+    .history-panel .file-actions .button,
+    .history-panel .invoice-actions .button {
+      width: 100%;
+      min-width: 0;
+      min-height: 38px;
+      padding-inline: 12px;
+      font-size: 0.82rem;
+    }
+
+    .pdf-preview-frame {
+      width: 100%;
+      min-height: 260px;
+      border: 1px solid var(--glass-line);
+      border-radius: 8px;
+      background: var(--glass-input);
+    }
+
+    .pdf-preview embed {
+      display: none;
+    }
+
+    .pdf-preview .file-actions {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .pdf-dialog-body {
+      display: block;
+      grid-template-columns: none;
+    }
+
+    .dialog-pdf {
+      display: grid;
+      gap: 12px;
+    }
+
+    .dialog-pdf .pdf-preview-frame {
+      min-height: min(68vh, 720px);
+    }
+
+    @media (max-width: 900px) {
+      .project-title-block {
+        width: 100%;
+        padding-left: 0;
+        margin-left: 0;
+        padding-top: 10px;
+        border-left: 0;
+        border-top: 1px solid var(--glass-line);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .project-title-block strong {
+        font-size: 1.18rem;
+      }
+
+      .form-actions .button,
+      .file-picker {
+        min-height: 48px;
+      }
+
+      .history-panel th:nth-child(1),
+      .history-panel td:nth-child(1),
+      .history-panel th:nth-child(4),
+      .history-panel td:nth-child(4),
+      .history-panel th:nth-child(5),
+      .history-panel td:nth-child(5) {
+        width: auto;
+        text-align: left;
+        padding-inline: 0;
+      }
+
+      .history-panel .concept-wrap,
+      .file-actions,
+      .invoice-actions {
+        justify-content: stretch;
+      }
+    }
+
+    @media (min-width: 981px) {
+      .form-actions {
+        align-self: end;
+      }
+
+      .form-actions .button {
+        height: 78px;
+        min-height: 78px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -2772,6 +3126,10 @@
           <div>
             <p>Control de Vi&aacute;ticos</p>
             <strong>Dashboard de comprobaci&oacute;n</strong>
+          </div>
+          <div class="project-title-block" aria-live="polite">
+            <span>Proyecto activo</span>
+            <strong id="activeProjectTitle">Proyecto general</strong>
           </div>
         </div>
         <div class="topbar-actions">
@@ -3099,6 +3457,7 @@
       themeToggleText: document.querySelector("#themeToggleText"),
       configNotice: document.querySelector("#configNotice"),
       projectSelect: document.querySelector("#projectSelect"),
+      activeProjectTitle: document.querySelector("#activeProjectTitle"),
       projectNameInput: document.querySelector("#projectNameInput"),
       periodStartInput: document.querySelector("#periodStartInput"),
       periodEndInput: document.querySelector("#periodEndInput"),
@@ -3169,6 +3528,24 @@
     }
 
     applyTheme(getPreferredTheme());
+
+    function enableDatePickers() {
+      document.querySelectorAll('input[type="date"]').forEach((input) => {
+        const openPicker = () => {
+          if (typeof input.showPicker === "function") {
+            try {
+              input.showPicker();
+            } catch (error) {
+              // showPicker requires direct user activation in some browsers.
+            }
+          }
+        };
+        input.addEventListener("click", openPicker);
+        input.addEventListener("focus", openPicker);
+      });
+    }
+
+    enableDatePickers();
 
     function hasFirebaseConfig(config) {
       return Boolean(
@@ -3288,6 +3665,7 @@
 
       const activeProject = getActiveProject();
       elements.projectSelect.value = activeProject.id;
+      elements.activeProjectTitle.textContent = activeProject.isLegacy ? "Proyecto general" : activeProject.name || "Proyecto sin nombre";
       elements.projectNameInput.value = activeProject.isLegacy ? "" : activeProject.name || "";
       elements.periodStartInput.value = activeProject.periodStart || "";
       elements.periodEndInput.value = activeProject.periodEnd || "";
@@ -3388,11 +3766,28 @@
       if (invoice) {
         const wrapper = document.createElement("div");
         wrapper.className = "pdf-preview";
-        wrapper.innerHTML = `
-          <strong>${invoice.name || "factura.pdf"}</strong>
-          <embed src="${invoice.dataUrl}" type="application/pdf">
-          <a href="${invoice.dataUrl}" target="_blank" rel="noopener noreferrer">Abrir PDF en otra pestaña</a>
-        `;
+        const title = document.createElement("strong");
+        title.textContent = invoice.name || "factura.pdf";
+        wrapper.appendChild(title);
+        renderPdfFrame(wrapper, invoice, "Vista previa de factura");
+
+        const actions = document.createElement("div");
+        actions.className = "file-actions";
+
+        const previewButton = document.createElement("button");
+        previewButton.className = "button secondary";
+        previewButton.type = "button";
+        previewButton.textContent = "Ver vista previa";
+        previewButton.addEventListener("click", () => openPdfDialog(invoice, "Factura cargada"));
+
+        const downloadLink = document.createElement("a");
+        downloadLink.className = "button secondary";
+        downloadLink.href = invoice.dataUrl;
+        downloadLink.download = invoice.name || "factura.pdf";
+        downloadLink.textContent = "Descargar PDF";
+
+        actions.append(previewButton, downloadLink);
+        wrapper.appendChild(actions);
         elements.invoicePreview.appendChild(wrapper);
       }
 
@@ -3408,6 +3803,7 @@
 
       elements.mediaDialogTitle.textContent = `Tickets de ${expense?.concepto || "gasto"}`;
       elements.mediaDialogBody.innerHTML = "";
+      elements.mediaDialogBody.classList.remove("pdf-dialog-body");
 
       tickets.forEach((ticket, index) => {
         const item = document.createElement("article");
@@ -3418,6 +3814,39 @@
         `;
         elements.mediaDialogBody.appendChild(item);
       });
+
+      if (typeof elements.mediaDialog.showModal === "function") {
+        elements.mediaDialog.showModal();
+      }
+    }
+
+    function renderPdfFrame(container, invoice, title = "Vista previa de PDF") {
+      const frame = document.createElement("iframe");
+      frame.className = "pdf-preview-frame";
+      frame.src = invoice.dataUrl;
+      frame.title = title;
+      frame.loading = "lazy";
+      container.appendChild(frame);
+    }
+
+    function openPdfDialog(invoice, title = "Factura PDF") {
+      if (!invoice?.dataUrl) return;
+      elements.mediaDialogTitle.textContent = title;
+      elements.mediaDialogBody.innerHTML = "";
+      elements.mediaDialogBody.classList.add("pdf-dialog-body");
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "dialog-pdf";
+      renderPdfFrame(wrapper, invoice, title);
+
+      const downloadLink = document.createElement("a");
+      downloadLink.className = "button secondary";
+      downloadLink.href = invoice.dataUrl;
+      downloadLink.download = invoice.name || "factura.pdf";
+      downloadLink.textContent = `Descargar ${invoice.name || "factura.pdf"}`;
+
+      wrapper.appendChild(downloadLink);
+      elements.mediaDialogBody.appendChild(wrapper);
 
       if (typeof elements.mediaDialog.showModal === "function") {
         elements.mediaDialog.showModal();
@@ -3620,17 +4049,16 @@
       const wrapper = document.createElement("div");
       wrapper.className = "file-actions invoice-actions";
 
-      const viewLink = document.createElement("a");
-      viewLink.className = "button secondary";
-      viewLink.href = invoice.dataUrl;
-      viewLink.target = "_blank";
-      viewLink.rel = "noopener noreferrer";
-      viewLink.innerHTML = `
+      const viewButton = document.createElement("button");
+      viewButton.className = "button secondary";
+      viewButton.type = "button";
+      viewButton.innerHTML = `
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         Ver PDF
       `;
+      viewButton.addEventListener("click", () => openPdfDialog(invoice, `Factura de ${expense.concepto || "gasto"}`));
 
       const downloadLink = document.createElement("a");
       downloadLink.className = "button secondary";
@@ -3643,7 +4071,7 @@
         Descargar
       `;
 
-      wrapper.append(viewLink, downloadLink);
+      wrapper.append(viewButton, downloadLink);
       cell.appendChild(wrapper);
     }
 
