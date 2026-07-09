@@ -3647,6 +3647,26 @@
       white-space: normal;
     }
 
+    .history-panel .amount-cell {
+      white-space: normal;
+    }
+
+    .history-panel .amount-value {
+      display: block;
+      white-space: nowrap;
+    }
+
+    .history-panel .amount-cell .limit-badge {
+      display: flex;
+      box-sizing: border-box;
+      width: min(116px, 100%);
+      margin: 7px auto 0;
+      justify-content: center;
+      text-align: center;
+      overflow-wrap: anywhere;
+      word-break: normal;
+    }
+
     @media (max-width: 760px) {
       .daily-limits-panel,
       .daily-limit-fields {
@@ -3742,6 +3762,12 @@
       .history-panel .amount-cell,
       .history-panel .muted-cell {
         white-space: normal;
+      }
+
+      .history-panel .amount-cell .limit-badge {
+        width: 100%;
+        max-width: 220px;
+        margin-inline: 0;
       }
 
       .history-panel .concept-wrap {
@@ -4975,7 +5001,7 @@
         row.innerHTML = `
           <td class="date-cell">${formatDate(expense.fecha)}</td>
           <td class="concept-cell"></td>
-          <td class="amount-cell">${formatter.format(parseMoney(expense.monto))}</td>
+          <td class="amount-cell"><span class="amount-value">${formatter.format(parseMoney(expense.monto))}</span></td>
           <td></td>
           <td></td>
           <td></td>
