@@ -3548,6 +3548,252 @@
         margin-inline: 0;
       }
     }
+
+    /* Mobile history cards and daily-limit warnings. */
+    .daily-limits-panel {
+      display: grid;
+      grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.2fr);
+      gap: 14px;
+      align-items: end;
+      margin: 14px 0;
+      padding: 14px;
+      border: 1px solid var(--glass-line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--glass-bg-soft), transparent 8%);
+    }
+
+    .daily-limits-panel h3,
+    .daily-limits-panel p {
+      margin: 0;
+    }
+
+    .daily-limits-panel h3 {
+      color: var(--glass-heading);
+      font-size: 1rem;
+    }
+
+    .daily-limits-panel p {
+      color: var(--glass-muted);
+      font-size: 0.86rem;
+      line-height: 1.35;
+    }
+
+    .daily-limit-fields {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(120px, 1fr)) minmax(150px, auto);
+      gap: 10px;
+      align-items: end;
+    }
+
+    .daily-limit-fields label {
+      display: grid;
+      gap: 6px;
+    }
+
+    .daily-limit-fields span {
+      color: var(--glass-heading);
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+
+    .limit-alerts {
+      display: none;
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .limit-alerts.show {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    }
+
+    .limit-alert {
+      display: grid;
+      gap: 4px;
+      padding: 12px;
+      border: 1px solid color-mix(in srgb, var(--glass-danger), transparent 35%);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--glass-danger), transparent 88%);
+    }
+
+    .limit-alert strong,
+    .limit-alert b {
+      color: var(--glass-danger);
+    }
+
+    .limit-alert span {
+      color: var(--glass-heading);
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+
+    .daily-limit-exceeded {
+      box-shadow: inset 4px 0 0 color-mix(in srgb, var(--glass-danger), transparent 10%);
+    }
+
+    .limit-badge {
+      display: inline-flex;
+      width: max-content;
+      max-width: 100%;
+      margin-top: 7px;
+      padding: 6px 8px;
+      border: 1px solid color-mix(in srgb, var(--glass-danger), transparent 24%);
+      border-radius: 8px;
+      color: var(--glass-danger);
+      background: color-mix(in srgb, var(--glass-danger), transparent 88%);
+      font-size: 0.74rem;
+      font-weight: 900;
+      line-height: 1.15;
+      white-space: normal;
+    }
+
+    @media (max-width: 760px) {
+      .daily-limits-panel,
+      .daily-limit-fields {
+        grid-template-columns: 1fr;
+      }
+
+      .history-panel .table-wrap {
+        overflow: visible;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .history-panel table,
+      .history-panel thead,
+      .history-panel tbody,
+      .history-panel tr,
+      .history-panel th,
+      .history-panel td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+      }
+
+      .history-panel thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+      }
+
+      .history-panel tbody {
+        display: grid;
+        gap: 12px;
+      }
+
+      .history-panel tbody tr {
+        display: grid;
+        gap: 0;
+        padding: 14px;
+        border: 1px solid var(--glass-line);
+        border-radius: 8px;
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.05)),
+          var(--glass-bg-strong);
+      }
+
+      .history-panel td {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 7px;
+        width: 100% !important;
+        max-width: none !important;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--glass-line);
+        text-align: left;
+      }
+
+      .history-panel th:nth-child(1),
+      .history-panel td:nth-child(1),
+      .history-panel th:nth-child(2),
+      .history-panel td:nth-child(2),
+      .history-panel th:nth-child(3),
+      .history-panel td:nth-child(3),
+      .history-panel th:nth-child(4),
+      .history-panel td:nth-child(4),
+      .history-panel th:nth-child(5),
+      .history-panel td:nth-child(5),
+      .history-panel th:nth-child(6),
+      .history-panel td:nth-child(6) {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: 0 !important;
+        padding-inline: 0 !important;
+        text-align: left !important;
+      }
+
+      .history-panel td:last-child {
+        border-bottom: 0;
+      }
+
+      .history-panel td::before {
+        content: attr(data-label);
+        color: var(--glass-muted);
+        font-size: 0.72rem;
+        font-weight: 950;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .history-panel .date-cell,
+      .history-panel .amount-cell,
+      .history-panel .muted-cell {
+        white-space: normal;
+      }
+
+      .history-panel .concept-wrap {
+        grid-template-columns: 44px minmax(0, 1fr);
+        align-items: center;
+        width: 100%;
+        margin: 0;
+      }
+
+      .history-panel .concept-neon {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+      }
+
+      .history-panel .concept-text strong {
+        font-size: 0.95rem;
+        overflow-wrap: anywhere;
+      }
+
+      .history-panel .concept-text small {
+        font-size: 0.78rem;
+        overflow-wrap: anywhere;
+      }
+
+      .history-panel .ticket-actions,
+      .history-panel .invoice-actions,
+      .history-panel .row-actions,
+      .history-panel .file-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        justify-content: stretch;
+        width: 100%;
+      }
+
+      .history-panel .row-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .history-panel .ticket-actions .button,
+      .history-panel .invoice-actions .button,
+      .history-panel .row-actions .button {
+        width: 100%;
+        min-width: 0;
+        justify-content: center;
+      }
+
+      .limit-alerts.show {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -3874,6 +4120,32 @@
           </div>
         </div>
 
+        <section class="daily-limits-panel" aria-labelledby="dailyLimitsTitle">
+          <div>
+            <h3 id="dailyLimitsTitle">L&iacute;mites diarios</h3>
+            <p>Marca excedentes por d&iacute;a para comida y transporte/Uber.</p>
+          </div>
+          <div class="daily-limit-fields">
+            <label>
+              <span>Comida</span>
+              <input id="foodLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350">
+            </label>
+            <label>
+              <span>Transporte / Uber</span>
+              <input id="transportLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350">
+            </label>
+            <button class="button secondary" id="saveLimitsBtn" type="button">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+              Guardar l&iacute;mites
+            </button>
+          </div>
+        </section>
+
+        <div class="limit-alerts" id="limitAlerts" aria-live="polite"></div>
+
         <div class="empty-state" id="emptyState">
           Aún no hay gastos registrados. Agrega el primer gasto desde el formulario.
         </div>
@@ -3941,6 +4213,10 @@
     const MAX_PDF_SIZE_BYTES = 2 * 1024 * 1024;
     const TICKET_MAX_DIMENSION = 1280;
     const TICKET_IMAGE_QUALITY = 0.72;
+    const DEFAULT_DAILY_LIMITS = {
+      food: 350,
+      transport: 350
+    };
 
     const formatter = new Intl.NumberFormat("es-MX", {
       style: "currency",
@@ -3950,6 +4226,8 @@
     const state = {
       budget: 0,
       legacyBudget: 0,
+      legacyDailyLimits: { ...DEFAULT_DAILY_LIMITS },
+      dailyLimits: { ...DEFAULT_DAILY_LIMITS },
       projects: [],
       activeProjectId: localStorage.getItem("viaticos-active-project") || LEGACY_PROJECT_ID,
       allExpenses: [],
@@ -4013,6 +4291,10 @@
       cancelEditBtn: document.querySelector("#cancelEditBtn"),
       formMessage: document.querySelector("#formMessage"),
       historyLoader: document.querySelector("#historyLoader"),
+      foodLimitInput: document.querySelector("#foodLimitInput"),
+      transportLimitInput: document.querySelector("#transportLimitInput"),
+      saveLimitsBtn: document.querySelector("#saveLimitsBtn"),
+      limitAlerts: document.querySelector("#limitAlerts"),
       emptyState: document.querySelector("#emptyState"),
       tableWrap: document.querySelector("#tableWrap"),
       expensesBody: document.querySelector("#expensesBody"),
@@ -4082,11 +4364,21 @@
       elements.saveExpenseBtn.disabled = !isReady;
       elements.saveProjectBtn.disabled = !isReady;
       elements.createProjectBtn.disabled = !isReady;
+      elements.saveLimitsBtn.disabled = !isReady;
     }
 
     function parseMoney(value) {
       const number = Number(value);
       return Number.isFinite(number) ? number : 0;
+    }
+
+    function normalizeDailyLimits(limits = {}) {
+      const food = parseMoney(limits.food ?? limits.comida ?? DEFAULT_DAILY_LIMITS.food);
+      const transport = parseMoney(limits.transport ?? limits.transporte ?? DEFAULT_DAILY_LIMITS.transport);
+      return {
+        food: food >= 0 ? food : DEFAULT_DAILY_LIMITS.food,
+        transport: transport >= 0 ? transport : DEFAULT_DAILY_LIMITS.transport
+      };
     }
 
     function formatDate(value) {
@@ -4116,6 +4408,7 @@
         id: LEGACY_PROJECT_ID,
         name: "Proyecto general",
         budget: state.legacyBudget,
+        dailyLimits: state.legacyDailyLimits,
         periodStart: "",
         periodEnd: "",
         isLegacy: true
@@ -4149,7 +4442,10 @@
     function syncActiveProjectBudget() {
       const activeProject = getActiveProject();
       state.budget = parseMoney(activeProject.budget);
+      state.dailyLimits = normalizeDailyLimits(activeProject.dailyLimits);
       elements.budgetInput.value = state.budget || "";
+      elements.foodLimitInput.value = state.dailyLimits.food;
+      elements.transportLimitInput.value = state.dailyLimits.transport;
     }
 
     function setActiveProject(projectId, shouldPersist = false) {
@@ -4309,6 +4605,68 @@
       const extension = getFileExtension(sourceName, type === "factura" ? "pdf" : "jpg");
       const indexSegment = type === "ticket" && index > 0 ? `-${index + 1}` : "";
       return `${type}-${conceptSegment}-${dateSegment}${indexSegment}.${extension}`;
+    }
+
+    function getDailyLimitCategory(expense) {
+      const text = getExpenseConceptParts(expense).combined.toLowerCase();
+      const foodKeys = ["comida", "restaurante", "desayuno", "cena", "alimento", "cafe", "vips", "porton", "tim hortons"];
+      const transportKeys = ["uber", "didi", "taxi", "transporte", "gasolina", "caseta", "camion", "cami\u00f3n"];
+      if (foodKeys.some((key) => text.includes(key))) return "food";
+      if (transportKeys.some((key) => text.includes(key))) return "transport";
+      return "";
+    }
+
+    function getDailyLimitLabel(category) {
+      return category === "food" ? "Comida" : "Transporte/Uber";
+    }
+
+    function analyzeDailyLimits() {
+      const totals = new Map();
+
+      state.expenses.forEach((expense) => {
+        const category = getDailyLimitCategory(expense);
+        if (!category || !expense.fecha) return;
+        const key = `${expense.fecha}|${category}`;
+        const current = totals.get(key) || {
+          fecha: expense.fecha,
+          category,
+          total: 0,
+          limit: parseMoney(state.dailyLimits[category])
+        };
+        current.total += parseMoney(expense.monto);
+        totals.set(key, current);
+      });
+
+      const byKey = new Map();
+      const alerts = [];
+      totals.forEach((item, key) => {
+        item.excess = Math.max(item.total - item.limit, 0);
+        item.isExceeded = item.limit > 0 && item.excess > 0;
+        byKey.set(key, item);
+        if (item.isExceeded) alerts.push(item);
+      });
+
+      alerts.sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)) || a.category.localeCompare(b.category));
+      return { byKey, alerts };
+    }
+
+    function renderLimitAlerts(alerts) {
+      elements.limitAlerts.innerHTML = "";
+      elements.limitAlerts.classList.toggle("show", alerts.length > 0);
+      if (!alerts.length) return;
+
+      const fragment = document.createDocumentFragment();
+      alerts.forEach((alert) => {
+        const item = document.createElement("article");
+        item.className = "limit-alert";
+        item.innerHTML = `
+          <strong>${formatDate(alert.fecha)}</strong>
+          <span>${getDailyLimitLabel(alert.category)}: ${formatter.format(alert.total)} / ${formatter.format(alert.limit)}</span>
+          <b>Exceso ${formatter.format(alert.excess)}</b>
+        `;
+        fragment.appendChild(item);
+      });
+      elements.limitAlerts.appendChild(fragment);
     }
 
     function formatFileCount(count, singular, plural) {
@@ -4606,6 +4964,8 @@
       const hasExpenses = state.expenses.length > 0;
       elements.emptyState.classList.toggle("show", !hasExpenses);
       elements.tableWrap.style.display = hasExpenses ? "block" : "none";
+      const limitAnalysis = analyzeDailyLimits();
+      renderLimitAlerts(hasExpenses ? limitAnalysis.alerts : []);
 
       const fragment = document.createDocumentFragment();
 
@@ -4639,6 +4999,16 @@
         row.querySelector(".concept-text strong").textContent = conceptParts.concept;
         row.querySelector(".concept-text small").textContent = conceptParts.name || "Sin nombre";
         row.querySelector(".concept-text").classList.toggle("single-line", !conceptParts.name);
+        const limitCategory = getDailyLimitCategory(expense);
+        const dailyLimit = limitCategory ? limitAnalysis.byKey.get(`${expense.fecha}|${limitCategory}`) : null;
+        if (dailyLimit?.isExceeded) {
+          row.classList.add("daily-limit-exceeded");
+          const amountCell = row.querySelector(".amount-cell");
+          const badge = document.createElement("span");
+          badge.className = "limit-badge";
+          badge.textContent = `Exceso del d\u00eda: ${formatter.format(dailyLimit.excess)}`;
+          amountCell.appendChild(badge);
+        }
 
         const cells = row.querySelectorAll("td");
         ["Fecha", "Concepto", "Monto", "Ticket", "Factura", "Acciones"].forEach((label, index) => {
@@ -4804,11 +5174,13 @@
           await update(dbRef(state.db, BUDGET_PATH), {
             totalDeposit,
             selectedProjectId: state.activeProjectId,
+            dailyLimits: getDailyLimitsFromInputs(),
             updatedAt: Date.now()
           });
         } else {
           await update(dbRef(state.db, `${PROJECTS_PATH}/${state.activeProjectId}`), {
             budget: totalDeposit,
+            dailyLimits: getDailyLimitsFromInputs(),
             updatedAt: Date.now()
           });
         }
@@ -4818,6 +5190,41 @@
         setMessage("error", "No se pudo guardar el presupuesto. Revisa las reglas de Realtime Database.");
       } finally {
         elements.saveBudgetBtn.disabled = false;
+      }
+    }
+
+    function getDailyLimitsFromInputs() {
+      return normalizeDailyLimits({
+        food: elements.foodLimitInput.value,
+        transport: elements.transportLimitInput.value
+      });
+    }
+
+    async function saveDailyLimits() {
+      if (!state.isFirebaseReady) return;
+
+      const dailyLimits = getDailyLimitsFromInputs();
+      elements.saveLimitsBtn.disabled = true;
+      try {
+        if (state.activeProjectId === LEGACY_PROJECT_ID) {
+          await update(dbRef(state.db, BUDGET_PATH), {
+            dailyLimits,
+            updatedAt: Date.now()
+          });
+        } else {
+          await update(dbRef(state.db, `${PROJECTS_PATH}/${state.activeProjectId}`), {
+            dailyLimits,
+            updatedAt: Date.now()
+          });
+        }
+        state.dailyLimits = dailyLimits;
+        renderExpenses();
+        setMessage("success", "L\u00edmites diarios guardados correctamente.");
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudieron guardar los l\u00edmites diarios. Revisa permisos de Realtime Database.");
+      } finally {
+        elements.saveLimitsBtn.disabled = false;
       }
     }
 
@@ -4847,6 +5254,7 @@
           periodStart,
           periodEnd,
           budget: parseMoney(elements.budgetInput.value),
+          dailyLimits: getDailyLimitsFromInputs(),
           updatedAt: Date.now()
         });
         setMessage("success", "Proyecto actualizado correctamente.");
@@ -4883,6 +5291,7 @@
           periodStart,
           periodEnd,
           budget: parseMoney(elements.budgetInput.value),
+          dailyLimits: getDailyLimitsFromInputs(),
           createdAt: Date.now(),
           updatedAt: Date.now()
         });
@@ -5105,6 +5514,7 @@
       onValue(budgetRef, (snapshot) => {
         const data = snapshot.exists() ? snapshot.val() : {};
         state.legacyBudget = parseMoney(data.totalDeposit);
+        state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) {
           state.activeProjectId = data.selectedProjectId;
           localStorage.setItem("viaticos-active-project", state.activeProjectId);
@@ -5121,6 +5531,7 @@
       if (budgetSnapshot.exists()) {
         const data = budgetSnapshot.val();
         state.legacyBudget = parseMoney(data.totalDeposit);
+        state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) state.activeProjectId = data.selectedProjectId;
       }
       rerenderActiveProject();
@@ -5190,6 +5601,7 @@
     }
 
     elements.saveBudgetBtn.addEventListener("click", saveBudget);
+    elements.saveLimitsBtn.addEventListener("click", saveDailyLimits);
     elements.saveProjectBtn.addEventListener("click", saveProjectDetails);
     elements.createProjectBtn.addEventListener("click", createProject);
     elements.projectSelect.addEventListener("change", () => {
