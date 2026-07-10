@@ -3892,8 +3892,8 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
-      gap: 12px;
-      padding: 11px 14px;
+      gap: 7px 12px;
+      padding: 12px 14px;
       border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
     }
 
@@ -3901,16 +3901,60 @@
       border-bottom: 0;
     }
 
-    .report-row span {
+    .report-row-label {
+      display: grid;
+      gap: 2px;
       min-width: 0;
+    }
+
+    .report-row-label span {
       color: var(--muted);
-      font-size: 0.78rem;
+      font-size: 0.8rem;
+      font-weight: 700;
       overflow-wrap: anywhere;
+    }
+
+    .report-row-label small {
+      color: var(--muted);
+      font-size: 0.68rem;
     }
 
     .report-row strong {
       font-size: 0.82rem;
       white-space: nowrap;
+    }
+
+    .report-bar {
+      grid-column: 1 / -1;
+      height: 4px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--line) 72%, transparent);
+    }
+
+    .report-bar span {
+      display: block;
+      width: var(--report-width, 0%);
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #06b6d4, #2dd4bf);
+    }
+
+    .report-total {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-top: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 82%, transparent);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .report-total strong {
+      color: var(--accent);
+      font-size: 0.88rem;
     }
 
     .report-empty {
@@ -4903,19 +4947,29 @@
       state.expenses.forEach((expense) => {
         const category = getExpenseConceptParts(expense).concept || "SIN CATEGORIA";
         const amount = parseMoney(expense.monto);
-        categoryTotals.set(category, (categoryTotals.get(category) || 0) + amount);
+        const categorySummary = categoryTotals.get(category) || { total: 0, count: 0 };
+        categorySummary.total += amount;
+        categorySummary.count += 1;
+        categoryTotals.set(category, categorySummary);
         const day = expense.fecha || "sin-fecha";
-        dayTotals.set(day, (dayTotals.get(day) || 0) + amount);
+        const daySummary = dayTotals.get(day) || { total: 0, count: 0 };
+        daySummary.total += amount;
+        daySummary.count += 1;
+        dayTotals.set(day, daySummary);
       });
 
       renderReportList(
         elements.categoryReport,
-        [...categoryTotals.entries()].sort((a, b) => b[1] - a[1]),
+        [...categoryTotals.entries()].sort((a, b) => b[1].total - a[1].total),
         (label) => label
       );
       renderReportList(
         elements.dayReport,
-        [...dayTotals.entries()].sort((a, b) => String(b[0]).localeCompare(String(a[0]))),
+        [...dayTotals.entries()].sort((a, b) => {
+          if (a[0] === "sin-fecha") return 1;
+          if (b[0] === "sin-fecha") return -1;
+          return String(a[0]).localeCompare(String(b[0]));
+        }),
         (label) => label === "sin-fecha" ? "Sin fecha" : formatDate(label)
       );
     }
@@ -4931,16 +4985,36 @@
       }
 
       const fragment = document.createDocumentFragment();
-      entries.forEach(([label, total]) => {
+      const grandTotal = entries.reduce((total, [, summary]) => total + summary.total, 0);
+      const maximum = Math.max(...entries.map(([, summary]) => summary.total), 1);
+      entries.forEach(([label, summary]) => {
         const row = document.createElement("div");
         row.className = "report-row";
-        const name = document.createElement("span");
-        name.textContent = formatLabel(label);
+        const name = document.createElement("div");
+        name.className = "report-row-label";
+        const nameText = document.createElement("span");
+        nameText.textContent = formatLabel(label);
+        const count = document.createElement("small");
+        count.textContent = `${summary.count} ${summary.count === 1 ? "gasto" : "gastos"}`;
+        name.append(nameText, count);
         const value = document.createElement("strong");
-        value.textContent = formatter.format(total);
-        row.append(name, value);
+        value.textContent = formatter.format(summary.total);
+        const bar = document.createElement("div");
+        bar.className = "report-bar";
+        const barFill = document.createElement("span");
+        barFill.style.setProperty("--report-width", `${Math.max((summary.total / maximum) * 100, 2)}%`);
+        bar.appendChild(barFill);
+        row.append(name, value, bar);
         fragment.appendChild(row);
       });
+      const totalRow = document.createElement("div");
+      totalRow.className = "report-total";
+      const totalLabel = document.createElement("span");
+      totalLabel.textContent = "Total del proyecto";
+      const totalValue = document.createElement("strong");
+      totalValue.textContent = formatter.format(grandTotal);
+      totalRow.append(totalLabel, totalValue);
+      fragment.appendChild(totalRow);
       container.appendChild(fragment);
     }
 
