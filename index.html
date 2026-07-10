@@ -3820,6 +3820,127 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .project-tools-panel,
+    .expense-report-panel {
+      margin-top: 16px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel) 78%, transparent);
+    }
+
+    .project-tools-header,
+    .report-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .project-tools-header h3,
+    .report-header h3 {
+      margin: 0 0 4px;
+      font-size: 1rem;
+    }
+
+    .project-tools-header p,
+    .report-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .project-tools-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .project-tools-actions .button {
+      min-height: 42px;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .report-group {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--surface) 68%, transparent);
+    }
+
+    .report-group h4 {
+      margin: 0;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+    }
+
+    .report-list {
+      display: grid;
+    }
+
+    .report-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+    }
+
+    .report-row:last-child {
+      border-bottom: 0;
+    }
+
+    .report-row span {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      overflow-wrap: anywhere;
+    }
+
+    .report-row strong {
+      font-size: 0.82rem;
+      white-space: nowrap;
+    }
+
+    .report-empty {
+      padding: 14px;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 760px) {
+      .project-tools-header,
+      .report-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .project-tools-actions,
+      .project-tools-actions .button,
+      .report-grid {
+        width: 100%;
+      }
+
+      .project-tools-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .report-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -4170,6 +4291,40 @@
           </div>
         </section>
 
+        <section class="project-tools-panel" aria-labelledby="projectToolsTitle">
+          <div class="project-tools-header">
+            <div>
+              <h3 id="projectToolsTitle">Herramientas del proyecto</h3>
+              <p>Comprobantes, respaldo completo e importaci&oacute;n segura.</p>
+            </div>
+            <div class="project-tools-actions">
+              <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
+              <button class="button secondary" id="exportBackupBtn" type="button">Exportar respaldo</button>
+              <button class="button secondary" id="importBackupBtn" type="button">Importar respaldo</button>
+              <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
+            </div>
+          </div>
+        </section>
+
+        <section class="expense-report-panel" aria-labelledby="expenseReportTitle">
+          <div class="report-header">
+            <div>
+              <h3 id="expenseReportTitle">Resumen de gastos</h3>
+              <p>Totales del proyecto seleccionado por categor&iacute;a y por d&iacute;a.</p>
+            </div>
+          </div>
+          <div class="report-grid">
+            <section class="report-group" aria-labelledby="categoryReportTitle">
+              <h4 id="categoryReportTitle">Por categor&iacute;a</h4>
+              <div class="report-list" id="categoryReport"></div>
+            </section>
+            <section class="report-group" aria-labelledby="dayReportTitle">
+              <h4 id="dayReportTitle">Por d&iacute;a</h4>
+              <div class="report-list" id="dayReport"></div>
+            </section>
+          </div>
+        </section>
+
         <div class="limit-alerts" id="limitAlerts" aria-live="polite"></div>
 
         <div class="empty-state" id="emptyState">
@@ -4252,6 +4407,9 @@
     const state = {
       budget: 0,
       legacyBudget: 0,
+      legacyProjectName: "Proyecto general",
+      legacyPeriodStart: "",
+      legacyPeriodEnd: "",
       legacyDailyLimits: { ...DEFAULT_DAILY_LIMITS },
       dailyLimits: { ...DEFAULT_DAILY_LIMITS },
       projects: [],
@@ -4321,6 +4479,12 @@
       transportLimitInput: document.querySelector("#transportLimitInput"),
       saveLimitsBtn: document.querySelector("#saveLimitsBtn"),
       limitAlerts: document.querySelector("#limitAlerts"),
+      downloadReceiptsBtn: document.querySelector("#downloadReceiptsBtn"),
+      exportBackupBtn: document.querySelector("#exportBackupBtn"),
+      importBackupBtn: document.querySelector("#importBackupBtn"),
+      backupFileInput: document.querySelector("#backupFileInput"),
+      categoryReport: document.querySelector("#categoryReport"),
+      dayReport: document.querySelector("#dayReport"),
       emptyState: document.querySelector("#emptyState"),
       tableWrap: document.querySelector("#tableWrap"),
       expensesBody: document.querySelector("#expensesBody"),
@@ -4391,6 +4555,9 @@
       elements.saveProjectBtn.disabled = !isReady;
       elements.createProjectBtn.disabled = !isReady;
       elements.saveLimitsBtn.disabled = !isReady;
+      elements.downloadReceiptsBtn.disabled = !isReady;
+      elements.exportBackupBtn.disabled = !isReady;
+      elements.importBackupBtn.disabled = !isReady;
     }
 
     function parseMoney(value) {
@@ -4432,11 +4599,11 @@
     function getLegacyProject() {
       return {
         id: LEGACY_PROJECT_ID,
-        name: "Proyecto general",
+        name: state.legacyProjectName || "Proyecto general",
         budget: state.legacyBudget,
         dailyLimits: state.legacyDailyLimits,
-        periodStart: "",
-        periodEnd: "",
+        periodStart: state.legacyPeriodStart,
+        periodEnd: state.legacyPeriodEnd,
         isLegacy: true
       };
     }
@@ -4504,13 +4671,13 @@
 
       const activeProject = getActiveProject();
       elements.projectSelect.value = activeProject.id;
-      elements.activeProjectTitle.textContent = activeProject.isLegacy ? "Proyecto general" : activeProject.name || "Proyecto sin nombre";
-      elements.projectNameInput.value = activeProject.isLegacy ? "" : activeProject.name || "";
+      elements.activeProjectTitle.textContent = activeProject.name || "Proyecto sin nombre";
+      elements.projectNameInput.value = activeProject.name || "";
       elements.periodStartInput.value = activeProject.periodStart || "";
       elements.periodEndInput.value = activeProject.periodEnd || "";
-      elements.saveProjectBtn.disabled = !state.isFirebaseReady || activeProject.isLegacy;
+      elements.saveProjectBtn.disabled = !state.isFirebaseReady;
       elements.projectHint.textContent = activeProject.isLegacy
-        ? "Este proyecto muestra gastos anteriores sin proyecto asignado. Crea un proyecto nuevo para separar futuras comprobaciones."
+        ? `${getPeriodLabel(activeProject)} Este proyecto conserva todos los gastos anteriores sin cambiar sus registros.`
         : `${getPeriodLabel(activeProject)} ${state.expenses.length} ${state.expenses.length === 1 ? "gasto" : "gastos"} en este proyecto.`;
     }
 
@@ -4693,6 +4860,272 @@
         fragment.appendChild(item);
       });
       elements.limitAlerts.appendChild(fragment);
+    }
+
+    function renderExpenseReports() {
+      const categoryTotals = new Map();
+      const dayTotals = new Map();
+
+      state.expenses.forEach((expense) => {
+        const category = getExpenseConceptParts(expense).concept || "SIN CATEGORIA";
+        const amount = parseMoney(expense.monto);
+        categoryTotals.set(category, (categoryTotals.get(category) || 0) + amount);
+        const day = expense.fecha || "sin-fecha";
+        dayTotals.set(day, (dayTotals.get(day) || 0) + amount);
+      });
+
+      renderReportList(
+        elements.categoryReport,
+        [...categoryTotals.entries()].sort((a, b) => b[1] - a[1]),
+        (label) => label
+      );
+      renderReportList(
+        elements.dayReport,
+        [...dayTotals.entries()].sort((a, b) => String(b[0]).localeCompare(String(a[0]))),
+        (label) => label === "sin-fecha" ? "Sin fecha" : formatDate(label)
+      );
+    }
+
+    function renderReportList(container, entries, formatLabel) {
+      container.innerHTML = "";
+      if (!entries.length) {
+        const empty = document.createElement("p");
+        empty.className = "report-empty";
+        empty.textContent = "Sin gastos para mostrar.";
+        container.appendChild(empty);
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+      entries.forEach(([label, total]) => {
+        const row = document.createElement("div");
+        row.className = "report-row";
+        const name = document.createElement("span");
+        name.textContent = formatLabel(label);
+        const value = document.createElement("strong");
+        value.textContent = formatter.format(total);
+        row.append(name, value);
+        fragment.appendChild(row);
+      });
+      container.appendChild(fragment);
+    }
+
+    function downloadBlob(blob, fileName) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    async function dataUrlToBlob(dataUrl) {
+      const response = await fetch(dataUrl);
+      if (!response.ok) throw new Error("attachment-read-failed");
+      return response.blob();
+    }
+
+    function getCrc32(bytes) {
+      if (!getCrc32.table) {
+        getCrc32.table = Array.from({ length: 256 }, (_, index) => {
+          let value = index;
+          for (let bit = 0; bit < 8; bit += 1) value = (value >>> 1) ^ (value & 1 ? 0xedb88320 : 0);
+          return value >>> 0;
+        });
+      }
+      let crc = 0xffffffff;
+      bytes.forEach((byte) => { crc = (crc >>> 8) ^ getCrc32.table[(crc ^ byte) & 0xff]; });
+      return (crc ^ 0xffffffff) >>> 0;
+    }
+
+    function writeZipNumber(view, offset, value, byteLength) {
+      if (byteLength === 2) view.setUint16(offset, value, true);
+      else view.setUint32(offset, value, true);
+    }
+
+    function concatZipParts(parts) {
+      const totalLength = parts.reduce((total, part) => total + part.length, 0);
+      const result = new Uint8Array(totalLength);
+      let offset = 0;
+      parts.forEach((part) => {
+        result.set(part, offset);
+        offset += part.length;
+      });
+      return result;
+    }
+
+    async function createZipBlob(entries) {
+      const encoder = new TextEncoder();
+      const localParts = [];
+      const centralParts = [];
+      let localOffset = 0;
+      const now = new Date();
+      const dosTime = (now.getHours() << 11) | (now.getMinutes() << 5) | Math.floor(now.getSeconds() / 2);
+      const dosDate = ((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate();
+
+      for (const entry of entries) {
+        const nameBytes = encoder.encode(entry.name);
+        const data = new Uint8Array(await entry.blob.arrayBuffer());
+        const crc = getCrc32(data);
+        const localHeader = new Uint8Array(30 + nameBytes.length);
+        const localView = new DataView(localHeader.buffer);
+        writeZipNumber(localView, 0, 0x04034b50, 4);
+        writeZipNumber(localView, 4, 20, 2);
+        writeZipNumber(localView, 6, 0x0800, 2);
+        writeZipNumber(localView, 8, 0, 2);
+        writeZipNumber(localView, 10, dosTime, 2);
+        writeZipNumber(localView, 12, dosDate, 2);
+        writeZipNumber(localView, 14, crc, 4);
+        writeZipNumber(localView, 18, data.length, 4);
+        writeZipNumber(localView, 22, data.length, 4);
+        writeZipNumber(localView, 26, nameBytes.length, 2);
+        localHeader.set(nameBytes, 30);
+        localParts.push(localHeader, data);
+
+        const centralHeader = new Uint8Array(46 + nameBytes.length);
+        const centralView = new DataView(centralHeader.buffer);
+        writeZipNumber(centralView, 0, 0x02014b50, 4);
+        writeZipNumber(centralView, 4, 20, 2);
+        writeZipNumber(centralView, 6, 20, 2);
+        writeZipNumber(centralView, 8, 0x0800, 2);
+        writeZipNumber(centralView, 10, 0, 2);
+        writeZipNumber(centralView, 12, dosTime, 2);
+        writeZipNumber(centralView, 14, dosDate, 2);
+        writeZipNumber(centralView, 16, crc, 4);
+        writeZipNumber(centralView, 20, data.length, 4);
+        writeZipNumber(centralView, 24, data.length, 4);
+        writeZipNumber(centralView, 28, nameBytes.length, 2);
+        writeZipNumber(centralView, 42, localOffset, 4);
+        centralHeader.set(nameBytes, 46);
+        centralParts.push(centralHeader);
+        localOffset += localHeader.length + data.length;
+      }
+
+      const centralDirectory = concatZipParts(centralParts);
+      const endRecord = new Uint8Array(22);
+      const endView = new DataView(endRecord.buffer);
+      writeZipNumber(endView, 0, 0x06054b50, 4);
+      writeZipNumber(endView, 8, entries.length, 2);
+      writeZipNumber(endView, 10, entries.length, 2);
+      writeZipNumber(endView, 12, centralDirectory.length, 4);
+      writeZipNumber(endView, 16, localOffset, 4);
+      return new Blob([...localParts, centralDirectory, endRecord], { type: "application/zip" });
+    }
+
+    async function downloadAllReceipts() {
+      const expensesWithFiles = state.expenses.filter((expense) => getTicketList(expense).length || getInvoiceData(expense));
+      if (!expensesWithFiles.length) {
+        setMessage("error", "Este proyecto no tiene comprobantes para descargar.");
+        return;
+      }
+
+      elements.downloadReceiptsBtn.disabled = true;
+      elements.downloadReceiptsBtn.textContent = "Preparando ZIP...";
+      clearMessage();
+      try {
+        const entries = [];
+        const usedNames = new Set();
+        const addEntry = (name, blob) => {
+          let uniqueName = name;
+          let duplicateIndex = 2;
+          const extensionIndex = name.lastIndexOf(".");
+          while (usedNames.has(uniqueName)) {
+            uniqueName = extensionIndex > -1
+              ? `${name.slice(0, extensionIndex)}-${duplicateIndex}${name.slice(extensionIndex)}`
+              : `${name}-${duplicateIndex}`;
+            duplicateIndex += 1;
+          }
+          usedNames.add(uniqueName);
+          entries.push({ name: uniqueName, blob });
+        };
+        for (const expense of expensesWithFiles) {
+          const tickets = getTicketList(expense);
+          for (let index = 0; index < tickets.length; index += 1) {
+            const ticket = tickets[index];
+            addEntry(`tickets/${buildDownloadFileName(expense, "ticket", index, ticket.name)}`, await dataUrlToBlob(ticket.dataUrl));
+          }
+          const invoice = getInvoiceData(expense);
+          if (invoice) {
+            addEntry(`facturas/${buildDownloadFileName(expense, "factura", 0, invoice.name)}`, await dataUrlToBlob(invoice.dataUrl));
+          }
+        }
+        const projectName = slugifyFilePart(getActiveProject().name);
+        const content = await createZipBlob(entries);
+        downloadBlob(content, `comprobantes-${projectName}.zip`);
+        setMessage("success", "Comprobantes preparados y descargados correctamente.");
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudieron preparar todos los comprobantes. Intenta nuevamente.");
+      } finally {
+        elements.downloadReceiptsBtn.disabled = false;
+        elements.downloadReceiptsBtn.textContent = "Descargar comprobantes";
+      }
+    }
+
+    function exportBackup() {
+      const backup = {
+        app: "control-viaticos",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        settings: {
+          legacy: {
+            projectName: state.legacyProjectName,
+            periodStart: state.legacyPeriodStart,
+            periodEnd: state.legacyPeriodEnd,
+            totalDeposit: state.legacyBudget,
+            dailyLimits: state.legacyDailyLimits
+          },
+          projects: Object.fromEntries(state.projects.map(({ id, ...project }) => [id, project]))
+        },
+        expenses: Object.fromEntries(state.allExpenses.map(({ id, ...expense }) => [id, expense]))
+      };
+      const date = new Date().toISOString().slice(0, 10);
+      downloadBlob(new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }), `respaldo-viaticos-${date}.json`);
+      setMessage("success", "Respaldo completo exportado correctamente.");
+    }
+
+    async function importBackup(file) {
+      if (!file || !state.db) return;
+      if (file.size > 50 * 1024 * 1024) {
+        setMessage("error", "El respaldo supera el limite de 50 MB.");
+        return;
+      }
+
+      try {
+        const backup = JSON.parse(await file.text());
+        if (backup?.app !== "control-viaticos" || backup?.version !== 1 || typeof backup.expenses !== "object") {
+          throw new Error("backup-invalid");
+        }
+        const expenseCount = Object.keys(backup.expenses || {}).length;
+        const projectCount = Object.keys(backup.settings?.projects || {}).length;
+        const confirmed = window.confirm(`Importar ${expenseCount} gastos y ${projectCount} proyectos. Los registros existentes no se eliminaran. ¿Continuar?`);
+        if (!confirmed) return;
+
+        elements.importBackupBtn.disabled = true;
+        const updates = {};
+        const legacy = backup.settings?.legacy || {};
+        updates[`${BUDGET_PATH}/projectName`] = String(legacy.projectName || "Proyecto general").slice(0, 80);
+        updates[`${BUDGET_PATH}/periodStart`] = legacy.periodStart || "";
+        updates[`${BUDGET_PATH}/periodEnd`] = legacy.periodEnd || "";
+        updates[`${BUDGET_PATH}/totalDeposit`] = parseMoney(legacy.totalDeposit);
+        updates[`${BUDGET_PATH}/dailyLimits`] = normalizeDailyLimits(legacy.dailyLimits);
+        Object.entries(backup.settings?.projects || {}).forEach(([id, project]) => {
+          if (/^[A-Za-z0-9_-]+$/.test(id)) updates[`${PROJECTS_PATH}/${id}`] = project;
+        });
+        Object.entries(backup.expenses || {}).forEach(([id, expense]) => {
+          if (/^[A-Za-z0-9_-]+$/.test(id)) updates[`${EXPENSES_PATH}/${id}`] = expense;
+        });
+        await update(dbRef(state.db), updates);
+        setMessage("success", `Respaldo importado: ${expenseCount} gastos y ${projectCount} proyectos procesados.`);
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "El archivo no es un respaldo valido de esta aplicacion o no pudo importarse.");
+      } finally {
+        elements.importBackupBtn.disabled = false;
+        elements.backupFileInput.value = "";
+      }
     }
 
     function formatFileCount(count, singular, plural) {
@@ -4992,6 +5425,7 @@
       elements.tableWrap.style.display = hasExpenses ? "block" : "none";
       const limitAnalysis = analyzeDailyLimits();
       renderLimitAlerts(hasExpenses ? limitAnalysis.alerts : []);
+      renderExpenseReports();
 
       const fragment = document.createDocumentFragment();
 
@@ -5255,10 +5689,7 @@
     }
 
     async function saveProjectDetails() {
-      if (!state.isFirebaseReady || state.activeProjectId === LEGACY_PROJECT_ID) {
-        setMessage("error", "Crea o selecciona un proyecto para guardar nombre y periodo.");
-        return;
-      }
+      if (!state.isFirebaseReady) return;
 
       const name = elements.projectNameInput.value.trim();
       if (!name) {
@@ -5275,14 +5706,25 @@
 
       elements.saveProjectBtn.disabled = true;
       try {
-        await update(dbRef(state.db, `${PROJECTS_PATH}/${state.activeProjectId}`), {
-          name,
-          periodStart,
-          periodEnd,
-          budget: parseMoney(elements.budgetInput.value),
-          dailyLimits: getDailyLimitsFromInputs(),
-          updatedAt: Date.now()
-        });
+        if (state.activeProjectId === LEGACY_PROJECT_ID) {
+          await update(dbRef(state.db, BUDGET_PATH), {
+            projectName: name,
+            periodStart,
+            periodEnd,
+            totalDeposit: parseMoney(elements.budgetInput.value),
+            dailyLimits: getDailyLimitsFromInputs(),
+            updatedAt: Date.now()
+          });
+        } else {
+          await update(dbRef(state.db, `${PROJECTS_PATH}/${state.activeProjectId}`), {
+            name,
+            periodStart,
+            periodEnd,
+            budget: parseMoney(elements.budgetInput.value),
+            dailyLimits: getDailyLimitsFromInputs(),
+            updatedAt: Date.now()
+          });
+        }
         setMessage("success", "Proyecto actualizado correctamente.");
       } catch (error) {
         console.error(error);
@@ -5540,6 +5982,9 @@
       onValue(budgetRef, (snapshot) => {
         const data = snapshot.exists() ? snapshot.val() : {};
         state.legacyBudget = parseMoney(data.totalDeposit);
+        state.legacyProjectName = String(data.projectName || "Proyecto general");
+        state.legacyPeriodStart = data.periodStart || "";
+        state.legacyPeriodEnd = data.periodEnd || "";
         state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) {
           state.activeProjectId = data.selectedProjectId;
@@ -5557,6 +6002,9 @@
       if (budgetSnapshot.exists()) {
         const data = budgetSnapshot.val();
         state.legacyBudget = parseMoney(data.totalDeposit);
+        state.legacyProjectName = String(data.projectName || "Proyecto general");
+        state.legacyPeriodStart = data.periodStart || "";
+        state.legacyPeriodEnd = data.periodEnd || "";
         state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) state.activeProjectId = data.selectedProjectId;
       }
@@ -5627,6 +6075,10 @@
     }
 
     elements.saveBudgetBtn.addEventListener("click", saveBudget);
+    elements.downloadReceiptsBtn.addEventListener("click", downloadAllReceipts);
+    elements.exportBackupBtn.addEventListener("click", exportBackup);
+    elements.importBackupBtn.addEventListener("click", () => elements.backupFileInput.click());
+    elements.backupFileInput.addEventListener("change", () => importBackup(elements.backupFileInput.files[0]));
     elements.saveLimitsBtn.addEventListener("click", saveDailyLimits);
     elements.saveProjectBtn.addEventListener("click", saveProjectDetails);
     elements.createProjectBtn.addEventListener("click", createProject);
