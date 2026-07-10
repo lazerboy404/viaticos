@@ -3941,6 +3941,47 @@
         grid-template-columns: 1fr;
       }
     }
+
+    .budget-limits-row {
+      display: grid;
+      grid-template-columns: minmax(420px, 0.85fr) minmax(0, 1.15fr);
+      gap: 16px;
+      align-items: stretch;
+      margin: 0 22px 18px;
+    }
+
+    .budget-limits-row .budget-panel,
+    .budget-limits-row .daily-limits-panel {
+      width: 100%;
+      min-width: 0;
+      margin: 0;
+    }
+
+    .budget-limits-row .daily-limits-panel {
+      grid-template-columns: minmax(150px, 0.45fr) minmax(0, 1.55fr);
+      align-items: end;
+    }
+
+    .history-secondary {
+      margin-top: 18px;
+    }
+
+    @media (max-width: 1100px) {
+      .budget-limits-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .budget-limits-row {
+        margin-inline: 12px;
+      }
+
+      .budget-limits-row .daily-limits-panel,
+      .budget-limits-row .daily-limit-fields {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -4055,6 +4096,7 @@
       <p class="project-hint" id="projectHint">Selecciona un proyecto para cargar su presupuesto, periodo e historial.</p>
     </section>
 
+    <div class="budget-limits-row">
     <section class="budget-panel" aria-labelledby="budgetTitle">
       <div class="field">
         <label id="budgetTitle" for="budgetInput">Monto Total Depositado</label>
@@ -4068,6 +4110,22 @@
         Guardar presupuesto
       </button>
     </section>
+
+    <section class="daily-limits-panel" aria-labelledby="dailyLimitsTitle">
+      <div>
+        <h3 id="dailyLimitsTitle">L&iacute;mites diarios</h3>
+        <p>Marca excedentes por d&iacute;a para comida y transporte/Uber.</p>
+      </div>
+      <div class="daily-limit-fields">
+        <label><span>Comida</span><input id="foodLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
+        <label><span>Transporte / Uber</span><input id="transportLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
+        <button class="button secondary" id="saveLimitsBtn" type="button">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/></svg>
+          Guardar l&iacute;mites
+        </button>
+      </div>
+    </section>
+    </div>
 
     <section class="summary-grid" aria-label="Resumen de viáticos">
       <article class="summary-card">
@@ -4267,64 +4325,6 @@
           </div>
         </div>
 
-        <section class="daily-limits-panel" aria-labelledby="dailyLimitsTitle">
-          <div>
-            <h3 id="dailyLimitsTitle">L&iacute;mites diarios</h3>
-            <p>Marca excedentes por d&iacute;a para comida y transporte/Uber.</p>
-          </div>
-          <div class="daily-limit-fields">
-            <label>
-              <span>Comida</span>
-              <input id="foodLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350">
-            </label>
-            <label>
-              <span>Transporte / Uber</span>
-              <input id="transportLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350">
-            </label>
-            <button class="button secondary" id="saveLimitsBtn" type="button">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-              </svg>
-              Guardar l&iacute;mites
-            </button>
-          </div>
-        </section>
-
-        <section class="project-tools-panel" aria-labelledby="projectToolsTitle">
-          <div class="project-tools-header">
-            <div>
-              <h3 id="projectToolsTitle">Herramientas del proyecto</h3>
-              <p>Comprobantes, respaldo completo e importaci&oacute;n segura.</p>
-            </div>
-            <div class="project-tools-actions">
-              <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
-              <button class="button secondary" id="exportBackupBtn" type="button">Exportar respaldo</button>
-              <button class="button secondary" id="importBackupBtn" type="button">Importar respaldo</button>
-              <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
-            </div>
-          </div>
-        </section>
-
-        <section class="expense-report-panel" aria-labelledby="expenseReportTitle">
-          <div class="report-header">
-            <div>
-              <h3 id="expenseReportTitle">Resumen de gastos</h3>
-              <p>Totales del proyecto seleccionado por categor&iacute;a y por d&iacute;a.</p>
-            </div>
-          </div>
-          <div class="report-grid">
-            <section class="report-group" aria-labelledby="categoryReportTitle">
-              <h4 id="categoryReportTitle">Por categor&iacute;a</h4>
-              <div class="report-list" id="categoryReport"></div>
-            </section>
-            <section class="report-group" aria-labelledby="dayReportTitle">
-              <h4 id="dayReportTitle">Por d&iacute;a</h4>
-              <div class="report-list" id="dayReport"></div>
-            </section>
-          </div>
-        </section>
-
         <div class="limit-alerts" id="limitAlerts" aria-live="polite"></div>
 
         <div class="empty-state" id="emptyState">
@@ -4346,6 +4346,40 @@
             <tbody id="expensesBody"></tbody>
           </table>
         </div>
+
+        <section class="project-tools-panel history-secondary" aria-labelledby="projectToolsTitle">
+          <div class="project-tools-header">
+            <div>
+              <h3 id="projectToolsTitle">Herramientas del proyecto</h3>
+              <p>Comprobantes, respaldo completo e importaci&oacute;n segura.</p>
+            </div>
+            <div class="project-tools-actions">
+              <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
+              <button class="button secondary" id="exportBackupBtn" type="button">Exportar respaldo</button>
+              <button class="button secondary" id="importBackupBtn" type="button">Importar respaldo</button>
+              <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
+            </div>
+          </div>
+        </section>
+
+        <section class="expense-report-panel history-secondary" aria-labelledby="expenseReportTitle">
+          <div class="report-header">
+            <div>
+              <h3 id="expenseReportTitle">Resumen de gastos</h3>
+              <p>Totales del proyecto seleccionado por categor&iacute;a y por d&iacute;a.</p>
+            </div>
+          </div>
+          <div class="report-grid">
+            <section class="report-group" aria-labelledby="categoryReportTitle">
+              <h4 id="categoryReportTitle">Por categor&iacute;a</h4>
+              <div class="report-list" id="categoryReport"></div>
+            </section>
+            <section class="report-group" aria-labelledby="dayReportTitle">
+              <h4 id="dayReportTitle">Por d&iacute;a</h4>
+              <div class="report-list" id="dayReport"></div>
+            </section>
+          </div>
+        </section>
       </section>
     </section>
   </main>
