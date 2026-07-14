@@ -5924,6 +5924,8 @@
         const workbook = new window.ExcelJS.Workbook();
         await workbook.xlsx.load(await response.arrayBuffer());
         workbook.calcProperties.fullCalcOnLoad = true;
+        workbook.calcProperties.forceFullCalc = true;
+        workbook.calcProperties.calcMode = "auto";
         const worksheet = workbook.getWorksheet("Comprobacion") || workbook.worksheets[0];
         const sortByDateAscending = (expenses) => [...expenses].sort((first, second) => {
           const dateComparison = String(first.fecha || "").localeCompare(String(second.fecha || ""));
@@ -5989,7 +5991,15 @@
             worksheet.getCell(row, 9).value = fiscal.subtotal;
             worksheet.getCell(row, 10).value = fiscal.tip;
             worksheet.getCell(row, 11).value = fiscal.iva;
-            worksheet.getCell(row, 12).value = fiscal.total;
+            const rowTotal = Math.round((
+              parseMoney(fiscal.subtotal)
+              + parseMoney(fiscal.tip)
+              + parseMoney(fiscal.iva)
+            ) * 100) / 100;
+            worksheet.getCell(row, 12).value = {
+              formula: `SUM(I${row}:K${row})`,
+              result: rowTotal
+            };
             worksheet.getCell(row, 4).numFmt = "dd/mm/yyyy";
             for (let column = 9; column <= 12; column += 1) worksheet.getCell(row, column).numFmt = "$#,##0.00";
           });
