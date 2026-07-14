@@ -4180,34 +4180,56 @@
       border-radius: 12px;
     }
 
-    .invoice-status {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      width: max-content;
-      max-width: 100%;
-      padding: 5px 8px;
-      border: 1px solid rgba(34, 197, 94, 0.42);
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.1);
-      color: #159447;
-      font-size: 0.69rem;
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    .invoice-status::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #22c55e;
-      box-shadow: 0 0 10px rgba(34, 197, 94, 0.65);
-    }
-
     .invoice-actions {
       align-items: stretch;
+    }
+
+    .history-panel .table-wrap {
+      padding: 0 12px 12px;
+      border: 0;
+      background: color-mix(in srgb, var(--glass-bg-soft) 46%, transparent);
+    }
+
+    .history-panel table {
+      border-collapse: separate;
+      border-spacing: 0 12px;
+      background: transparent;
+    }
+
+    .history-panel thead th {
+      border-bottom: 0;
+      background: transparent;
+    }
+
+    .history-panel tbody td {
+      border-top: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)),
+        color-mix(in srgb, var(--glass-bg-strong) 91%, transparent);
+      box-shadow: 0 12px 26px rgba(18, 45, 68, 0.08);
+    }
+
+    .history-panel tbody td:first-child {
+      border-left: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
+      border-radius: 16px 0 0 16px;
+    }
+
+    .history-panel tbody td:last-child {
+      border-right: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
+      border-radius: 0 16px 16px 0;
+    }
+
+    .history-panel tbody tr.has-invoice td {
+      border-color: rgba(34, 197, 94, 0.32);
+      background:
+        linear-gradient(135deg, rgba(117, 255, 174, 0.17), rgba(255, 255, 255, 0.06) 46%, rgba(20, 168, 83, 0.1)),
+        color-mix(in srgb, var(--glass-bg-strong) 90%, transparent);
+      box-shadow: inset 0 1px 0 rgba(226, 255, 238, 0.35), 0 14px 30px rgba(24, 143, 76, 0.11);
+    }
+
+    .history-panel tbody tr.has-invoice td:first-child {
+      border-left: 3px solid rgba(34, 197, 94, 0.72);
     }
 
     @media (max-width: 900px) {
@@ -4245,6 +4267,24 @@
 
       .report-excel-button {
         grid-column: 1 / -1;
+      }
+
+      .history-panel tbody td,
+      .history-panel tbody tr.has-invoice td {
+        border-top: 0;
+        border-right: 0;
+        border-left: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .history-panel tbody tr.has-invoice {
+        border-color: rgba(34, 197, 94, 0.42);
+        background:
+          linear-gradient(145deg, rgba(117, 255, 174, 0.18), rgba(255, 255, 255, 0.06)),
+          var(--glass-bg-strong);
+        box-shadow: inset 3px 0 0 rgba(34, 197, 94, 0.72), 0 14px 30px rgba(24, 143, 76, 0.12);
       }
     }
   </style>
@@ -6083,6 +6123,7 @@
 
       state.expenses.forEach((expense) => {
         const row = document.createElement("tr");
+        row.classList.toggle("has-invoice", Boolean(getInvoiceData(expense)) && !expense.valeAzul);
 
         row.innerHTML = `
           <td class="date-cell">${formatDate(expense.fecha)}</td>
@@ -6192,10 +6233,6 @@
       const wrapper = document.createElement("div");
       wrapper.className = "file-actions invoice-actions";
 
-      const status = document.createElement("span");
-      status.className = "invoice-status";
-      status.textContent = "Factura cargada";
-
       const viewButton = document.createElement("button");
       viewButton.className = "button secondary";
       viewButton.type = "button";
@@ -6222,7 +6259,7 @@
         Descargar
       `;
 
-      wrapper.append(status, viewButton, downloadLink);
+      wrapper.append(viewButton, downloadLink);
       cell.appendChild(wrapper);
     }
 
