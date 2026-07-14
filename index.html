@@ -4187,7 +4187,7 @@
     .history-panel .table-wrap {
       padding: 0 12px 12px;
       border: 0;
-      background: color-mix(in srgb, var(--glass-bg-soft) 46%, transparent);
+      background: color-mix(in srgb, var(--glass-bg-soft) 78%, transparent);
     }
 
     .history-panel table {
@@ -4201,13 +4201,16 @@
       background: transparent;
     }
 
+    .history-panel tbody tr {
+      --expense-card-bg: color-mix(in srgb, var(--glass-bg-strong) 82%, var(--glass-heading) 18%);
+      filter: drop-shadow(0 10px 12px rgba(18, 45, 68, 0.12));
+    }
+
     .history-panel tbody td {
       border-top: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
       border-bottom: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
-      background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)),
-        color-mix(in srgb, var(--glass-bg-strong) 91%, transparent);
-      box-shadow: 0 12px 26px rgba(18, 45, 68, 0.08);
+      background: var(--expense-card-bg);
+      box-shadow: none;
     }
 
     .history-panel tbody td:first-child {
@@ -4222,10 +4225,13 @@
 
     .history-panel tbody tr.has-invoice td {
       border-color: rgba(34, 197, 94, 0.32);
-      background:
-        linear-gradient(135deg, rgba(117, 255, 174, 0.17), rgba(255, 255, 255, 0.06) 46%, rgba(20, 168, 83, 0.1)),
-        color-mix(in srgb, var(--glass-bg-strong) 90%, transparent);
-      box-shadow: inset 0 1px 0 rgba(226, 255, 238, 0.35), 0 14px 30px rgba(24, 143, 76, 0.11);
+      background: var(--expense-card-bg);
+      box-shadow: none;
+    }
+
+    .history-panel tbody tr.has-invoice {
+      --expense-card-bg: color-mix(in srgb, var(--glass-bg-strong) 74%, #35c978 26%);
+      filter: drop-shadow(0 12px 14px rgba(24, 143, 76, 0.16));
     }
 
     .history-panel tbody tr.has-invoice td:first-child {
