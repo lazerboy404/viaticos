@@ -4230,6 +4230,10 @@
       gap: 10px;
     }
 
+    .history-panel .concept-cell .concept-wrap {
+      margin-inline: auto;
+    }
+
     .invoice-check {
       display: inline-flex;
       align-items: center;
@@ -4252,6 +4256,133 @@
       display: grid;
       gap: 8px;
       min-width: 0;
+    }
+
+    .edit-expense-dialog {
+      width: min(1040px, calc(100% - 32px));
+      max-height: min(92vh, 900px);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--glass-line) 72%, rgba(255, 255, 255, 0.45));
+      border-radius: 24px;
+      background: transparent;
+      color: var(--glass-text);
+      box-shadow: 0 30px 90px rgba(3, 15, 28, 0.38);
+    }
+
+    .edit-expense-dialog::backdrop {
+      background: rgba(4, 15, 27, 0.62);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .edit-dialog-shell {
+      max-height: min(92vh, 900px);
+      overflow: auto;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.06)),
+        color-mix(in srgb, var(--glass-bg-strong) 94%, transparent);
+      backdrop-filter: blur(30px) saturate(150%);
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
+    }
+
+    .edit-dialog-header {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--glass-line);
+      background: color-mix(in srgb, var(--glass-bg-strong) 88%, transparent);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+
+    .edit-dialog-header span {
+      color: var(--glass-muted);
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .edit-dialog-header h3 {
+      margin: 3px 0 0;
+      color: var(--glass-heading);
+      font-size: 1.35rem;
+    }
+
+    .edit-dialog-close {
+      display: inline-grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border: 1px solid var(--glass-line);
+      border-radius: 50%;
+      background: var(--glass-input);
+      color: var(--glass-heading);
+      cursor: pointer;
+    }
+
+    .edit-dialog-close svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .edit-dialog-body {
+      padding: 22px;
+    }
+
+    .edit-dialog-body .expense-form {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .edit-dialog-body .expense-form > .field:first-child,
+    .edit-dialog-body .expense-name-field {
+      grid-column: auto;
+    }
+
+    .edit-dialog-body .form-row,
+    .edit-dialog-body .file-grid,
+    .edit-dialog-body .form-actions,
+    .edit-dialog-body .attachment-preview,
+    .edit-dialog-body .expense-form .message {
+      grid-column: 1 / -1;
+    }
+
+    .edit-dialog-body .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .edit-dialog-body .file-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .edit-dialog-body .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .edit-dialog-body .form-actions .button {
+      width: auto;
+      min-width: 190px;
+    }
+
+    .edit-dialog-body #cancelEditBtn {
+      order: 1;
+    }
+
+    .edit-dialog-body #saveExpenseBtn {
+      order: 2;
     }
 
     @media (max-width: 900px) {
@@ -4302,6 +4433,37 @@
 
       .history-panel .invoice-actions {
         grid-template-columns: 38px minmax(0, 1fr);
+      }
+
+      .edit-expense-dialog {
+        width: calc(100% - 16px);
+        max-height: calc(100vh - 16px);
+        border-radius: 18px;
+      }
+
+      .edit-dialog-shell {
+        max-height: calc(100vh - 16px);
+      }
+
+      .edit-dialog-header,
+      .edit-dialog-body {
+        padding: 16px;
+      }
+
+      .edit-dialog-body .expense-form,
+      .edit-dialog-body .form-row,
+      .edit-dialog-body .file-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .edit-dialog-body .form-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .edit-dialog-body .form-actions .button {
+        width: 100%;
+        min-width: 0;
       }
     }
   </style>
@@ -4728,6 +4890,21 @@
     <div class="dialog-body" id="mediaDialogBody"></div>
   </dialog>
 
+  <dialog class="edit-expense-dialog" id="editExpenseDialog" aria-labelledby="editExpenseDialogTitle">
+    <div class="edit-dialog-shell">
+      <div class="edit-dialog-header">
+        <div>
+          <span>Registro seleccionado</span>
+          <h3 id="editExpenseDialogTitle">Editar gasto</h3>
+        </div>
+        <button class="edit-dialog-close" id="closeEditExpenseDialog" type="button" aria-label="Cerrar editor">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="edit-dialog-body" id="editExpenseDialogBody"></div>
+    </div>
+  </dialog>
+
   <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script type="module">
     // 1) Pega aquí tus credenciales del proyecto Firebase.
@@ -4826,6 +5003,7 @@
       balanceGaugeText: document.querySelector("#balanceGaugeText"),
       expenseCount: document.querySelector("#expenseCount"),
       spentProgress: document.querySelector("#spentProgress"),
+      formPanel: document.querySelector(".form-panel"),
       expenseFormTitle: document.querySelector("#expenseFormTitle"),
       expenseForm: document.querySelector("#expenseForm"),
       conceptInput: document.querySelector("#conceptInput"),
@@ -4866,7 +5044,10 @@
       mediaDialog: document.querySelector("#mediaDialog"),
       mediaDialogTitle: document.querySelector("#mediaDialogTitle"),
       mediaDialogBody: document.querySelector("#mediaDialogBody"),
-      closeMediaDialog: document.querySelector("#closeMediaDialog")
+      closeMediaDialog: document.querySelector("#closeMediaDialog"),
+      editExpenseDialog: document.querySelector("#editExpenseDialog"),
+      editExpenseDialogBody: document.querySelector("#editExpenseDialogBody"),
+      closeEditExpenseDialog: document.querySelector("#closeEditExpenseDialog")
     };
 
     elements.dateInput.valueAsDate = new Date();
@@ -6040,7 +6221,13 @@
       renderAttachmentPreviews(expense);
     }
 
+    function restoreExpenseFormHome() {
+      if (elements.expenseForm.parentElement !== elements.formPanel) elements.formPanel.appendChild(elements.expenseForm);
+      if (elements.editExpenseDialog.open) elements.editExpenseDialog.close();
+    }
+
     function resetExpenseForm() {
+      restoreExpenseFormHome();
       state.editingId = null;
       elements.expenseForm.reset();
       elements.dateInput.valueAsDate = new Date();
@@ -6069,8 +6256,9 @@
       elements.expenseFormTitle.textContent = "Editar gasto";
       elements.cancelEditBtn.classList.add("show");
       elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
-      elements.expenseForm.scrollIntoView({ behavior: "smooth", block: "start" });
-      setMessage("success", "Editando gasto. Puedes cambiar datos y reemplazar comprobantes si lo necesitas.");
+      clearMessage();
+      elements.editExpenseDialogBody.appendChild(elements.expenseForm);
+      if (typeof elements.editExpenseDialog.showModal === "function") elements.editExpenseDialog.showModal();
     }
 
     function renderSummary() {
@@ -6977,6 +7165,15 @@
     });
     elements.closeMediaDialog.addEventListener("click", () => {
       elements.mediaDialog.close();
+    });
+    elements.closeEditExpenseDialog.addEventListener("click", () => {
+      resetExpenseForm();
+      clearMessage();
+    });
+    elements.editExpenseDialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      resetExpenseForm();
+      clearMessage();
     });
 
     initFirebase();
