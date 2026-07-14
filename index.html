@@ -5258,11 +5258,11 @@
       [9, 10, 11, 12, 13, 15].forEach((row) => {
         worksheet.getCell(row, 3).font = { name: "Arial", size: 10, bold: true, color: { argb: row === 13 ? "FFDC2626" : "FF111827" } };
       });
-      worksheet.getCell("D12").alignment = { horizontal: "left" };
-      worksheet.getCell("D13").font = { name: "Arial", size: 10, bold: true, color: { argb: "FFDC2626" } };
-      worksheet.getCell("D15").font = { name: "Arial", size: 10, bold: true, color: { argb: "FF111827" } };
-      worksheet.getCell("D13").alignment = { horizontal: "left", shrinkToFit: true };
-      worksheet.getCell("D15").alignment = { horizontal: "left", shrinkToFit: true };
+      ["E9", "E10", "E11", "E12", "E13", "E15"].forEach((address) => {
+        worksheet.getCell(address).alignment = { horizontal: "left", vertical: "middle", shrinkToFit: true };
+      });
+      worksheet.getCell("E13").font = { name: "Arial", size: 10, bold: true, color: { argb: "FFDC2626" } };
+      worksheet.getCell("E15").font = { name: "Arial", size: 10, bold: true, color: { argb: "FF111827" } };
       worksheet.getCell("H13").font = { name: "Arial", size: 10, bold: true, color: { argb: "FF111827" } };
 
       sections.forEach((section) => {
@@ -5367,12 +5367,13 @@
         const periodText = activeProject.periodStart || activeProject.periodEnd
           ? `${activeProject.periodStart ? formatDate(activeProject.periodStart) : ""}${activeProject.periodStart && activeProject.periodEnd ? " al " : ""}${activeProject.periodEnd ? formatDate(activeProject.periodEnd) : ""}`
           : "Periodo sin definir";
-        const reportDate = new Date();
-        worksheet.getCell("D12").value = new Date(Date.UTC(reportDate.getFullYear(), reportDate.getMonth(), reportDate.getDate()));
-        worksheet.getCell("D12").numFmt = "dd/mm/yyyy";
-        worksheet.getCell("D13").value = periodText;
+        worksheet.getCell("E9").value = "Einar Ulises Arenas Hernandez";
+        worksheet.getCell("E10").value = "Tecnico Operaciones";
+        worksheet.getCell("E11").value = "Operaciones";
+        worksheet.getCell("E12").value = null;
+        worksheet.getCell("E13").value = periodText;
         worksheet.getCell("H13").value = state.budget;
-        worksheet.getCell("D15").value = activeProject.name || "Proyecto sin nombre";
+        worksheet.getCell("E15").value = "Queretaro";
 
         sections.forEach((section) => {
           section.items.forEach((expense, index) => {
