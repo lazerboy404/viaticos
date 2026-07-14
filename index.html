@@ -2198,6 +2198,10 @@
       min-width: 0;
     }
 
+    .topbar-title {
+      flex: 1;
+    }
+
     .topbar-title p {
       margin: 0;
       color: #f8fbff;
@@ -2820,10 +2824,12 @@
     .project-title-block {
       display: grid;
       gap: 2px;
-      min-width: min(420px, 100%);
+      flex: 1;
+      min-width: 0;
       padding-left: 18px;
       margin-left: 10px;
       border-left: 1px solid var(--glass-line);
+      text-align: center;
     }
 
     .project-title-block span {
@@ -4165,11 +4171,11 @@
     <section class="daily-limits-panel" aria-labelledby="dailyLimitsTitle">
       <div>
         <h3 id="dailyLimitsTitle">L&iacute;mites diarios</h3>
-        <p>Marca excedentes por d&iacute;a para comida y transporte/Uber.</p>
+        <p>Marca excedentes por d&iacute;a para comida y Uber.</p>
       </div>
       <div class="daily-limit-fields">
         <label><span>Comida</span><input id="foodLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
-        <label><span>Transporte / Uber</span><input id="transportLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
+        <label><span>Uber</span><input id="transportLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
         <button class="button secondary" id="saveLimitsBtn" type="button">
           <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/></svg>
           Guardar l&iacute;mites
@@ -4902,17 +4908,13 @@
     function getDailyLimitCategory(expense) {
       const text = getExpenseConceptParts(expense).combined.toLowerCase();
       const foodKeys = ["comida", "restaurante", "desayuno", "cena", "alimento", "cafe", "vips", "porton", "tim hortons"];
-      const transportKeys = [
-        "uber", "didi", "taxi", "transporte", "gasolina", "caseta", "camion", "cami\u00f3n",
-        "autobus", "autob\u00fas", "bus", "primera plus", "etn", "ado", "flecha amarilla"
-      ];
       if (foodKeys.some((key) => text.includes(key))) return "food";
-      if (transportKeys.some((key) => text.includes(key))) return "transport";
+      if (/\buber\b/.test(text)) return "transport";
       return "";
     }
 
     function getDailyLimitLabel(category) {
-      return category === "food" ? "Comida" : "Transporte/Uber";
+      return category === "food" ? "Comida" : "Uber";
     }
 
     function analyzeDailyLimits() {
@@ -5221,8 +5223,24 @@
     function getExcelExpenseGroup(expense) {
       const combined = getExpenseConceptParts(expense).combined.toLowerCase();
       if (["hospedaje", "hotel", "hostal", "airbnb"].some((key) => combined.includes(key))) return "lodging";
-      if (getDailyLimitCategory(expense) === "transport") return "transport";
+      const transportKeys = [
+        "uber", "didi", "taxi", "transporte", "gasolina", "caseta", "camion", "cami\u00f3n",
+        "autobus", "autob\u00fas", "bus", "primera plus", "etn", "ado", "flecha amarilla"
+      ];
+      if (transportKeys.some((key) => combined.includes(key))) return "transport";
       return "consumption";
+    }
+
+    function shouldApplyRestaurantTip(expense) {
+      if (getExcelExpenseGroup(expense) !== "consumption") return false;
+      const combined = getExpenseConceptParts(expense).combined.toLowerCase();
+      const excludedStores = ["oxxo", "tienda", "supermercado", "farmacia", "seven eleven", "7-eleven"];
+      if (excludedStores.some((key) => combined.includes(key))) return false;
+      const restaurantKeys = [
+        "comida", "restaurante", "alimento", "desayuno", "cena", "cafe", "caf\u00e9",
+        "vips", "porton", "port\u00f3n", "tim hortons", "kfc", "gorditas", "tacos", "fogon", "fog\u00f3n"
+      ];
+      return restaurantKeys.some((key) => combined.includes(key));
     }
 
     function getExcelConcept(expense) {
@@ -5327,7 +5345,7 @@
         const getFiscalData = (expense) => {
           const parts = getExpenseConceptParts(expense);
           const total = parseMoney(expense.monto);
-          return invoiceFieldsById.get(expense.id) || {
+          const fiscal = invoiceFieldsById.get(expense.id) || {
             origin: detectInvoiceOrigin("", activeProject.name || ""),
             document: "",
             name: parts.name || parts.concept,
@@ -5335,6 +5353,14 @@
             tip: 0,
             iva: 0,
             total
+          };
+          if (!shouldApplyRestaurantTip(expense)) return fiscal;
+          const baseTotal = parseMoney(fiscal.total) || total;
+          const tip = Math.round(baseTotal * 10) / 100;
+          return {
+            ...fiscal,
+            tip,
+            total: Math.round((baseTotal + tip) * 100) / 100
           };
         };
 
@@ -5356,6 +5382,12 @@
           lodging: sortByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "lodging")),
           consumption: sortByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "consumption"))
         };
+        const groupedExpenses = [...groups.transport, ...groups.lodging, ...groups.consumption];
+        const expectedIds = state.expenses.map((expense) => expense.id);
+        const groupedIds = groupedExpenses.map((expense) => expense.id);
+        if (groupedIds.length !== expectedIds.length || new Set(groupedIds).size !== groupedIds.length || expectedIds.some((id) => !groupedIds.includes(id))) {
+          throw new Error("excel-expense-integrity-check-failed");
+        }
 
         const fitExpenseRows = (start, itemCount) => {
           const extraRows = Math.max(itemCount - 5, 0);
