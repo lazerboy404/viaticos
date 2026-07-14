@@ -5805,7 +5805,7 @@
 
     function syncBlueVoucherFields(expense = null) {
       const isBlueVoucher = elements.blueVoucherInput.checked;
-      elements.ticketInputLabel.textContent = isBlueVoucher ? "Fotos del ticket requeridas" : "Fotos del ticket opcionales";
+      elements.ticketInputLabel.textContent = isBlueVoucher ? "Fotos del ticket opcionales (puedes agregarlas despues)" : "Fotos del ticket opcionales";
       elements.fileGrid.classList.toggle("is-blue-voucher", isBlueVoucher);
       elements.invoiceField.classList.toggle("is-disabled", isBlueVoucher);
       elements.invoiceInput.disabled = isBlueVoucher;
@@ -6285,11 +6285,6 @@
 
       if (!concepto || monto <= 0 || !fecha) {
         setMessage("error", "Completa concepto, monto y fecha.");
-        return;
-      }
-
-      if (valeAzul && !ticketFiles.length && !getTicketList(existingExpense).length) {
-        setMessage("error", "Para comprobar con vale azul debes adjuntar al menos una foto del ticket.");
         return;
       }
 
