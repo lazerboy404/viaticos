@@ -886,53 +886,6 @@
       grid-column: 6 / 7;
     }
 
-    .fiscal-details {
-      grid-column: 1 / -1;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: color-mix(in srgb, var(--surface) 72%, transparent);
-    }
-
-    .fiscal-details summary {
-      padding: 12px 14px;
-      color: var(--glass-heading);
-      font-size: 0.82rem;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .fiscal-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 12px;
-      padding: 0 14px 14px;
-    }
-
-    .fiscal-grid .note-field {
-      grid-column: span 2;
-    }
-
-    .invoice-read-status {
-      grid-column: 1 / -1;
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.75rem;
-    }
-
-    @media (max-width: 980px) {
-      .fiscal-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 600px) {
-      .fiscal-grid,
-      .fiscal-grid .note-field {
-        grid-template-columns: 1fr;
-        grid-column: auto;
-      }
-    }
-
     .expense-form > .field:first-child {
       grid-column: 1 / 2;
     }
@@ -4361,37 +4314,6 @@
             </div>
           </div>
 
-          <details class="fiscal-details" id="fiscalDetails">
-            <summary>Datos para comprobaci&oacute;n Excel</summary>
-            <div class="fiscal-grid">
-              <div class="field">
-                <label for="originInput">Origen / Edo.</label>
-                <input id="originInput" type="text" placeholder="Ej. QRO o CDMX" maxlength="40">
-              </div>
-              <div class="field">
-                <label for="documentInput">Docto. / Folio</label>
-                <input id="documentInput" type="text" placeholder="Serie o folio" maxlength="80">
-              </div>
-              <div class="field note-field">
-                <label for="expenseNoteInput">Nota / comentario</label>
-                <input id="expenseNoteInput" type="text" placeholder="Opcional" maxlength="160">
-              </div>
-              <div class="field">
-                <label for="subtotalInput">Subtotal</label>
-                <input id="subtotalInput" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
-              </div>
-              <div class="field">
-                <label for="tipInput">Propina</label>
-                <input id="tipInput" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
-              </div>
-              <div class="field">
-                <label for="taxInput">IVA</label>
-                <input id="taxInput" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
-              </div>
-              <p class="invoice-read-status" id="invoiceReadStatus">Al seleccionar una factura PDF intentaremos leer folio e importes. Verifica los datos antes de exportar.</p>
-            </div>
-          </details>
-
           <div class="file-grid">
             <div class="field">
               <label for="ticketInput">Fotos del ticket opcionales</label>
@@ -4627,14 +4549,6 @@
       expenseNameInput: document.querySelector("#expenseNameInput"),
       amountInput: document.querySelector("#amountInput"),
       dateInput: document.querySelector("#dateInput"),
-      fiscalDetails: document.querySelector("#fiscalDetails"),
-      originInput: document.querySelector("#originInput"),
-      documentInput: document.querySelector("#documentInput"),
-      expenseNoteInput: document.querySelector("#expenseNoteInput"),
-      subtotalInput: document.querySelector("#subtotalInput"),
-      tipInput: document.querySelector("#tipInput"),
-      taxInput: document.querySelector("#taxInput"),
-      invoiceReadStatus: document.querySelector("#invoiceReadStatus"),
       ticketInput: document.querySelector("#ticketInput"),
       ticketFileName: document.querySelector("#ticketFileName"),
       invoiceInput: document.querySelector("#invoiceInput"),
@@ -5392,6 +5306,36 @@
       elements.exportExcelBtn.textContent = "Generando Excel...";
       clearMessage();
       try {
+        const activeProject = getActiveProject();
+        const invoiceFieldsById = new Map();
+        const expensesWithInvoices = state.expenses.filter((expense) => getInvoiceData(expense));
+        let unreadableInvoices = 0;
+        for (let index = 0; index < expensesWithInvoices.length; index += 1) {
+          const expense = expensesWithInvoices[index];
+          elements.exportExcelBtn.textContent = `Leyendo facturas ${index + 1}/${expensesWithInvoices.length}`;
+          try {
+            invoiceFieldsById.set(expense.id, await extractInvoiceFields(getInvoiceData(expense), expense, activeProject.name || ""));
+          } catch (error) {
+            console.error(error);
+            unreadableInvoices += 1;
+          }
+        }
+
+        const getFiscalData = (expense) => {
+          const parts = getExpenseConceptParts(expense);
+          const total = parseMoney(expense.monto);
+          return invoiceFieldsById.get(expense.id) || {
+            origin: detectInvoiceOrigin("", activeProject.name || ""),
+            document: "",
+            name: parts.name || parts.concept,
+            subtotal: total,
+            tip: 0,
+            iva: 0,
+            total
+          };
+        };
+
+        elements.exportExcelBtn.textContent = "Generando Excel...";
         const templateUrl = new URL("Comprobacion%20-%20Viaticos.xlsx", window.location.href);
         const response = await fetch(templateUrl);
         if (!response.ok) throw new Error("excel-template-not-found");
@@ -5420,7 +5364,6 @@
           { items: groups.consumption, start: consumptionStart, total: 47 + extraTransport + extraLodging + extraConsumption }
         ];
 
-        const activeProject = getActiveProject();
         const periodText = activeProject.periodStart || activeProject.periodEnd
           ? `${activeProject.periodStart ? formatDate(activeProject.periodStart) : ""}${activeProject.periodStart && activeProject.periodEnd ? " al " : ""}${activeProject.periodEnd ? formatDate(activeProject.periodEnd) : ""}`
           : "Periodo sin definir";
@@ -5434,21 +5377,17 @@
         sections.forEach((section) => {
           section.items.forEach((expense, index) => {
             const row = section.start + index;
-            const parts = getExpenseConceptParts(expense);
-            const total = parseMoney(expense.monto);
-            const tip = parseMoney(expense.propina);
-            const tax = parseMoney(expense.iva);
-            const subtotal = parseMoney(expense.subtotal) || Math.max(total - tip - tax, 0);
-            worksheet.getCell(row, 3).value = expense.origenEstado ? String(expense.origenEstado).toUpperCase() : null;
+            const fiscal = getFiscalData(expense);
+            worksheet.getCell(row, 3).value = fiscal.origin || null;
             worksheet.getCell(row, 4).value = expense.fecha ? new Date(`${expense.fecha}T00:00:00Z`) : null;
-            worksheet.getCell(row, 5).value = expense.documentoFactura ? String(expense.documentoFactura).toUpperCase() : null;
-            worksheet.getCell(row, 6).value = parts.name || parts.concept;
+            worksheet.getCell(row, 5).value = fiscal.document ? String(fiscal.document).toUpperCase() : null;
+            worksheet.getCell(row, 6).value = fiscal.name;
             worksheet.getCell(row, 7).value = getExcelConcept(expense);
-            worksheet.getCell(row, 8).value = expense.notaComentario || null;
-            worksheet.getCell(row, 9).value = subtotal;
-            worksheet.getCell(row, 10).value = tip;
-            worksheet.getCell(row, 11).value = tax;
-            worksheet.getCell(row, 12).value = total;
+            worksheet.getCell(row, 8).value = null;
+            worksheet.getCell(row, 9).value = fiscal.subtotal;
+            worksheet.getCell(row, 10).value = fiscal.tip;
+            worksheet.getCell(row, 11).value = fiscal.iva;
+            worksheet.getCell(row, 12).value = fiscal.total;
             worksheet.getCell(row, 4).numFmt = "dd/mm/yyyy";
             for (let column = 9; column <= 12; column += 1) worksheet.getCell(row, column).numFmt = "$#,##0.00";
           });
@@ -5456,10 +5395,11 @@
           for (let column = 9; column <= 12; column += 1) {
             const letter = String.fromCharCode(64 + column);
             const result = section.items.reduce((total, expense) => {
-              if (column === 9) return total + (parseMoney(expense.subtotal) || Math.max(parseMoney(expense.monto) - parseMoney(expense.propina) - parseMoney(expense.iva), 0));
-              if (column === 10) return total + parseMoney(expense.propina);
-              if (column === 11) return total + parseMoney(expense.iva);
-              return total + parseMoney(expense.monto);
+              const fiscal = getFiscalData(expense);
+              if (column === 9) return total + parseMoney(fiscal.subtotal);
+              if (column === 10) return total + parseMoney(fiscal.tip);
+              if (column === 11) return total + parseMoney(fiscal.iva);
+              return total + parseMoney(fiscal.total);
             }, 0);
             worksheet.getCell(section.total, column).value = { formula: `SUM(${letter}${section.start}:${letter}${lastDataRow})`, result };
             worksheet.getCell(section.total, column).numFmt = "$#,##0.00";
@@ -5481,7 +5421,9 @@
           new Blob([output], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
           `comprobacion-${slugifyFilePart(activeProject.name)}.xlsx`
         );
-        setMessage("success", "Excel generado con los gastos del proyecto seleccionado.");
+        setMessage("success", unreadableInvoices
+          ? `Excel generado. ${unreadableInvoices} factura(s) no contenian texto legible y usaron los datos del gasto.`
+          : "Excel generado automaticamente con los datos de las facturas PDF.");
       } catch (error) {
         console.error(error);
         setMessage("error", "No se pudo generar el Excel. Verifica que la plantilla este publicada junto a la pagina.");
@@ -5743,8 +5685,6 @@
       elements.dateInput.valueAsDate = new Date();
       elements.ticketFileName.textContent = "Seleccionar fotos";
       elements.invoiceFileName.textContent = "Seleccionar PDF";
-      elements.invoiceReadStatus.textContent = "Al seleccionar una factura PDF intentaremos leer folio e importes. Verifica los datos antes de exportar.";
-      elements.fiscalDetails.open = false;
       renderAttachmentPreviews();
       elements.expenseFormTitle.textContent = "Nuevo gasto";
       elements.cancelEditBtn.classList.remove("show");
@@ -5761,13 +5701,6 @@
       elements.expenseNameInput.value = conceptParts.name || "";
       elements.amountInput.value = parseMoney(expense.monto) || "";
       elements.dateInput.value = expense.fecha || "";
-      elements.originInput.value = expense.origenEstado || "";
-      elements.documentInput.value = expense.documentoFactura || "";
-      elements.expenseNoteInput.value = expense.notaComentario || "";
-      elements.subtotalInput.value = parseMoney(expense.subtotal) || "";
-      elements.tipInput.value = parseMoney(expense.propina) || "";
-      elements.taxInput.value = parseMoney(expense.iva) || "";
-      elements.fiscalDetails.open = Boolean(expense.origenEstado || expense.documentoFactura || expense.subtotal || expense.propina || expense.iva);
       elements.ticketFileName.textContent = getTicketList(expense).length ? "Conservar tickets" : "Seleccionar fotos";
       elements.invoiceFileName.textContent = expense.invoiceUrl ? "Conservar factura" : "Seleccionar PDF";
       renderAttachmentPreviews(expense);
@@ -6198,12 +6131,6 @@
       const nombreGasto = elements.expenseNameInput.value.trim().toUpperCase();
       const monto = parseMoney(elements.amountInput.value);
       const fecha = elements.dateInput.value;
-      const origenEstado = elements.originInput.value.trim().toUpperCase();
-      const documentoFactura = elements.documentInput.value.trim().toUpperCase();
-      const notaComentario = elements.expenseNoteInput.value.trim();
-      const subtotal = parseMoney(elements.subtotalInput.value);
-      const propina = parseMoney(elements.tipInput.value);
-      const iva = parseMoney(elements.taxInput.value);
       const ticketFiles = Array.from(elements.ticketInput.files || []);
       const invoiceFile = elements.invoiceInput.files[0];
       const existingExpense = state.editingId
@@ -6234,12 +6161,6 @@
           conceptoCompleto: `${concepto} ${nombreGasto}`.trim(),
           monto,
           fecha,
-          origenEstado,
-          documentoFactura,
-          notaComentario,
-          subtotal,
-          propina,
-          iva,
           updatedAt: Date.now()
         };
 
@@ -6327,51 +6248,105 @@
       return matches.length ? parseInvoiceMoney(matches[matches.length - 1][1]) : 0;
     }
 
-    async function extractInvoiceDataFromPdf(file) {
-      elements.invoiceReadStatus.textContent = "Leyendo datos de la factura...";
-      elements.fiscalDetails.open = true;
-      try {
-        const pdfjs = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
-        pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
-        const documentTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
-        const pdf = await documentTask.promise;
-        const pageTexts = [];
-        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-          const page = await pdf.getPage(pageNumber);
-          const content = await page.getTextContent();
-          pageTexts.push(content.items.map((item) => item.str).join(" "));
-        }
-        const text = pageTexts.join("\n").replace(/\s+/g, " ");
-        const folioPatterns = [
-          /(?:SERIE\s*(?:Y\s*)?FOLIO|FOLIO|NO\.?\s*FACTURA|FACTURA)\s*[:#-]?\s*([A-Z0-9-]{3,})/i,
-          /(?:UUID|FOLIO\s+FISCAL)\s*[:#-]?\s*([A-F0-9-]{20,})/i
-        ];
-        const folio = folioPatterns.map((pattern) => text.match(pattern)?.[1] || "").find(Boolean) || "";
-        const issuerPatterns = [
-          /(?:SOCIO\s+CONDUCTOR|CONDUCTOR|PRESTADOR\s+DEL\s+SERVICIO)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'-]{3,70}?)(?=\s+(?:RFC|R\.F\.C\.|DOMICILIO|FECHA|$))/i,
-          /(?:RAZ[ÓO]N\s+SOCIAL|EMISOR|NOMBRE)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'-]{3,70}?)(?=\s+(?:RFC|R\.F\.C\.|R[ÉE]GIMEN|DOMICILIO|C\.?P\.?|$))/i
-        ];
-        const issuerName = issuerPatterns.map((pattern) => text.match(pattern)?.[1]?.trim() || "").find(Boolean) || "";
-        const subtotal = findInvoiceMoney(text, "SUBTOTAL");
-        const propina = findInvoiceMoney(text, "PROPINA|SERVICIO");
-        const iva = findInvoiceMoney(text, "(?:I\\.?V\\.?A\\.?|IVA)(?:\\s+16%|\\s+TRASLADADO)?");
-        const total = findInvoiceMoney(text, "(?:TOTAL(?:\\s+A\\s+PAGAR)?|IMPORTE\\s+TOTAL)");
-
-        if (folio && !elements.documentInput.value) elements.documentInput.value = folio.toUpperCase();
-        if (issuerName && !elements.expenseNameInput.value) elements.expenseNameInput.value = issuerName.toUpperCase();
-        if (subtotal && !elements.subtotalInput.value) elements.subtotalInput.value = subtotal.toFixed(2);
-        if (propina && !elements.tipInput.value) elements.tipInput.value = propina.toFixed(2);
-        if (iva && !elements.taxInput.value) elements.taxInput.value = iva.toFixed(2);
-        if (total && !elements.amountInput.value) elements.amountInput.value = total.toFixed(2);
-
-        const found = [folio, issuerName, subtotal, propina, iva, total].filter(Boolean).length;
-        elements.invoiceReadStatus.textContent = found
-          ? `Se detectaron ${found} datos. Verifica origen, fecha de consumo, nombre e importes antes de guardar.`
-          : "El PDF no contiene texto reconocible. Captura manualmente los datos de comprobacion.";
-      } catch (error) {
-        console.error(error);
-        elements.invoiceReadStatus.textContent = "No se pudo leer automaticamente el PDF. Puedes capturar los datos manualmente.";
+    function findInvoiceTax(text) {
+      const patterns = [
+        /IVA.{0,90}?IMPORTE\s*[-:]?\s*\$\s*([\d,]+\.\d{2})/ig,
+        /(?:IMPUESTOS\s+TRASLADADOS|IVA(?:T)?\s+0\.160000|IVA\s+16(?:\.00)?%|IVA\s+TRASLADADO\s+AL\s+16%)\s*\$?\s*([\d,]+\.\d{2})/ig,
+        /\bIVA\s*\$\s*([\d,]+\.\d{2})/ig,
+        /\bIVA\s+([\d,]+\.\d{2})\s*(?:MXN|$)/ig
+      ];
+      for (const pattern of patterns) {
+        const matches = [...text.matchAll(pattern)];
+        if (matches.length) return parseInvoiceMoney(matches[matches.length - 1][1]);
       }
+      return 0;
+    }
+
+    function findInvoiceTotal(text) {
+      const directMatches = [...text.matchAll(/\bTOTAL\s*:?[ \t]*\$?[ \t]*([\d,]+\.\d{2})(?:\s*MXN)?/ig)];
+      if (directMatches.length) return parseInvoiceMoney(directMatches[directMatches.length - 1][1]);
+      const reversedMatch = text.match(/\$?\s*([\d,]+\.\d{2})\s+TOTAL\s*:/i);
+      return reversedMatch ? parseInvoiceMoney(reversedMatch[1]) : 0;
+    }
+
+    let pdfModulePromise = null;
+
+    function detectInvoiceOrigin(text, projectName = "") {
+      const normalized = `${text} ${projectName}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+      const routeMatch = normalized.match(/(?:ORIGEN|PUNTO DE PARTIDA|RECOGIDA|INICIO DEL VIAJE)\s*[:#-]?\s*([^\n]{0,140})/);
+      const routeText = routeMatch?.[1] || "";
+      const isCdmx = (value) => /\b(CDMX|CIUDAD DE MEXICO|MEXICO CITY)\b/.test(value);
+      const isQro = (value) => /\b(QRO|QUERETARO)\b/.test(value);
+      if (isCdmx(routeText)) return "CDMX";
+      if (isQro(routeText)) return "QRO";
+      const textHasCdmx = isCdmx(normalized);
+      const textHasQro = isQro(normalized);
+      if (textHasCdmx && !textHasQro) return "CDMX";
+      if (textHasQro && !textHasCdmx) return "QRO";
+      if (isQro(projectName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase())) return "QRO";
+      return "";
+    }
+
+    async function extractInvoiceFields(invoice, expense, projectName) {
+      if (!invoice?.dataUrl) return {};
+      if (!pdfModulePromise) {
+        pdfModulePromise = import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
+      }
+      const pdfjs = await pdfModulePromise;
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+      const response = await fetch(invoice.dataUrl);
+      const pdf = await pdfjs.getDocument({ data: new Uint8Array(await response.arrayBuffer()) }).promise;
+      const pageTexts = [];
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent();
+        pageTexts.push(content.items.map((item) => item.str).join(" "));
+      }
+      const text = pageTexts.join("\n").replace(/[ \t]+/g, " ");
+      const folioPatterns = [
+        /SERIE\s*(?:Y\s*)?FOLIO\s*[:#-]?\s*([A-Z0-9-]{2,})/i,
+        /FACTURA\s*:\s*([A-Z0-9-]{3,})/i,
+        /FACTURA\s+(?:\(INGRESO\)\s*)?([A-Z]{0,5}\s*-?\s*\d{2,})/i,
+        /FOLIO\s+([A-Z]{1,5})\s*-\s*(\d{2,})/i,
+        /\bFOLIO(?!\s+(?:FISCAL|SAT))\s*[:#-]\s*([A-Z0-9-]{2,})/i,
+        /(?:UUID|FOLIO\s+FISCAL)\s*[:#-]?\s*([A-F0-9-]{20,})/i,
+        /\b([A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})\b/i
+      ];
+      const issuerPatterns = [
+        /(?:SOCIO\s+CONDUCTOR|CONDUCTOR|PRESTADOR\s+DEL\s+SERVICIO)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'-]{3,70}?)(?=\s+(?:RFC|R\.F\.C\.|DOMICILIO|FECHA|$))/i,
+        /(?:RAZ[ÓO]N\s+SOCIAL|EMISOR|NOMBRE)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'-]{3,70}?)(?=\s+(?:RFC|R\.F\.C\.|R[ÉE]GIMEN|DOMICILIO|C\.?P\.?|$))/i
+      ];
+      const parts = getExpenseConceptParts(expense);
+      const expenseTotal = parseMoney(expense.monto);
+      let subtotal = findInvoiceMoney(text, "SUBTOTAL");
+      let iva = findInvoiceTax(text);
+      let invoiceTotal = findInvoiceTotal(text);
+      const isConvenienceStore = /\b(OXXO|TIENDA|SUPERMERCADO)\b/i.test(getExpenseConceptParts(expense).combined);
+      if (!subtotal && iva > 0 && !invoiceTotal) {
+        invoiceTotal = expenseTotal;
+        subtotal = Math.max(invoiceTotal - iva, 0);
+      }
+      if (!invoiceTotal) invoiceTotal = subtotal + iva || expenseTotal;
+      const taxDifference = Math.round(Math.max(invoiceTotal - subtotal, 0) * 100) / 100;
+      if (!isConvenienceStore && taxDifference > 0 && (!iva || (iva < 1 && taxDifference > 1))) iva = taxDifference;
+      if (!subtotal) subtotal = Math.max(invoiceTotal - iva, 0);
+      const explicitTip = findInvoiceMoney(text, "PROPINA");
+      const derivedTip = invoiceTotal > 0 && expenseTotal - invoiceTotal > 0.5
+        ? Math.round((expenseTotal - invoiceTotal) * 100) / 100
+        : 0;
+      const tip = explicitTip || derivedTip;
+      return {
+        origin: detectInvoiceOrigin(text, projectName),
+        document: folioPatterns.map((pattern) => {
+          const match = text.match(pattern);
+          return match?.[2] ? `${match[1]}-${match[2]}` : match?.[1] || "";
+        }).find(Boolean) || "",
+        name: issuerPatterns.map((pattern) => text.match(pattern)?.[1]?.trim() || "").find(Boolean) || parts.name || parts.concept,
+        subtotal: subtotal || Math.max(expenseTotal - tip - iva, 0),
+        tip,
+        iva,
+        total: expenseTotal || invoiceTotal
+      };
     }
 
     function compressTicketImage(file) {
@@ -6596,7 +6571,6 @@
           ? "Conservar factura"
           : "Seleccionar PDF";
       renderAttachmentPreviews(editingExpense);
-      if (file) extractInvoiceDataFromPdf(file);
     });
     elements.closeMediaDialog.addEventListener("click", () => {
       elements.mediaDialog.close();
