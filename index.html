@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Control de Viáticos</title>
-  <link rel="icon" href="data:,">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b2035'/%3E%3Cpath d='M17 18h30v34H17z' fill='none' stroke='%2300dceb' stroke-width='4'/%3E%3Cpath d='M24 13h16v10H24zM24 31h16M24 39h9' fill='none' stroke='%23fff' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='m36 44 4 4 9-11' fill='none' stroke='%2357e389' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
     :root {
       --bg: #eef3f8;
@@ -2852,6 +2852,63 @@
       text-shadow: none;
     }
 
+    .blue-voucher-field {
+      grid-column: 1 / -1;
+    }
+
+    .expense-form .blue-voucher-field {
+      display: block;
+    }
+
+    .expense-form .blue-voucher-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid var(--glass-line);
+      border-radius: 7px;
+      background: rgba(37, 99, 235, 0.08);
+      color: var(--glass-heading);
+      cursor: pointer;
+    }
+
+    .expense-form .blue-voucher-option input {
+      width: 20px;
+      height: 20px;
+      min-height: 20px;
+      margin: 0;
+      accent-color: #168cff;
+      flex: 0 0 auto;
+    }
+
+    .blue-voucher-option span {
+      font-weight: 850;
+    }
+
+    .expense-form .field.is-disabled {
+      display: none !important;
+    }
+
+    .file-grid.is-blue-voucher {
+      grid-template-columns: 1fr;
+    }
+
+    .voucher-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 6px 10px;
+      border: 1px solid #168cff;
+      border-radius: 6px;
+      background: rgba(22, 140, 255, 0.12);
+      color: #168cff;
+      font-size: 0.76rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
     input,
     select,
     .file-picker,
@@ -4320,9 +4377,15 @@
             </div>
           </div>
 
-          <div class="file-grid">
+          <div class="file-grid" id="fileGrid">
+            <div class="field blue-voucher-field">
+              <label class="blue-voucher-option" for="blueVoucherInput">
+                <input id="blueVoucherInput" type="checkbox">
+                <span>Comprobar con vale azul</span>
+              </label>
+            </div>
             <div class="field">
-              <label for="ticketInput">Fotos del ticket opcionales</label>
+              <label id="ticketInputLabel" for="ticketInput">Fotos del ticket opcionales</label>
               <input class="visually-hidden" id="ticketInput" type="file" accept="image/*" capture="environment" multiple>
               <label class="file-picker" for="ticketInput">
                 <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -4332,7 +4395,7 @@
               </label>
             </div>
 
-            <div class="field">
+            <div class="field" id="invoiceField">
               <label for="invoiceInput">Factura PDF opcional</label>
               <input class="visually-hidden" id="invoiceInput" type="file" accept="application/pdf,.pdf">
               <label class="file-picker" for="invoiceInput">
@@ -4555,9 +4618,13 @@
       expenseNameInput: document.querySelector("#expenseNameInput"),
       amountInput: document.querySelector("#amountInput"),
       dateInput: document.querySelector("#dateInput"),
+      blueVoucherInput: document.querySelector("#blueVoucherInput"),
+      fileGrid: document.querySelector("#fileGrid"),
       ticketInput: document.querySelector("#ticketInput"),
+      ticketInputLabel: document.querySelector("#ticketInputLabel"),
       ticketFileName: document.querySelector("#ticketFileName"),
       invoiceInput: document.querySelector("#invoiceInput"),
+      invoiceField: document.querySelector("#invoiceField"),
       invoiceFileName: document.querySelector("#invoiceFileName"),
       attachmentPreview: document.querySelector("#attachmentPreview"),
       ticketPreviewSection: document.querySelector("#ticketPreviewSection"),
@@ -5329,7 +5396,7 @@
       try {
         const activeProject = getActiveProject();
         const invoiceFieldsById = new Map();
-        const expensesWithInvoices = state.expenses.filter((expense) => getInvoiceData(expense));
+        const expensesWithInvoices = state.expenses.filter((expense) => !expense.valeAzul && getInvoiceData(expense));
         let unreadableInvoices = 0;
         for (let index = 0; index < expensesWithInvoices.length; index += 1) {
           const expense = expensesWithInvoices[index];
@@ -5429,7 +5496,7 @@
             const fiscal = getFiscalData(expense);
             worksheet.getCell(row, 3).value = fiscal.origin || null;
             worksheet.getCell(row, 4).value = expense.fecha ? new Date(`${expense.fecha}T00:00:00Z`) : null;
-            worksheet.getCell(row, 5).value = fiscal.document ? String(fiscal.document).toUpperCase() : null;
+            worksheet.getCell(row, 5).value = expense.valeAzul ? "VALE" : fiscal.document ? String(fiscal.document).toUpperCase() : null;
             worksheet.getCell(row, 6).value = fiscal.name;
             worksheet.getCell(row, 7).value = getExcelConcept(expense);
             worksheet.getCell(row, 8).value = null;
@@ -5548,7 +5615,7 @@
       const tickets = selectedTickets.length > 0 ? selectedTickets : getTicketList(expense);
 
       const selectedInvoice = elements.invoiceInput.files[0];
-      const invoice = selectedInvoice
+      const invoice = elements.blueVoucherInput.checked ? null : selectedInvoice
         ? {
           dataUrl: URL.createObjectURL(selectedInvoice),
           name: selectedInvoice.name,
@@ -5736,13 +5803,26 @@
       return `<svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="${state.editingId ? "M20 6 9 17l-5-5" : "M12 5v14M5 12h14"}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg> ${label}`;
     }
 
+    function syncBlueVoucherFields(expense = null) {
+      const isBlueVoucher = elements.blueVoucherInput.checked;
+      elements.ticketInputLabel.textContent = isBlueVoucher ? "Fotos del ticket requeridas" : "Fotos del ticket opcionales";
+      elements.fileGrid.classList.toggle("is-blue-voucher", isBlueVoucher);
+      elements.invoiceField.classList.toggle("is-disabled", isBlueVoucher);
+      elements.invoiceInput.disabled = isBlueVoucher;
+      if (isBlueVoucher) {
+        elements.invoiceInput.value = "";
+        elements.invoiceFileName.textContent = "Seleccionar PDF";
+      }
+      renderAttachmentPreviews(expense);
+    }
+
     function resetExpenseForm() {
       state.editingId = null;
       elements.expenseForm.reset();
       elements.dateInput.valueAsDate = new Date();
       elements.ticketFileName.textContent = "Seleccionar fotos";
       elements.invoiceFileName.textContent = "Seleccionar PDF";
-      renderAttachmentPreviews();
+      syncBlueVoucherFields();
       elements.expenseFormTitle.textContent = "Nuevo gasto";
       elements.cancelEditBtn.classList.remove("show");
       elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
@@ -5758,9 +5838,10 @@
       elements.expenseNameInput.value = conceptParts.name || "";
       elements.amountInput.value = parseMoney(expense.monto) || "";
       elements.dateInput.value = expense.fecha || "";
+      elements.blueVoucherInput.checked = Boolean(expense.valeAzul);
       elements.ticketFileName.textContent = getTicketList(expense).length ? "Conservar tickets" : "Seleccionar fotos";
       elements.invoiceFileName.textContent = expense.invoiceUrl ? "Conservar factura" : "Seleccionar PDF";
-      renderAttachmentPreviews(expense);
+      syncBlueVoucherFields(expense);
       elements.expenseFormTitle.textContent = "Editar gasto";
       elements.cancelEditBtn.classList.add("show");
       elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
@@ -5927,6 +6008,13 @@
     }
 
     function renderInvoiceCell(cell, expense) {
+      if (expense.valeAzul) {
+        const badge = document.createElement("span");
+        badge.className = "voucher-badge";
+        badge.textContent = "Vale azul";
+        cell.appendChild(badge);
+        return;
+      }
       const invoice = getInvoiceData(expense);
       if (!invoice) {
         cell.className = "muted-cell";
@@ -6188,6 +6276,7 @@
       const nombreGasto = elements.expenseNameInput.value.trim().toUpperCase();
       const monto = parseMoney(elements.amountInput.value);
       const fecha = elements.dateInput.value;
+      const valeAzul = elements.blueVoucherInput.checked;
       const ticketFiles = Array.from(elements.ticketInput.files || []);
       const invoiceFile = elements.invoiceInput.files[0];
       const existingExpense = state.editingId
@@ -6196,6 +6285,11 @@
 
       if (!concepto || monto <= 0 || !fecha) {
         setMessage("error", "Completa concepto, monto y fecha.");
+        return;
+      }
+
+      if (valeAzul && !ticketFiles.length && !getTicketList(existingExpense).length) {
+        setMessage("error", "Para comprobar con vale azul debes adjuntar al menos una foto del ticket.");
         return;
       }
 
@@ -6218,6 +6312,7 @@
           conceptoCompleto: `${concepto} ${nombreGasto}`.trim(),
           monto,
           fecha,
+          valeAzul,
           updatedAt: Date.now()
         };
 
@@ -6241,6 +6336,13 @@
           payload.invoiceName = invoiceData.name;
           payload.invoiceType = invoiceData.type;
           payload.invoiceSize = invoiceData.size;
+        }
+
+        if (valeAzul) {
+          payload.invoiceUrl = null;
+          payload.invoiceName = null;
+          payload.invoiceType = null;
+          payload.invoiceSize = null;
         }
 
         if (state.editingId) {
@@ -6629,6 +6731,10 @@
           ? "Conservar tickets"
           : "Seleccionar fotos";
       renderAttachmentPreviews(editingExpense);
+    });
+    elements.blueVoucherInput.addEventListener("change", () => {
+      const editingExpense = state.expenses.find((item) => item.id === state.editingId);
+      syncBlueVoucherFields(editingExpense);
     });
     elements.invoiceInput.addEventListener("change", () => {
       const file = elements.invoiceInput.files[0];
