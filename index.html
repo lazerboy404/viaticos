@@ -886,6 +886,53 @@
       grid-column: 6 / 7;
     }
 
+    .fiscal-details {
+      grid-column: 1 / -1;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--surface) 72%, transparent);
+    }
+
+    .fiscal-details summary {
+      padding: 12px 14px;
+      color: var(--glass-heading);
+      font-size: 0.82rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .fiscal-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      padding: 0 14px 14px;
+    }
+
+    .fiscal-grid .note-field {
+      grid-column: span 2;
+    }
+
+    .invoice-read-status {
+      grid-column: 1 / -1;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    @media (max-width: 980px) {
+      .fiscal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      .fiscal-grid,
+      .fiscal-grid .note-field {
+        grid-template-columns: 1fr;
+        grid-column: auto;
+      }
+    }
+
     .expense-form > .field:first-child {
       grid-column: 1 / 2;
     }
@@ -2835,8 +2882,14 @@
 
     .project-title-block strong {
       color: var(--glass-heading);
-      font-size: clamp(1.25rem, 2.1vw, 2rem);
-      line-height: 1.08;
+      display: block;
+      min-height: 1.55rem;
+      max-width: min(760px, 52vw);
+      overflow: hidden;
+      font-size: 1.25rem;
+      line-height: 1.25;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       text-shadow: none;
     }
 
@@ -3035,7 +3088,8 @@
 
     @media (max-width: 700px) {
       .project-title-block strong {
-        font-size: 1.18rem;
+        max-width: 100%;
+        font-size: 1.08rem;
       }
 
       .form-actions .button,
@@ -4292,8 +4346,8 @@
           </div>
 
           <div class="field expense-name-field">
-            <label for="expenseNameInput">Nombre / lugar</label>
-            <input id="expenseNameInput" type="text" placeholder="Ej. VIPS, PORTON, OXXO" maxlength="90">
+              <label for="expenseNameInput">Nombre / proveedor</label>
+              <input id="expenseNameInput" type="text" placeholder="Restaurante, hotel o conductor" maxlength="90">
           </div>
 
           <div class="form-row">
@@ -4306,6 +4360,37 @@
               <input id="dateInput" type="date" required>
             </div>
           </div>
+
+          <details class="fiscal-details" id="fiscalDetails">
+            <summary>Datos para comprobaci&oacute;n Excel</summary>
+            <div class="fiscal-grid">
+              <div class="field">
+                <label for="originInput">Origen / Edo.</label>
+                <input id="originInput" type="text" placeholder="Ej. QRO o CDMX" maxlength="40">
+              </div>
+              <div class="field">
+                <label for="documentInput">Docto. / Folio</label>
+                <input id="documentInput" type="text" placeholder="Serie o folio" maxlength="80">
+              </div>
+              <div class="field note-field">
+                <label for="expenseNoteInput">Nota / comentario</label>
+                <input id="expenseNoteInput" type="text" placeholder="Opcional" maxlength="160">
+              </div>
+              <div class="field">
+                <label for="subtotalInput">Subtotal</label>
+                <input id="subtotalInput" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
+              </div>
+              <div class="field">
+                <label for="tipInput">Propina</label>
+                <input id="tipInput" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
+              </div>
+              <div class="field">
+                <label for="taxInput">IVA</label>
+                <input id="taxInput" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal">
+              </div>
+              <p class="invoice-read-status" id="invoiceReadStatus">Al seleccionar una factura PDF intentaremos leer folio e importes. Verifica los datos antes de exportar.</p>
+            </div>
+          </details>
 
           <div class="file-grid">
             <div class="field">
@@ -4400,6 +4485,7 @@
             <div class="project-tools-actions">
               <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
               <button class="button secondary" id="exportBackupBtn" type="button">Exportar respaldo</button>
+              <button class="button secondary" id="exportExcelBtn" type="button">Exportar Excel</button>
               <button class="button secondary" id="importBackupBtn" type="button">Importar respaldo</button>
               <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
             </div>
@@ -4437,6 +4523,7 @@
     <div class="dialog-body" id="mediaDialogBody"></div>
   </dialog>
 
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script type="module">
     // 1) Pega aquí tus credenciales del proyecto Firebase.
     const firebaseConfig = {
@@ -4540,6 +4627,14 @@
       expenseNameInput: document.querySelector("#expenseNameInput"),
       amountInput: document.querySelector("#amountInput"),
       dateInput: document.querySelector("#dateInput"),
+      fiscalDetails: document.querySelector("#fiscalDetails"),
+      originInput: document.querySelector("#originInput"),
+      documentInput: document.querySelector("#documentInput"),
+      expenseNoteInput: document.querySelector("#expenseNoteInput"),
+      subtotalInput: document.querySelector("#subtotalInput"),
+      tipInput: document.querySelector("#tipInput"),
+      taxInput: document.querySelector("#taxInput"),
+      invoiceReadStatus: document.querySelector("#invoiceReadStatus"),
       ticketInput: document.querySelector("#ticketInput"),
       ticketFileName: document.querySelector("#ticketFileName"),
       invoiceInput: document.querySelector("#invoiceInput"),
@@ -4559,6 +4654,7 @@
       limitAlerts: document.querySelector("#limitAlerts"),
       downloadReceiptsBtn: document.querySelector("#downloadReceiptsBtn"),
       exportBackupBtn: document.querySelector("#exportBackupBtn"),
+      exportExcelBtn: document.querySelector("#exportExcelBtn"),
       importBackupBtn: document.querySelector("#importBackupBtn"),
       backupFileInput: document.querySelector("#backupFileInput"),
       categoryReport: document.querySelector("#categoryReport"),
@@ -4635,6 +4731,7 @@
       elements.saveLimitsBtn.disabled = !isReady;
       elements.downloadReceiptsBtn.disabled = !isReady;
       elements.exportBackupBtn.disabled = !isReady;
+      elements.exportExcelBtn.disabled = !isReady;
       elements.importBackupBtn.disabled = !isReady;
     }
 
@@ -4692,7 +4789,17 @@
       return [
         ...(shouldShowLegacy ? [getLegacyProject()] : []),
         ...state.projects
-      ];
+      ].sort(compareProjectsByPeriod);
+    }
+
+    function compareProjectsByPeriod(a, b) {
+      const startA = String(a.periodStart || "9999-12-31");
+      const startB = String(b.periodStart || "9999-12-31");
+      const startComparison = startA.localeCompare(startB);
+      if (startComparison) return startComparison;
+      const endComparison = String(a.periodEnd || "9999-12-31").localeCompare(String(b.periodEnd || "9999-12-31"));
+      if (endComparison) return endComparison;
+      return String(a.name || "").localeCompare(String(b.name || ""), "es", { sensitivity: "base" });
     }
 
     function getActiveProject() {
@@ -4743,7 +4850,7 @@
       options.forEach((project) => {
         const option = document.createElement("option");
         option.value = project.id;
-        option.textContent = project.isLegacy ? `${project.name} (sin proyecto)` : project.name;
+        option.textContent = project.name || "Proyecto sin nombre";
         elements.projectSelect.appendChild(option);
       });
 
@@ -5194,6 +5301,196 @@
       setMessage("success", "Respaldo completo exportado correctamente.");
     }
 
+    function getExcelExpenseGroup(expense) {
+      const combined = getExpenseConceptParts(expense).combined.toLowerCase();
+      if (["hospedaje", "hotel", "hostal", "airbnb"].some((key) => combined.includes(key))) return "lodging";
+      if (getDailyLimitCategory(expense) === "transport") return "transport";
+      return "consumption";
+    }
+
+    function getExcelConcept(expense) {
+      const parts = getExpenseConceptParts(expense);
+      const group = getExcelExpenseGroup(expense);
+      if (group === "transport") return parts.concept || "TRANSPORTE";
+      if (group === "lodging") return "HOSPEDAJE";
+      return "CONSUMO DE ALIMENTOS";
+    }
+
+    function styleExcelWorksheet(worksheet, sections, overallTotalRow) {
+      const whiteFill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFFFF" } };
+      const darkFill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF303A46" } };
+      const line = { style: "thin", color: { argb: "FF64748B" } };
+      const lastRow = Math.max(overallTotalRow + 5, worksheet.rowCount);
+
+      for (let row = 1; row <= lastRow; row += 1) {
+        for (let column = 1; column <= 12; column += 1) {
+          const cell = worksheet.getCell(row, column);
+          cell.fill = whiteFill;
+          cell.font = { name: "Arial", size: 10, color: { argb: "FF111827" } };
+        }
+      }
+
+      for (let column = 3; column <= 12; column += 1) {
+        const titleCell = worksheet.getCell(6, column);
+        titleCell.fill = darkFill;
+        titleCell.font = { name: "Arial", size: 14, bold: true, color: { argb: "FFFFFFFF" } };
+        const headerCell = worksheet.getCell(17, column);
+        headerCell.fill = darkFill;
+        headerCell.font = { name: "Arial", size: 9, bold: true, color: { argb: "FFFFFFFF" } };
+        headerCell.alignment = { horizontal: "center", vertical: "middle" };
+        headerCell.border = { top: line, bottom: line, left: line, right: line };
+      }
+
+      [9, 10, 11, 12, 13, 15].forEach((row) => {
+        worksheet.getCell(row, 3).font = { name: "Arial", size: 10, bold: true, color: { argb: row === 13 ? "FFDC2626" : "FF111827" } };
+      });
+      worksheet.getCell("D12").alignment = { horizontal: "left" };
+      worksheet.getCell("D13").font = { name: "Arial", size: 10, bold: true, color: { argb: "FFDC2626" } };
+      worksheet.getCell("D15").font = { name: "Arial", size: 10, bold: true, color: { argb: "FF111827" } };
+      worksheet.getCell("D13").alignment = { horizontal: "left", shrinkToFit: true };
+      worksheet.getCell("D15").alignment = { horizontal: "left", shrinkToFit: true };
+      worksheet.getCell("H13").font = { name: "Arial", size: 10, bold: true, color: { argb: "FF111827" } };
+
+      sections.forEach((section) => {
+        const headingRow = section.start - 1;
+        worksheet.getCell(headingRow, 6).font = { name: "Arial", size: 10, bold: true, color: { argb: "FF111827" } };
+        worksheet.getCell(headingRow, 6).alignment = { horizontal: "center" };
+        for (let row = section.start; row < section.total - 1; row += 1) {
+          for (let column = 3; column <= 12; column += 1) {
+            const cell = worksheet.getCell(row, column);
+            cell.border = { top: line, bottom: line, left: line, right: line };
+            cell.alignment = { vertical: "middle", horizontal: column >= 9 ? "right" : "center" };
+          }
+        }
+        for (let column = 8; column <= 12; column += 1) {
+          const cell = worksheet.getCell(section.total, column);
+          cell.fill = darkFill;
+          cell.font = { name: "Arial", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
+          cell.border = { top: line, bottom: line, left: line, right: line };
+        }
+      });
+
+      for (let column = 7; column <= 12; column += 1) {
+        const cell = worksheet.getCell(overallTotalRow, column);
+        cell.fill = darkFill;
+        cell.font = { name: "Arial", size: 10, bold: true, color: { argb: "FFFFFFFF" } };
+        cell.border = { top: line, bottom: line, left: line, right: line };
+      }
+    }
+
+    async function exportProjectExcel() {
+      if (!window.ExcelJS) {
+        setMessage("error", "No se pudo cargar el generador de Excel. Revisa tu conexion e intenta nuevamente.");
+        return;
+      }
+      if (!state.expenses.length) {
+        setMessage("error", "Este proyecto no tiene gastos para exportar.");
+        return;
+      }
+
+      elements.exportExcelBtn.disabled = true;
+      elements.exportExcelBtn.textContent = "Generando Excel...";
+      clearMessage();
+      try {
+        const templateUrl = new URL("Comprobacion%20-%20Viaticos.xlsx", window.location.href);
+        const response = await fetch(templateUrl);
+        if (!response.ok) throw new Error("excel-template-not-found");
+        const workbook = new window.ExcelJS.Workbook();
+        await workbook.xlsx.load(await response.arrayBuffer());
+        workbook.calcProperties.fullCalcOnLoad = true;
+        const worksheet = workbook.getWorksheet("Comprobacion") || workbook.worksheets[0];
+        const groups = {
+          transport: state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "transport"),
+          lodging: state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "lodging"),
+          consumption: state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "consumption")
+        };
+
+        const extraTransport = Math.max(groups.transport.length - 5, 0);
+        if (extraTransport) worksheet.duplicateRow(25, extraTransport, true);
+        const lodgingStart = 31 + extraTransport;
+        const extraLodging = Math.max(groups.lodging.length - 5, 0);
+        if (extraLodging) worksheet.duplicateRow(lodgingStart + 4, extraLodging, true);
+        const consumptionStart = 41 + extraTransport + extraLodging;
+        const extraConsumption = Math.max(groups.consumption.length - 5, 0);
+        if (extraConsumption) worksheet.duplicateRow(consumptionStart + 4, extraConsumption, true);
+
+        const sections = [
+          { items: groups.transport, start: 21, total: 27 + extraTransport },
+          { items: groups.lodging, start: lodgingStart, total: 37 + extraTransport + extraLodging },
+          { items: groups.consumption, start: consumptionStart, total: 47 + extraTransport + extraLodging + extraConsumption }
+        ];
+
+        const activeProject = getActiveProject();
+        const periodText = activeProject.periodStart || activeProject.periodEnd
+          ? `${activeProject.periodStart ? formatDate(activeProject.periodStart) : ""}${activeProject.periodStart && activeProject.periodEnd ? " al " : ""}${activeProject.periodEnd ? formatDate(activeProject.periodEnd) : ""}`
+          : "Periodo sin definir";
+        const reportDate = new Date();
+        worksheet.getCell("D12").value = new Date(Date.UTC(reportDate.getFullYear(), reportDate.getMonth(), reportDate.getDate()));
+        worksheet.getCell("D12").numFmt = "dd/mm/yyyy";
+        worksheet.getCell("D13").value = periodText;
+        worksheet.getCell("H13").value = state.budget;
+        worksheet.getCell("D15").value = activeProject.name || "Proyecto sin nombre";
+
+        sections.forEach((section) => {
+          section.items.forEach((expense, index) => {
+            const row = section.start + index;
+            const parts = getExpenseConceptParts(expense);
+            const total = parseMoney(expense.monto);
+            const tip = parseMoney(expense.propina);
+            const tax = parseMoney(expense.iva);
+            const subtotal = parseMoney(expense.subtotal) || Math.max(total - tip - tax, 0);
+            worksheet.getCell(row, 3).value = expense.origenEstado ? String(expense.origenEstado).toUpperCase() : null;
+            worksheet.getCell(row, 4).value = expense.fecha ? new Date(`${expense.fecha}T00:00:00Z`) : null;
+            worksheet.getCell(row, 5).value = expense.documentoFactura ? String(expense.documentoFactura).toUpperCase() : null;
+            worksheet.getCell(row, 6).value = parts.name || parts.concept;
+            worksheet.getCell(row, 7).value = getExcelConcept(expense);
+            worksheet.getCell(row, 8).value = expense.notaComentario || null;
+            worksheet.getCell(row, 9).value = subtotal;
+            worksheet.getCell(row, 10).value = tip;
+            worksheet.getCell(row, 11).value = tax;
+            worksheet.getCell(row, 12).value = total;
+            worksheet.getCell(row, 4).numFmt = "dd/mm/yyyy";
+            for (let column = 9; column <= 12; column += 1) worksheet.getCell(row, column).numFmt = "$#,##0.00";
+          });
+          const lastDataRow = Math.max(section.start + section.items.length - 1, section.start);
+          for (let column = 9; column <= 12; column += 1) {
+            const letter = String.fromCharCode(64 + column);
+            const result = section.items.reduce((total, expense) => {
+              if (column === 9) return total + (parseMoney(expense.subtotal) || Math.max(parseMoney(expense.monto) - parseMoney(expense.propina) - parseMoney(expense.iva), 0));
+              if (column === 10) return total + parseMoney(expense.propina);
+              if (column === 11) return total + parseMoney(expense.iva);
+              return total + parseMoney(expense.monto);
+            }, 0);
+            worksheet.getCell(section.total, column).value = { formula: `SUM(${letter}${section.start}:${letter}${lastDataRow})`, result };
+            worksheet.getCell(section.total, column).numFmt = "$#,##0.00";
+          }
+        });
+
+        const overallTotalRow = 53 + extraTransport + extraLodging + extraConsumption;
+        for (let column = 9; column <= 12; column += 1) {
+          const letter = String.fromCharCode(64 + column);
+          const result = sections.reduce((total, section) => total + parseMoney(worksheet.getCell(section.total, column).value?.result), 0);
+          worksheet.getCell(overallTotalRow, column).value = { formula: sections.map((section) => `${letter}${section.total}`).join("+"), result };
+          worksheet.getCell(overallTotalRow, column).numFmt = "$#,##0.00";
+        }
+
+        styleExcelWorksheet(worksheet, sections, overallTotalRow);
+
+        const output = await workbook.xlsx.writeBuffer();
+        downloadBlob(
+          new Blob([output], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
+          `comprobacion-${slugifyFilePart(activeProject.name)}.xlsx`
+        );
+        setMessage("success", "Excel generado con los gastos del proyecto seleccionado.");
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudo generar el Excel. Verifica que la plantilla este publicada junto a la pagina.");
+      } finally {
+        elements.exportExcelBtn.disabled = false;
+        elements.exportExcelBtn.textContent = "Exportar Excel";
+      }
+    }
+
     async function importBackup(file) {
       if (!file || !state.db) return;
       if (file.size > 50 * 1024 * 1024) {
@@ -5446,6 +5743,8 @@
       elements.dateInput.valueAsDate = new Date();
       elements.ticketFileName.textContent = "Seleccionar fotos";
       elements.invoiceFileName.textContent = "Seleccionar PDF";
+      elements.invoiceReadStatus.textContent = "Al seleccionar una factura PDF intentaremos leer folio e importes. Verifica los datos antes de exportar.";
+      elements.fiscalDetails.open = false;
       renderAttachmentPreviews();
       elements.expenseFormTitle.textContent = "Nuevo gasto";
       elements.cancelEditBtn.classList.remove("show");
@@ -5462,6 +5761,13 @@
       elements.expenseNameInput.value = conceptParts.name || "";
       elements.amountInput.value = parseMoney(expense.monto) || "";
       elements.dateInput.value = expense.fecha || "";
+      elements.originInput.value = expense.origenEstado || "";
+      elements.documentInput.value = expense.documentoFactura || "";
+      elements.expenseNoteInput.value = expense.notaComentario || "";
+      elements.subtotalInput.value = parseMoney(expense.subtotal) || "";
+      elements.tipInput.value = parseMoney(expense.propina) || "";
+      elements.taxInput.value = parseMoney(expense.iva) || "";
+      elements.fiscalDetails.open = Boolean(expense.origenEstado || expense.documentoFactura || expense.subtotal || expense.propina || expense.iva);
       elements.ticketFileName.textContent = getTicketList(expense).length ? "Conservar tickets" : "Seleccionar fotos";
       elements.invoiceFileName.textContent = expense.invoiceUrl ? "Conservar factura" : "Seleccionar PDF";
       renderAttachmentPreviews(expense);
@@ -5892,6 +6198,12 @@
       const nombreGasto = elements.expenseNameInput.value.trim().toUpperCase();
       const monto = parseMoney(elements.amountInput.value);
       const fecha = elements.dateInput.value;
+      const origenEstado = elements.originInput.value.trim().toUpperCase();
+      const documentoFactura = elements.documentInput.value.trim().toUpperCase();
+      const notaComentario = elements.expenseNoteInput.value.trim();
+      const subtotal = parseMoney(elements.subtotalInput.value);
+      const propina = parseMoney(elements.tipInput.value);
+      const iva = parseMoney(elements.taxInput.value);
       const ticketFiles = Array.from(elements.ticketInput.files || []);
       const invoiceFile = elements.invoiceInput.files[0];
       const existingExpense = state.editingId
@@ -5922,6 +6234,12 @@
           conceptoCompleto: `${concepto} ${nombreGasto}`.trim(),
           monto,
           fecha,
+          origenEstado,
+          documentoFactura,
+          notaComentario,
+          subtotal,
+          propina,
+          iva,
           updatedAt: Date.now()
         };
 
@@ -5996,6 +6314,64 @@
         reader.onerror = () => reject(reader.error);
         reader.readAsDataURL(file);
       });
+    }
+
+    function parseInvoiceMoney(value) {
+      if (!value) return 0;
+      return parseMoney(String(value).replace(/[$,\s]/g, ""));
+    }
+
+    function findInvoiceMoney(text, labelPattern) {
+      const expression = new RegExp(`${labelPattern}[^\\d$]{0,24}\\$?\\s*([\\d,]+(?:\\.\\d{2})?)`, "ig");
+      const matches = [...text.matchAll(expression)];
+      return matches.length ? parseInvoiceMoney(matches[matches.length - 1][1]) : 0;
+    }
+
+    async function extractInvoiceDataFromPdf(file) {
+      elements.invoiceReadStatus.textContent = "Leyendo datos de la factura...";
+      elements.fiscalDetails.open = true;
+      try {
+        const pdfjs = await import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
+        pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+        const documentTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
+        const pdf = await documentTask.promise;
+        const pageTexts = [];
+        for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+          const page = await pdf.getPage(pageNumber);
+          const content = await page.getTextContent();
+          pageTexts.push(content.items.map((item) => item.str).join(" "));
+        }
+        const text = pageTexts.join("\n").replace(/\s+/g, " ");
+        const folioPatterns = [
+          /(?:SERIE\s*(?:Y\s*)?FOLIO|FOLIO|NO\.?\s*FACTURA|FACTURA)\s*[:#-]?\s*([A-Z0-9-]{3,})/i,
+          /(?:UUID|FOLIO\s+FISCAL)\s*[:#-]?\s*([A-F0-9-]{20,})/i
+        ];
+        const folio = folioPatterns.map((pattern) => text.match(pattern)?.[1] || "").find(Boolean) || "";
+        const issuerPatterns = [
+          /(?:SOCIO\s+CONDUCTOR|CONDUCTOR|PRESTADOR\s+DEL\s+SERVICIO)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'-]{3,70}?)(?=\s+(?:RFC|R\.F\.C\.|DOMICILIO|FECHA|$))/i,
+          /(?:RAZ[ÓO]N\s+SOCIAL|EMISOR|NOMBRE)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'-]{3,70}?)(?=\s+(?:RFC|R\.F\.C\.|R[ÉE]GIMEN|DOMICILIO|C\.?P\.?|$))/i
+        ];
+        const issuerName = issuerPatterns.map((pattern) => text.match(pattern)?.[1]?.trim() || "").find(Boolean) || "";
+        const subtotal = findInvoiceMoney(text, "SUBTOTAL");
+        const propina = findInvoiceMoney(text, "PROPINA|SERVICIO");
+        const iva = findInvoiceMoney(text, "(?:I\\.?V\\.?A\\.?|IVA)(?:\\s+16%|\\s+TRASLADADO)?");
+        const total = findInvoiceMoney(text, "(?:TOTAL(?:\\s+A\\s+PAGAR)?|IMPORTE\\s+TOTAL)");
+
+        if (folio && !elements.documentInput.value) elements.documentInput.value = folio.toUpperCase();
+        if (issuerName && !elements.expenseNameInput.value) elements.expenseNameInput.value = issuerName.toUpperCase();
+        if (subtotal && !elements.subtotalInput.value) elements.subtotalInput.value = subtotal.toFixed(2);
+        if (propina && !elements.tipInput.value) elements.tipInput.value = propina.toFixed(2);
+        if (iva && !elements.taxInput.value) elements.taxInput.value = iva.toFixed(2);
+        if (total && !elements.amountInput.value) elements.amountInput.value = total.toFixed(2);
+
+        const found = [folio, issuerName, subtotal, propina, iva, total].filter(Boolean).length;
+        elements.invoiceReadStatus.textContent = found
+          ? `Se detectaron ${found} datos. Verifica origen, fecha de consumo, nombre e importes antes de guardar.`
+          : "El PDF no contiene texto reconocible. Captura manualmente los datos de comprobacion.";
+      } catch (error) {
+        console.error(error);
+        elements.invoiceReadStatus.textContent = "No se pudo leer automaticamente el PDF. Puedes capturar los datos manualmente.";
+      }
     }
 
     function compressTicketImage(file) {
@@ -6126,7 +6502,7 @@
         const data = snapshot.exists() ? snapshot.val() : {};
         state.projects = Object.entries(data)
           .map(([id, project]) => ({ id, ...project }))
-          .sort((a, b) => String(b.updatedAt || b.createdAt || 0).localeCompare(String(a.updatedAt || a.createdAt || 0)));
+          .sort(compareProjectsByPeriod);
         rerenderActiveProject();
       }, (error) => {
         console.error(error);
@@ -6185,6 +6561,7 @@
     elements.saveBudgetBtn.addEventListener("click", saveBudget);
     elements.downloadReceiptsBtn.addEventListener("click", downloadAllReceipts);
     elements.exportBackupBtn.addEventListener("click", exportBackup);
+    elements.exportExcelBtn.addEventListener("click", exportProjectExcel);
     elements.importBackupBtn.addEventListener("click", () => elements.backupFileInput.click());
     elements.backupFileInput.addEventListener("change", () => importBackup(elements.backupFileInput.files[0]));
     elements.saveLimitsBtn.addEventListener("click", saveDailyLimits);
@@ -6219,6 +6596,7 @@
           ? "Conservar factura"
           : "Seleccionar PDF";
       renderAttachmentPreviews(editingExpense);
+      if (file) extractInvoiceDataFromPdf(file);
     });
     elements.closeMediaDialog.addEventListener("click", () => {
       elements.mediaDialog.close();
