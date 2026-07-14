@@ -4377,6 +4377,78 @@
       min-width: 190px;
     }
 
+    .file-picker {
+      justify-content: center;
+      justify-items: center;
+      text-align: center;
+    }
+
+    #ticketPreviewSection {
+      grid-column: 1 / 2;
+    }
+
+    #invoicePreviewSection {
+      grid-column: 2 / 3;
+    }
+
+    .form-panel .panel-heading {
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--glass-line);
+    }
+
+    @media (min-width: 981px) {
+      .form-panel > .expense-form {
+        grid-template-columns: minmax(180px, 1fr) minmax(240px, 1.25fr) minmax(130px, 0.65fr) minmax(160px, 0.75fr);
+        gap: 16px;
+        align-items: start;
+      }
+
+      .form-panel > .expense-form > .field:first-child,
+      .form-panel > .expense-form > .expense-name-field {
+        grid-column: auto;
+      }
+
+      .form-panel > .expense-form > .form-row {
+        display: contents;
+      }
+
+      .form-panel > .expense-form > .file-grid,
+      .form-panel > .expense-form > .attachment-preview,
+      .form-panel > .expense-form > .form-actions,
+      .form-panel > .expense-form > .message {
+        grid-column: 1 / -1;
+      }
+
+      .form-panel > .expense-form > .file-grid {
+        grid-template-columns: minmax(220px, 0.72fr) repeat(2, minmax(260px, 1fr));
+        align-items: end;
+        padding-top: 4px;
+        border-top: 1px solid color-mix(in srgb, var(--glass-line) 74%, transparent);
+      }
+
+      .form-panel > .expense-form .blue-voucher-field {
+        grid-column: auto;
+      }
+
+      .form-panel > .expense-form > .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+
+      .form-panel > .expense-form > .form-actions .button {
+        width: auto;
+        min-width: 190px;
+      }
+
+      .form-panel > .expense-form .blue-voucher-option {
+        width: 100%;
+        min-width: 0;
+        min-height: 58px;
+        justify-content: center;
+      }
+    }
+
     .edit-dialog-body #cancelEditBtn {
       order: 1;
     }
@@ -4464,6 +4536,15 @@
       .edit-dialog-body .form-actions .button {
         width: 100%;
         min-width: 0;
+      }
+
+      #ticketPreviewSection,
+      #invoicePreviewSection {
+        grid-column: 1 / -1;
+      }
+
+      .form-panel .blue-voucher-option {
+        width: 100%;
       }
     }
   </style>
@@ -4780,7 +4861,7 @@
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
                   <path d="M14 2v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <span class="file-name" id="invoiceFileName">Seleccionar PDF</span>
+                <span class="file-name" id="invoiceFileName">Subir factura</span>
               </label>
             </div>
           </div>
@@ -6216,7 +6297,7 @@
       elements.invoiceInput.disabled = isBlueVoucher;
       if (isBlueVoucher) {
         elements.invoiceInput.value = "";
-        elements.invoiceFileName.textContent = "Seleccionar PDF";
+        elements.invoiceFileName.textContent = "Subir factura";
       }
       renderAttachmentPreviews(expense);
     }
@@ -6232,7 +6313,7 @@
       elements.expenseForm.reset();
       elements.dateInput.valueAsDate = new Date();
       elements.ticketFileName.textContent = "Seleccionar fotos";
-      elements.invoiceFileName.textContent = "Seleccionar PDF";
+      elements.invoiceFileName.textContent = "Subir factura";
       syncBlueVoucherFields();
       elements.expenseFormTitle.textContent = "Nuevo gasto";
       elements.cancelEditBtn.classList.remove("show");
@@ -6251,7 +6332,7 @@
       elements.dateInput.value = expense.fecha || "";
       elements.blueVoucherInput.checked = Boolean(expense.valeAzul);
       elements.ticketFileName.textContent = getTicketList(expense).length ? "Conservar tickets" : "Seleccionar fotos";
-      elements.invoiceFileName.textContent = expense.invoiceUrl ? "Conservar factura" : "Seleccionar PDF";
+      elements.invoiceFileName.textContent = "Subir factura";
       syncBlueVoucherFields(expense);
       elements.expenseFormTitle.textContent = "Editar gasto";
       elements.cancelEditBtn.classList.add("show");
@@ -7158,9 +7239,7 @@
       const editingExpense = state.expenses.find((item) => item.id === state.editingId);
       elements.invoiceFileName.textContent = file
         ? file.name
-        : editingExpense?.invoiceUrl
-          ? "Conservar factura"
-          : "Seleccionar PDF";
+        : "Subir factura";
       renderAttachmentPreviews(editingExpense);
     });
     elements.closeMediaDialog.addEventListener("click", () => {
