@@ -5259,7 +5259,7 @@
         worksheet.getCell(row, 3).font = { name: "Arial", size: 10, bold: true, color: { argb: row === 13 ? "FFDC2626" : "FF111827" } };
       });
       ["E9", "E10", "E11", "E12", "E13", "E15"].forEach((address) => {
-        worksheet.getCell(address).alignment = { horizontal: "left", vertical: "middle", shrinkToFit: true };
+        worksheet.getCell(address).alignment = { horizontal: "center", vertical: "middle", shrinkToFit: true };
       });
       worksheet.getCell("E13").font = { name: "Arial", size: 10, bold: true, color: { argb: "FFDC2626" } };
       worksheet.getCell("E15").font = { name: "Arial", size: 10, bold: true, color: { argb: "FF111827" } };
@@ -5349,14 +5349,18 @@
           consumption: state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "consumption")
         };
 
-        const extraTransport = Math.max(groups.transport.length - 5, 0);
-        if (extraTransport) worksheet.duplicateRow(25, extraTransport, true);
+        const fitExpenseRows = (start, itemCount) => {
+          const extraRows = Math.max(itemCount - 5, 0);
+          if (extraRows) worksheet.duplicateRow(start + 4, extraRows, true);
+          for (let index = itemCount; index < 5; index += 1) worksheet.getRow(start + index).hidden = true;
+          return extraRows;
+        };
+
+        const extraTransport = fitExpenseRows(21, groups.transport.length);
         const lodgingStart = 31 + extraTransport;
-        const extraLodging = Math.max(groups.lodging.length - 5, 0);
-        if (extraLodging) worksheet.duplicateRow(lodgingStart + 4, extraLodging, true);
+        const extraLodging = fitExpenseRows(lodgingStart, groups.lodging.length);
         const consumptionStart = 41 + extraTransport + extraLodging;
-        const extraConsumption = Math.max(groups.consumption.length - 5, 0);
-        if (extraConsumption) worksheet.duplicateRow(consumptionStart + 4, extraConsumption, true);
+        const extraConsumption = fitExpenseRows(consumptionStart, groups.consumption.length);
 
         const sections = [
           { items: groups.transport, start: 21, total: 27 + extraTransport },
