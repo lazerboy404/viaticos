@@ -4096,6 +4096,157 @@
         grid-template-columns: 1fr;
       }
     }
+    /* Liquid-glass refinement for the primary dashboard surfaces. */
+    .report-excel-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid rgba(40, 190, 105, 0.48);
+      border-radius: 999px;
+      background: linear-gradient(145deg, rgba(42, 196, 108, 0.22), rgba(19, 126, 70, 0.12));
+      color: var(--glass-heading);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 8px 22px rgba(15, 118, 65, 0.12);
+      font-size: 0.86rem;
+      font-weight: 900;
+      white-space: nowrap;
+      cursor: pointer;
+      backdrop-filter: blur(18px) saturate(150%);
+      -webkit-backdrop-filter: blur(18px) saturate(150%);
+    }
+
+    .report-excel-button .icon {
+      width: 19px;
+      height: 19px;
+      color: #21a65b;
+    }
+
+    .report-excel-button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      border-color: rgba(40, 190, 105, 0.75);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 12px 28px rgba(15, 118, 65, 0.18);
+    }
+
+    .report-excel-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
+    .topbar,
+    .project-panel,
+    .budget-panel,
+    .daily-limits-panel,
+    .summary-card,
+    .form-panel,
+    .history-panel,
+    .project-tools-panel,
+    .expense-report-panel {
+      border-color: color-mix(in srgb, var(--glass-line) 78%, rgba(255, 255, 255, 0.42));
+      border-radius: 20px;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.06)),
+        color-mix(in srgb, var(--glass-bg-strong) 88%, transparent);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 16px 42px rgba(19, 48, 73, 0.12);
+      backdrop-filter: blur(26px) saturate(145%);
+      -webkit-backdrop-filter: blur(26px) saturate(145%);
+    }
+
+    .dashboard-config-grid,
+    .summary-grid,
+    .workspace {
+      gap: 20px;
+    }
+
+    .project-panel,
+    .budget-limits-row,
+    .summary-grid,
+    .workspace {
+      margin-bottom: 20px;
+    }
+
+    .table-wrap,
+    .attachment-preview,
+    .report-group {
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    input,
+    select,
+    .file-picker,
+    .button:not(.icon-button) {
+      border-radius: 12px;
+    }
+
+    .invoice-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: max-content;
+      max-width: 100%;
+      padding: 5px 8px;
+      border: 1px solid rgba(34, 197, 94, 0.42);
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.1);
+      color: #159447;
+      font-size: 0.69rem;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .invoice-status::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.65);
+    }
+
+    .invoice-actions {
+      align-items: stretch;
+    }
+
+    @media (max-width: 900px) {
+      .topbar-actions {
+        width: 100%;
+        justify-content: stretch;
+      }
+
+      .topbar-actions > * {
+        flex: 1 1 auto;
+      }
+
+      .report-excel-button {
+        order: -1;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar,
+      .project-panel,
+      .budget-panel,
+      .daily-limits-panel,
+      .summary-card,
+      .form-panel,
+      .history-panel,
+      .project-tools-panel,
+      .expense-report-panel {
+        border-radius: 16px;
+      }
+
+      .topbar-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .report-excel-button {
+        grid-column: 1 / -1;
+      }
+    }
   </style>
 </head>
 <body>
@@ -4162,6 +4313,13 @@
             <span class="status-dot" aria-hidden="true"></span>
             <span id="firebaseStatusText">Configuraci&oacute;n pendiente</span>
           </div>
+          <button class="report-excel-button" id="exportExcelBtn" type="button">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M14 2v6h6M8 13l4 5M12 13l-4 5M15 13h2M15 17h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Reporte de vi&aacute;ticos</span>
+          </button>
           <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro">
             <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -4476,7 +4634,6 @@
             <div class="project-tools-actions">
               <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
               <button class="button secondary" id="exportBackupBtn" type="button">Exportar respaldo</button>
-              <button class="button secondary" id="exportExcelBtn" type="button">Exportar Excel</button>
               <button class="button secondary" id="importBackupBtn" type="button">Importar respaldo</button>
               <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
             </div>
@@ -5380,6 +5537,16 @@
       }
     }
 
+    function getExcelButtonContent() {
+      return `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M14 2v6h6M8 13l4 5M12 13l-4 5M15 13h2M15 17h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Reporte de vi&aacute;ticos</span>
+      `;
+    }
+
     async function exportProjectExcel() {
       if (!window.ExcelJS) {
         setMessage("error", "No se pudo cargar el generador de Excel. Revisa tu conexion e intenta nuevamente.");
@@ -5553,7 +5720,7 @@
         setMessage("error", "No se pudo generar el Excel. Verifica que la plantilla este publicada junto a la pagina.");
       } finally {
         elements.exportExcelBtn.disabled = false;
-        elements.exportExcelBtn.textContent = "Exportar Excel";
+        elements.exportExcelBtn.innerHTML = getExcelButtonContent();
       }
     }
 
@@ -6025,6 +6192,10 @@
       const wrapper = document.createElement("div");
       wrapper.className = "file-actions invoice-actions";
 
+      const status = document.createElement("span");
+      status.className = "invoice-status";
+      status.textContent = "Factura cargada";
+
       const viewButton = document.createElement("button");
       viewButton.className = "button secondary";
       viewButton.type = "button";
@@ -6051,7 +6222,7 @@
         Descargar
       `;
 
-      wrapper.append(viewButton, downloadLink);
+      wrapper.append(status, viewButton, downloadLink);
       cell.appendChild(wrapper);
     }
 
