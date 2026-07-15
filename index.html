@@ -3737,7 +3737,7 @@
       word-break: normal;
     }
 
-    @media (max-width: 760px) {
+    @media (max-width: 960px) {
       .daily-limits-panel,
       .daily-limit-fields {
         grid-template-columns: 1fr;
@@ -4615,10 +4615,6 @@
       padding: 10px 16px;
     }
 
-    .history-panel tbody tr.day-start td:first-child {
-      box-shadow: inset 4px 0 0 color-mix(in srgb, #22d3ee 75%, transparent);
-    }
-
     .history-panel .date-cell {
       color: var(--glass-muted);
       font-size: 0.84rem;
@@ -4666,17 +4662,26 @@
     }
 
     .history-panel .ticket-actions,
-    .history-panel .invoice-actions,
     .history-panel .invoice-button-stack {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
+      gap: 2px;
+      width: 168px;
+      max-width: 100%;
+      margin-inline: auto;
+      padding: 3px;
+      border: 1px solid color-mix(in srgb, #22d3ee 52%, var(--glass-line));
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--glass-input) 82%, transparent);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
     }
 
     .history-panel .invoice-actions {
       display: grid;
-      grid-template-columns: 32px minmax(0, 1fr);
+      grid-template-columns: 28px minmax(0, 1fr);
+      align-items: center;
+      gap: 7px;
     }
 
     .history-panel .invoice-button-stack {
@@ -4685,16 +4690,37 @@
 
     .history-panel .ticket-actions .button,
     .history-panel .invoice-actions .button {
-      width: auto;
+      flex: 1 1 0;
+      width: 0;
       min-width: 0;
-      min-height: 34px;
-      padding: 7px 10px;
-      font-size: 0.73rem;
+      min-height: 30px;
+      padding: 6px 9px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      box-shadow: none;
+      font-size: 0.7rem;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .history-panel .ticket-actions .button:hover,
+    .history-panel .invoice-actions .button:hover {
+      background: color-mix(in srgb, #22d3ee 14%, var(--glass-input));
+      transform: none;
+    }
+
+    .history-panel .ticket-actions .button + .button,
+    .history-panel .invoice-button-stack .button + .button {
+      border-left: 1px solid color-mix(in srgb, var(--glass-line) 82%, transparent);
+      border-radius: 0 999px 999px 0;
     }
 
     .history-panel .invoice-check {
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
+      box-shadow: inset 0 1px 0 rgba(226, 255, 238, 0.3);
     }
 
     .history-panel .muted-cell {
@@ -4718,7 +4744,7 @@
       .history-panel .button .icon { margin: 0; }
     }
 
-    @media (max-width: 760px) {
+    @media (max-width: 960px) {
       .history-panel .table-wrap {
         padding: 2px 0 0;
       }
@@ -4769,15 +4795,19 @@
       }
 
       .history-panel .ticket-actions,
-      .history-panel .invoice-actions,
       .history-panel .invoice-button-stack {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
       }
 
       .history-panel .ticket-actions .button,
       .history-panel .invoice-actions .button {
-        flex: 1 1 120px;
+        flex: 1 1 0;
+      }
+
+      .history-panel .invoice-actions {
+        display: flex;
+        justify-content: flex-start;
       }
     }
   </style>
@@ -6734,7 +6764,7 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M4 5h16v14H4zM8 9h3M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        ${tickets.length > 1 ? `Ver tickets (${tickets.length})` : "Ver ticket"}
+        ${tickets.length > 1 ? `Ver (${tickets.length})` : "Ver"}
       `;
       button.addEventListener("click", () => openTicketsDialog(expense.id));
 
@@ -6787,7 +6817,7 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M14 3h7v7M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Ver factura
+        Ver PDF
       `;
       viewButton.addEventListener("click", () => openPdfDialog(
         invoice,
