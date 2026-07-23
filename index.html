@@ -3737,7 +3737,7 @@
       word-break: normal;
     }
 
-    @media (max-width: 960px) {
+    @media (max-width: 1250px) {
       .daily-limits-panel,
       .daily-limit-fields {
         grid-template-columns: 1fr;
@@ -4568,35 +4568,45 @@
 
     .history-panel th:nth-child(1),
     .history-panel td:nth-child(1) {
-      width: 15%;
+      width: 12%;
       text-align: left;
     }
 
     .history-panel th:nth-child(2),
     .history-panel td:nth-child(2) {
-      width: 27%;
+      width: 18%;
       text-align: left;
     }
 
     .history-panel th:nth-child(3),
     .history-panel td:nth-child(3) {
-      width: 12%;
+      width: 8%;
       text-align: left;
     }
 
     .history-panel th:nth-child(4),
     .history-panel td:nth-child(4) {
-      width: 14%;
+      width: 10%;
     }
 
     .history-panel th:nth-child(5),
     .history-panel td:nth-child(5) {
-      width: 22%;
+      width: 15%;
     }
 
     .history-panel th:nth-child(6),
     .history-panel td:nth-child(6) {
-      width: 10%;
+      width: 14%;
+    }
+
+    .history-panel th:nth-child(7),
+    .history-panel td:nth-child(7) {
+      width: 14%;
+    }
+
+    .history-panel th:nth-child(8),
+    .history-panel td:nth-child(8) {
+      width: 9%;
     }
 
     .history-panel tbody tr {
@@ -4717,6 +4727,13 @@
       border-radius: 0 999px 999px 0;
     }
 
+    .history-panel .ticket-actions .button:last-child,
+    .history-panel .invoice-button-stack .button:last-child {
+      flex: 0 0 32px;
+      width: 32px;
+      padding-inline: 6px;
+    }
+
     .history-panel .invoice-check {
       width: 28px;
       height: 28px;
@@ -4744,7 +4761,7 @@
       .history-panel .button .icon { margin: 0; }
     }
 
-    @media (max-width: 960px) {
+    @media (max-width: 1250px) {
       .history-panel .table-wrap {
         padding: 2px 0 0;
       }
@@ -4790,7 +4807,9 @@
       .history-panel .amount-cell,
       .history-panel td:nth-child(4),
       .history-panel td:nth-child(5),
-      .history-panel td:nth-child(6) {
+      .history-panel td:nth-child(6),
+      .history-panel td:nth-child(7),
+      .history-panel td:nth-child(8) {
         grid-column: 1 / -1;
       }
 
@@ -4808,6 +4827,141 @@
       .history-panel .invoice-actions {
         display: flex;
         justify-content: flex-start;
+      }
+    }
+
+    .history-order-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px;
+      border: 1px solid var(--glass-line);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--glass-input) 78%, transparent);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .history-order-option {
+      min-height: 34px;
+      padding: 7px 13px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--glass-muted);
+      font: inherit;
+      font-size: 0.76rem;
+      font-weight: 850;
+      cursor: pointer;
+    }
+
+    .history-order-option.active {
+      background: color-mix(in srgb, #22d3ee 18%, var(--glass-input));
+      color: var(--glass-heading);
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.14);
+    }
+
+    .fiscal-breakdown {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+      padding: 8px 10px;
+      border: 1px solid color-mix(in srgb, var(--glass-line) 82%, transparent);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--glass-input) 72%, transparent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fiscal-breakdown span {
+      display: flex;
+      justify-content: space-between;
+      gap: 7px;
+      color: var(--glass-muted);
+      font-size: 0.66rem;
+      white-space: nowrap;
+    }
+
+    .fiscal-breakdown strong {
+      color: var(--glass-heading);
+      font-size: 0.7rem;
+    }
+
+    .fiscal-breakdown .fiscal-total {
+      margin-top: 2px;
+      padding-top: 4px;
+      border-top: 1px solid var(--glass-line);
+      color: var(--glass-heading);
+      font-weight: 900;
+    }
+
+    .document-code {
+      display: inline-block;
+      max-width: 100%;
+      padding: 7px 9px;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, #22d3ee 36%, var(--glass-line));
+      border-radius: 9px;
+      background: color-mix(in srgb, var(--glass-input) 78%, transparent);
+      color: var(--glass-heading);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fiscal-loading {
+      color: var(--glass-muted);
+      font-size: 0.72rem;
+    }
+
+    .signed-sheet-status {
+      color: var(--glass-muted);
+      font-size: 0.74rem;
+      font-weight: 750;
+    }
+
+    .signed-sheet-image {
+      display: block;
+      width: min(100%, 1000px);
+      max-height: 72vh;
+      margin-inline: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.94);
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .uber-concept .concept-neon {
+      border-color: rgba(255, 255, 255, 0.24);
+      background: #050505;
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 0 16px rgba(0, 0, 0, 0.34);
+    }
+
+    @media (max-width: 1250px) {
+      .history-panel .panel-heading {
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+
+      .history-order-control {
+        width: 100%;
+      }
+
+      .history-order-option {
+        flex: 1 1 0;
+      }
+
+      .fiscal-breakdown {
+        width: min(260px, 100%);
+      }
+
+      .document-code {
+        white-space: normal;
+        overflow-wrap: anywhere;
       }
     }
   </style>
@@ -5158,7 +5312,11 @@
         <div class="panel-heading">
           <div>
             <h2 id="historyTitle">Historial de gastos</h2>
-            <p>Ordenado por fecha, con acceso a ticket, factura y acciones.</p>
+            <p id="historyOrderDescription">Ordenado por fecha, con acceso a ticket, factura y acciones.</p>
+          </div>
+          <div class="history-order-control" aria-label="Orden del historial">
+            <button class="history-order-option active" type="button" data-history-order="date" aria-pressed="true">Por fecha</button>
+            <button class="history-order-option" type="button" data-history-order="excel" aria-pressed="false">Orden Excel</button>
           </div>
           <div class="loader" id="historyLoader">
             <span class="spinner" aria-hidden="true"></span>
@@ -5181,6 +5339,8 @@
                 <th>Monto</th>
                 <th>Ticket</th>
                 <th>Factura</th>
+                <th>Total factura</th>
+                <th>Docto</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -5195,6 +5355,12 @@
               <p>Comprobantes, respaldo completo e importaci&oacute;n segura.</p>
             </div>
             <div class="project-tools-actions">
+              <button class="button secondary" id="uploadSignedSheetBtn" type="button">Subir hoja firmada</button>
+              <button class="button secondary" id="viewSignedSheetBtn" type="button" hidden>Ver hoja</button>
+              <a class="button secondary" id="downloadSignedSheetBtn" hidden>Descargar hoja</a>
+              <button class="button danger" id="deleteSignedSheetBtn" type="button" hidden>Eliminar hoja</button>
+              <input class="visually-hidden" id="signedSheetInput" type="file" accept="application/pdf,.pdf,image/*">
+              <span class="signed-sheet-status" id="signedSheetStatus">Sin hoja firmada</span>
               <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
               <button class="button secondary" id="exportBackupBtn" type="button">Exportar respaldo</button>
               <button class="button secondary" id="importBackupBtn" type="button">Importar respaldo</button>
@@ -5283,6 +5449,7 @@
     const MAX_TICKET_SOURCE_BYTES = 8 * 1024 * 1024;
     const MAX_STORED_TICKET_BYTES = 950 * 1024;
     const MAX_PDF_SIZE_BYTES = 2 * 1024 * 1024;
+    const MAX_SIGNED_SHEET_BYTES = 3 * 1024 * 1024;
     const TICKET_MAX_DIMENSION = 1280;
     const TICKET_IMAGE_QUALITY = 0.72;
     const DEFAULT_DAILY_LIMITS = {
@@ -5301,12 +5468,15 @@
       legacyProjectName: "Proyecto general",
       legacyPeriodStart: "",
       legacyPeriodEnd: "",
+      legacySignedSheet: null,
       legacyDailyLimits: { ...DEFAULT_DAILY_LIMITS },
       dailyLimits: { ...DEFAULT_DAILY_LIMITS },
       projects: [],
       activeProjectId: localStorage.getItem("viaticos-active-project") || LEGACY_PROJECT_ID,
       allExpenses: [],
       expenses: [],
+      historyOrder: "date",
+      invoiceFiscalCache: new Map(),
       editingId: null,
       db: null,
       isFirebaseReady: false
@@ -5370,12 +5540,20 @@
       saveExpenseBtn: document.querySelector("#saveExpenseBtn"),
       cancelEditBtn: document.querySelector("#cancelEditBtn"),
       formMessage: document.querySelector("#formMessage"),
+      historyOrderDescription: document.querySelector("#historyOrderDescription"),
+      historyOrderOptions: [...document.querySelectorAll("[data-history-order]")],
       historyLoader: document.querySelector("#historyLoader"),
       foodLimitInput: document.querySelector("#foodLimitInput"),
       transportLimitInput: document.querySelector("#transportLimitInput"),
       saveLimitsBtn: document.querySelector("#saveLimitsBtn"),
       limitAlerts: document.querySelector("#limitAlerts"),
       downloadReceiptsBtn: document.querySelector("#downloadReceiptsBtn"),
+      uploadSignedSheetBtn: document.querySelector("#uploadSignedSheetBtn"),
+      viewSignedSheetBtn: document.querySelector("#viewSignedSheetBtn"),
+      downloadSignedSheetBtn: document.querySelector("#downloadSignedSheetBtn"),
+      deleteSignedSheetBtn: document.querySelector("#deleteSignedSheetBtn"),
+      signedSheetInput: document.querySelector("#signedSheetInput"),
+      signedSheetStatus: document.querySelector("#signedSheetStatus"),
       exportBackupBtn: document.querySelector("#exportBackupBtn"),
       exportExcelBtn: document.querySelector("#exportExcelBtn"),
       importBackupBtn: document.querySelector("#importBackupBtn"),
@@ -5456,6 +5634,7 @@
       elements.createProjectBtn.disabled = !isReady;
       elements.saveLimitsBtn.disabled = !isReady;
       elements.downloadReceiptsBtn.disabled = !isReady;
+      elements.uploadSignedSheetBtn.disabled = !isReady;
       elements.exportBackupBtn.disabled = !isReady;
       elements.exportExcelBtn.disabled = !isReady;
       elements.importBackupBtn.disabled = !isReady;
@@ -5505,6 +5684,7 @@
         dailyLimits: state.legacyDailyLimits,
         periodStart: state.legacyPeriodStart,
         periodEnd: state.legacyPeriodEnd,
+        signedSheet: state.legacySignedSheet,
         isLegacy: true
       };
     }
@@ -5590,10 +5770,18 @@
       elements.projectHint.textContent = activeProject.isLegacy
         ? `${getPeriodLabel(activeProject)} Este proyecto conserva todos los gastos anteriores sin cambiar sus registros.`
         : `${getPeriodLabel(activeProject)} ${state.expenses.length} ${state.expenses.length === 1 ? "gasto" : "gastos"} en este proyecto.`;
+      renderSignedSheetControls();
     }
 
     function getConceptMeta(concept = "") {
       const text = concept.toLowerCase();
+      if (/\buber\b/.test(text)) {
+        return {
+          color: "#ffffff",
+          isUber: true,
+          path: "M7 5v8a5 5 0 0 0 10 0V5M7 19h10"
+        };
+      }
       const catalog = [
         { keys: ["comida", "restaurante", "desayuno", "cena", "alimento", "cafe"], color: "#f472ff", path: "M6 3v8M9 3v8M6 7h3M7.5 11v10M17 3v18M14 3v7a3 3 0 0 0 6 0V3" },
         { keys: ["hotel", "hospedaje", "hostal", "airbnb"], color: "#22d3ee", path: "M4 21V5M20 21V11a3 3 0 0 0-3-3H9a3 3 0 0 0-3 3v10M6 14h14M9 8V5h6v3M9 17h2M15 17h2" },
@@ -5954,6 +6142,106 @@
       return new Blob([...localParts, centralDirectory, endRecord], { type: "application/zip" });
     }
 
+    function getSignedSheet() {
+      return getActiveProject()?.signedSheet || null;
+    }
+
+    function getSignedSheetDownloadName(sheet = getSignedSheet()) {
+      const extension = getFileExtension(sheet?.name, sheet?.type?.includes("pdf") ? "pdf" : "jpg");
+      return `hoja-firmada-${slugifyFilePart(getActiveProject().name)}.${extension}`;
+    }
+
+    function renderSignedSheetControls() {
+      const sheet = getSignedSheet();
+      const hasSheet = Boolean(sheet?.dataUrl);
+      elements.uploadSignedSheetBtn.textContent = hasSheet ? "Reemplazar hoja" : "Subir hoja firmada";
+      elements.viewSignedSheetBtn.hidden = !hasSheet;
+      elements.downloadSignedSheetBtn.hidden = !hasSheet;
+      elements.deleteSignedSheetBtn.hidden = !hasSheet;
+      elements.signedSheetStatus.textContent = hasSheet
+        ? `Hoja guardada: ${sheet.name || "archivo firmado"}`
+        : "Sin hoja firmada";
+      if (hasSheet) {
+        elements.downloadSignedSheetBtn.href = sheet.dataUrl;
+        elements.downloadSignedSheetBtn.download = getSignedSheetDownloadName(sheet);
+      } else {
+        elements.downloadSignedSheetBtn.removeAttribute("href");
+        elements.downloadSignedSheetBtn.removeAttribute("download");
+      }
+    }
+
+    async function saveSignedSheet(file) {
+      if (!file || !state.isFirebaseReady) return;
+      const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
+      const isImage = !file.type || file.type.startsWith("image/");
+      if (!isPdf && !isImage) {
+        setMessage("error", "La hoja firmada debe ser una imagen o un PDF.");
+        return;
+      }
+      if (file.size > MAX_SIGNED_SHEET_BYTES) {
+        setMessage("error", "La hoja firmada debe pesar 3 MB o menos.");
+        return;
+      }
+
+      elements.uploadSignedSheetBtn.disabled = true;
+      elements.uploadSignedSheetBtn.textContent = "Guardando hoja...";
+      try {
+        const data = await readFileData(file);
+        const signedSheet = {
+          ...data,
+          uploadedAt: Date.now()
+        };
+        const targetPath = state.activeProjectId === LEGACY_PROJECT_ID
+          ? BUDGET_PATH
+          : `${PROJECTS_PATH}/${state.activeProjectId}`;
+        await update(dbRef(state.db, targetPath), { signedSheet, updatedAt: Date.now() });
+        setMessage("success", "Hoja firmada guardada en el proyecto.");
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudo guardar la hoja firmada. Revisa su tamaño y los permisos de Firebase.");
+      } finally {
+        elements.signedSheetInput.value = "";
+        elements.uploadSignedSheetBtn.disabled = false;
+        renderSignedSheetControls();
+      }
+    }
+
+    function viewSignedSheet() {
+      const sheet = getSignedSheet();
+      if (!sheet?.dataUrl) return;
+      const title = `Hoja firmada de ${getActiveProject().name || "proyecto"}`;
+      if (sheet.type === "application/pdf" || /\.pdf$/i.test(sheet.name || "")) {
+        openPdfDialog(sheet, title, getSignedSheetDownloadName(sheet));
+        return;
+      }
+      elements.mediaDialogTitle.textContent = title;
+      elements.mediaDialogBody.innerHTML = "";
+      const image = document.createElement("img");
+      image.src = sheet.dataUrl;
+      image.alt = title;
+      image.className = "signed-sheet-image";
+      elements.mediaDialogBody.appendChild(image);
+      elements.mediaDialog.showModal();
+    }
+
+    async function deleteSignedSheet() {
+      const sheet = getSignedSheet();
+      if (!sheet?.dataUrl || !window.confirm("¿Eliminar la hoja firmada de este proyecto?")) return;
+      elements.deleteSignedSheetBtn.disabled = true;
+      try {
+        const targetPath = state.activeProjectId === LEGACY_PROJECT_ID
+          ? BUDGET_PATH
+          : `${PROJECTS_PATH}/${state.activeProjectId}`;
+        await update(dbRef(state.db, targetPath), { signedSheet: null, updatedAt: Date.now() });
+        setMessage("success", "Hoja firmada eliminada.");
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudo eliminar la hoja firmada.");
+      } finally {
+        elements.deleteSignedSheetBtn.disabled = false;
+      }
+    }
+
     async function downloadAllReceipts() {
       const expensesWithFiles = state.expenses.filter((expense) => getTicketList(expense).length || getInvoiceData(expense));
       if (!expensesWithFiles.length) {
@@ -6015,7 +6303,8 @@
             periodStart: state.legacyPeriodStart,
             periodEnd: state.legacyPeriodEnd,
             totalDeposit: state.legacyBudget,
-            dailyLimits: state.legacyDailyLimits
+            dailyLimits: state.legacyDailyLimits,
+            signedSheet: state.legacySignedSheet
           },
           projects: Object.fromEntries(state.projects.map(({ id, ...project }) => [id, project]))
         },
@@ -6035,6 +6324,20 @@
       ];
       if (transportKeys.some((key) => combined.includes(key))) return "transport";
       return "consumption";
+    }
+
+    function sortExpensesByDateAscending(expenses) {
+      return [...expenses].sort((first, second) => {
+        const dateComparison = String(first.fecha || "").localeCompare(String(second.fecha || ""));
+        if (dateComparison) return dateComparison;
+        return parseMoney(first.createdAt) - parseMoney(second.createdAt);
+      });
+    }
+
+    function getExpensesInExcelOrder(expenses) {
+      return ["transport", "lodging", "consumption"].flatMap((group) =>
+        sortExpensesByDateAscending(expenses.filter((expense) => getExcelExpenseGroup(expense) === group))
+      );
     }
 
     function shouldApplyRestaurantTip(expense) {
@@ -6196,15 +6499,10 @@
         workbook.calcProperties.forceFullCalc = true;
         workbook.calcProperties.calcMode = "auto";
         const worksheet = workbook.getWorksheet("Comprobacion") || workbook.worksheets[0];
-        const sortByDateAscending = (expenses) => [...expenses].sort((first, second) => {
-          const dateComparison = String(first.fecha || "").localeCompare(String(second.fecha || ""));
-          if (dateComparison) return dateComparison;
-          return parseMoney(first.createdAt) - parseMoney(second.createdAt);
-        });
         const groups = {
-          transport: sortByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "transport")),
-          lodging: sortByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "lodging")),
-          consumption: sortByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "consumption"))
+          transport: sortExpensesByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "transport")),
+          lodging: sortExpensesByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "lodging")),
+          consumption: sortExpensesByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "consumption"))
         };
         const groupedExpenses = [...groups.transport, ...groups.lodging, ...groups.consumption];
         const expectedIds = state.expenses.map((expense) => expense.id);
@@ -6347,6 +6645,7 @@
         updates[`${BUDGET_PATH}/periodEnd`] = legacy.periodEnd || "";
         updates[`${BUDGET_PATH}/totalDeposit`] = parseMoney(legacy.totalDeposit);
         updates[`${BUDGET_PATH}/dailyLimits`] = normalizeDailyLimits(legacy.dailyLimits);
+        updates[`${BUDGET_PATH}/signedSheet`] = legacy.signedSheet || null;
         Object.entries(backup.settings?.projects || {}).forEach(([id, project]) => {
           if (/^[A-Za-z0-9_-]+$/.test(id)) updates[`${PROJECTS_PATH}/${id}`] = project;
         });
@@ -6683,12 +6982,17 @@
       const limitAnalysis = analyzeDailyLimits();
       renderLimitAlerts(hasExpenses ? limitAnalysis.alerts : []);
       renderExpenseReports();
+      updateHistoryOrderControls();
 
       const fragment = document.createDocumentFragment();
+      const displayedExpenses = state.historyOrder === "excel"
+        ? getExpensesInExcelOrder(state.expenses)
+        : state.expenses;
 
       let previousExpenseDate = "";
-      state.expenses.forEach((expense) => {
+      displayedExpenses.forEach((expense) => {
         const row = document.createElement("tr");
+        row.dataset.expenseId = expense.id;
         const isNewDay = expense.fecha !== previousExpenseDate;
         row.classList.add(isNewDay ? "day-start" : "same-day");
         previousExpenseDate = expense.fecha;
@@ -6699,11 +7003,14 @@
           <td class="amount-cell"><span class="amount-value">${formatter.format(parseMoney(expense.monto))}</span></td>
           <td></td>
           <td></td>
+          <td class="fiscal-cell"></td>
+          <td class="document-cell"></td>
           <td></td>
         `;
 
         const conceptParts = getExpenseConceptParts(expense);
         const conceptMeta = getConceptMeta(conceptParts.combined);
+        row.classList.toggle("uber-concept", Boolean(conceptMeta.isUber));
         row.querySelector(".concept-cell").innerHTML = `
           <span class="concept-wrap" style="--concept-color: ${conceptMeta.color}">
             <span class="concept-neon" aria-hidden="true">
@@ -6732,17 +7039,144 @@
         }
 
         const cells = row.querySelectorAll("td");
-        ["Fecha", "Concepto", "Monto", "Ticket", "Factura", "Acciones"].forEach((label, index) => {
+        ["Fecha", "Concepto", "Monto", "Ticket", "Factura", "Total factura", "Docto", "Acciones"].forEach((label, index) => {
           cells[index].dataset.label = label;
         });
         renderTicketsCell(cells[3], expense);
         renderInvoiceCell(cells[4], expense);
-        renderActionCell(cells[5], expense.id);
+        renderFiscalPreviewCells(cells[5], cells[6], expense);
+        renderActionCell(cells[7], expense.id);
 
         fragment.appendChild(row);
       });
 
       elements.expensesBody.appendChild(fragment);
+    }
+
+    function updateHistoryOrderControls() {
+      elements.historyOrderOptions.forEach((button) => {
+        const isActive = button.dataset.historyOrder === state.historyOrder;
+        button.classList.toggle("active", isActive);
+        button.setAttribute("aria-pressed", String(isActive));
+      });
+      elements.historyOrderDescription.textContent = state.historyOrder === "excel"
+        ? "Orden Excel: transporte, hospedaje y consumo; cada grupo ordenado por fecha."
+        : "Ordenado por fecha, con acceso a ticket, factura y acciones.";
+    }
+
+    function getInvoiceFiscalSignature(expense) {
+      return `${expense.id}|${expense.updatedAt || ""}|${expense.invoiceName || ""}|${expense.invoiceSize || ""}`;
+    }
+
+    function getStoredInvoiceFiscal(signature) {
+      try {
+        const value = localStorage.getItem(`viaticos-fiscal:${signature}`);
+        return value ? JSON.parse(value) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function storeInvoiceFiscal(signature, data) {
+      try {
+        localStorage.setItem(`viaticos-fiscal:${signature}`, JSON.stringify(data));
+      } catch (error) {
+        // The table still works with the in-memory cache when storage is unavailable.
+      }
+    }
+
+    function renderFiscalBreakdown(cell, fiscal) {
+      const subtotal = parseMoney(fiscal.subtotal);
+      const iva = parseMoney(fiscal.iva);
+      const total = Math.round((subtotal + iva) * 100) / 100 || parseMoney(fiscal.total);
+      cell.className = "fiscal-cell";
+      cell.innerHTML = `
+        <div class="fiscal-breakdown">
+          <span>Subtotal <strong>${formatter.format(subtotal)}</strong></span>
+          <span>IVA <strong>${formatter.format(iva)}</strong></span>
+          <span class="fiscal-total">Total <strong>${formatter.format(total)}</strong></span>
+        </div>
+      `;
+    }
+
+    function renderFiscalDocument(cell, documentValue) {
+      cell.className = "document-cell";
+      cell.innerHTML = "";
+      if (!documentValue) {
+        cell.className = "document-cell muted-cell";
+        cell.textContent = "No detectado";
+        return;
+      }
+      const code = document.createElement("span");
+      code.className = "document-code";
+      code.title = documentValue;
+      code.textContent = documentValue;
+      cell.appendChild(code);
+    }
+
+    function renderFiscalPreviewCells(fiscalCell, documentCell, expense) {
+      if (expense.valeAzul) {
+        fiscalCell.className = "fiscal-cell muted-cell";
+        fiscalCell.textContent = "Vale azul";
+        renderFiscalDocument(documentCell, "VALE");
+        return;
+      }
+      const invoice = getInvoiceData(expense);
+      if (!invoice) {
+        fiscalCell.className = "fiscal-cell muted-cell";
+        fiscalCell.textContent = "Sin factura";
+        documentCell.className = "document-cell muted-cell";
+        documentCell.textContent = "Sin factura";
+        return;
+      }
+
+      const signature = getInvoiceFiscalSignature(expense);
+      const cached = state.invoiceFiscalCache.get(expense.id);
+      if (cached?.signature === signature && cached.data) {
+        renderFiscalBreakdown(fiscalCell, cached.data);
+        renderFiscalDocument(documentCell, cached.data.document);
+        return;
+      }
+      const stored = getStoredInvoiceFiscal(signature);
+      if (stored) {
+        state.invoiceFiscalCache.set(expense.id, { signature, data: stored });
+        renderFiscalBreakdown(fiscalCell, stored);
+        renderFiscalDocument(documentCell, stored.document);
+        return;
+      }
+
+      fiscalCell.innerHTML = '<span class="fiscal-loading">Leyendo factura...</span>';
+      documentCell.innerHTML = '<span class="fiscal-loading">Detectando...</span>';
+      if (cached?.signature === signature && cached.promise) {
+        cached.promise.then((data) => {
+          if (!fiscalCell.isConnected) return;
+          renderFiscalBreakdown(fiscalCell, data);
+          renderFiscalDocument(documentCell, data.document);
+        }).catch(() => {
+          if (!fiscalCell.isConnected) return;
+          fiscalCell.textContent = "No legible";
+          documentCell.textContent = "No detectado";
+        });
+        return;
+      }
+
+      const promise = extractInvoiceFields(invoice, expense, getActiveProject().name || "");
+      state.invoiceFiscalCache.set(expense.id, { signature, promise });
+      promise.then((data) => {
+        state.invoiceFiscalCache.set(expense.id, { signature, data });
+        storeInvoiceFiscal(signature, data);
+        if (!fiscalCell.isConnected) return;
+        renderFiscalBreakdown(fiscalCell, data);
+        renderFiscalDocument(documentCell, data.document);
+      }).catch((error) => {
+        console.error(error);
+        state.invoiceFiscalCache.delete(expense.id);
+        if (!fiscalCell.isConnected) return;
+        fiscalCell.className = "fiscal-cell muted-cell";
+        fiscalCell.textContent = "No legible";
+        documentCell.className = "document-cell muted-cell";
+        documentCell.textContent = "No detectado";
+      });
     }
 
     function renderTicketsCell(cell, expense) {
@@ -6772,11 +7206,12 @@
       downloadLink.className = "button secondary";
       downloadLink.href = firstTicket.dataUrl;
       downloadLink.download = buildDownloadFileName(expense, "ticket", 0, firstTicket.name || "ticket.jpg");
+      downloadLink.title = "Descargar ticket";
+      downloadLink.setAttribute("aria-label", "Descargar ticket");
       downloadLink.innerHTML = `
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 3v12M7 10l5 5 5-5M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Descargar
       `;
 
       wrapper.append(button, downloadLink);
@@ -6829,11 +7264,12 @@
       downloadLink.className = "button secondary";
       downloadLink.href = invoice.dataUrl;
       downloadLink.download = buildDownloadFileName(expense, "factura", 0, invoice.name || "factura.pdf");
+      downloadLink.title = "Descargar factura";
+      downloadLink.setAttribute("aria-label", "Descargar factura");
       downloadLink.innerHTML = `
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 3v12M7 10l5 5 5-5M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        Descargar
       `;
 
       buttonStack.append(viewButton, downloadLink);
@@ -7397,6 +7833,7 @@
         state.legacyProjectName = String(data.projectName || "Proyecto general");
         state.legacyPeriodStart = data.periodStart || "";
         state.legacyPeriodEnd = data.periodEnd || "";
+        state.legacySignedSheet = data.signedSheet || null;
         state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) {
           state.activeProjectId = data.selectedProjectId;
@@ -7417,6 +7854,7 @@
         state.legacyProjectName = String(data.projectName || "Proyecto general");
         state.legacyPeriodStart = data.periodStart || "";
         state.legacyPeriodEnd = data.periodEnd || "";
+        state.legacySignedSheet = data.signedSheet || null;
         state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) state.activeProjectId = data.selectedProjectId;
       }
@@ -7492,6 +7930,16 @@
 
     elements.saveBudgetBtn.addEventListener("click", saveBudget);
     elements.downloadReceiptsBtn.addEventListener("click", downloadAllReceipts);
+    elements.historyOrderOptions.forEach((button) => {
+      button.addEventListener("click", () => {
+        state.historyOrder = button.dataset.historyOrder === "excel" ? "excel" : "date";
+        renderExpenses();
+      });
+    });
+    elements.uploadSignedSheetBtn.addEventListener("click", () => elements.signedSheetInput.click());
+    elements.signedSheetInput.addEventListener("change", () => saveSignedSheet(elements.signedSheetInput.files[0]));
+    elements.viewSignedSheetBtn.addEventListener("click", viewSignedSheet);
+    elements.deleteSignedSheetBtn.addEventListener("click", deleteSignedSheet);
     elements.exportBackupBtn.addEventListener("click", exportBackup);
     elements.exportExcelBtn.addEventListener("click", exportProjectExcel);
     elements.importBackupBtn.addEventListener("click", () => elements.backupFileInput.click());
