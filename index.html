@@ -5121,7 +5121,7 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
-        Nuevo proyecto
+        <span id="createProjectBtnText">Nuevo proyecto</span>
       </button>
       <p class="project-hint" id="projectHint">Selecciona un proyecto para cargar su presupuesto, periodo e historial.</p>
     </section>
@@ -5514,6 +5514,7 @@
       dailyLimits: { ...DEFAULT_DAILY_LIMITS },
       projects: [],
       activeProjectId: localStorage.getItem("viaticos-active-project") || LEGACY_PROJECT_ID,
+      isCreatingProject: false,
       allExpenses: [],
       expenses: [],
       historyOrder: "date",
@@ -5536,6 +5537,7 @@
       periodEndInput: document.querySelector("#periodEndInput"),
       saveProjectBtn: document.querySelector("#saveProjectBtn"),
       createProjectBtn: document.querySelector("#createProjectBtn"),
+      createProjectBtnText: document.querySelector("#createProjectBtnText"),
       projectHint: document.querySelector("#projectHint"),
       budgetInput: document.querySelector("#budgetInput"),
       saveBudgetBtn: document.querySelector("#saveBudgetBtn"),
@@ -5803,6 +5805,18 @@
 
       const activeProject = getActiveProject();
       elements.projectSelect.value = activeProject.id;
+      elements.createProjectBtnText.textContent = state.isCreatingProject ? "Crear proyecto" : "Nuevo proyecto";
+
+      if (state.isCreatingProject) {
+        elements.activeProjectTitle.textContent = "NUEVO PROYECTO";
+        elements.saveProjectBtn.disabled = true;
+        elements.saveBudgetBtn.disabled = true;
+        elements.saveLimitsBtn.disabled = true;
+        elements.projectHint.textContent = "Completa los datos desde cero y presiona Crear proyecto. Tus proyectos anteriores no se modificar\u00e1n.";
+        renderSignedSheetControls();
+        return;
+      }
+
       elements.activeProjectTitle.textContent = activeProject.name || "Proyecto sin nombre";
       elements.projectNameInput.value = activeProject.name || "";
       elements.periodStartInput.value = activeProject.periodStart || "";
@@ -6184,6 +6198,7 @@
     }
 
     function getSignedSheet() {
+      if (state.isCreatingProject) return null;
       return getActiveProject()?.signedSheet || null;
     }
 
@@ -6199,9 +6214,10 @@
       elements.viewSignedSheetBtn.hidden = !hasSheet;
       elements.downloadSignedSheetBtn.hidden = !hasSheet;
       elements.deleteSignedSheetBtn.hidden = !hasSheet;
+      elements.uploadSignedSheetBtn.disabled = !state.isFirebaseReady || state.isCreatingProject;
       elements.signedSheetStatus.textContent = hasSheet
         ? `Hoja guardada: ${sheet.name || "archivo firmado"}`
-        : "Sin hoja firmada";
+        : state.isCreatingProject ? "Disponible despu\u00e9s de crear el proyecto" : "Sin hoja firmada";
       if (hasSheet) {
         elements.downloadSignedSheetBtn.href = sheet.dataUrl;
         elements.downloadSignedSheetBtn.download = getSignedSheetDownloadName(sheet);
@@ -7407,6 +7423,24 @@
       });
     }
 
+    function startNewProject() {
+      state.isCreatingProject = true;
+      state.budget = 0;
+      state.dailyLimits = { ...DEFAULT_DAILY_LIMITS };
+      state.expenses = [];
+      elements.projectNameInput.value = "";
+      elements.periodStartInput.value = "";
+      elements.periodEndInput.value = "";
+      elements.budgetInput.value = "";
+      elements.foodLimitInput.value = DEFAULT_DAILY_LIMITS.food;
+      elements.transportLimitInput.value = DEFAULT_DAILY_LIMITS.transport;
+      resetExpenseForm();
+      renderProjectControls();
+      renderExpenses();
+      renderSummary();
+      elements.projectNameInput.focus();
+    }
+
     async function saveDailyLimits() {
       if (!state.isFirebaseReady) return;
 
@@ -7484,6 +7518,11 @@
     async function createProject() {
       if (!state.isFirebaseReady) return;
 
+      if (!state.isCreatingProject) {
+        startNewProject();
+        return;
+      }
+
       const name = elements.projectNameInput.value.trim();
       const periodStart = elements.periodStartInput.value;
       const periodEnd = elements.periodEndInput.value;
@@ -7501,7 +7540,7 @@
       elements.createProjectBtn.disabled = true;
       try {
         const newProjectRef = push(dbRef(state.db, PROJECTS_PATH));
-        await set(newProjectRef, {
+        const newProject = {
           name,
           periodStart,
           periodEnd,
@@ -7509,10 +7548,18 @@
           dailyLimits: getDailyLimitsFromInputs(),
           createdAt: Date.now(),
           updatedAt: Date.now()
-        });
+        };
+        await set(newProjectRef, newProject);
         await update(dbRef(state.db, BUDGET_PATH), { selectedProjectId: newProjectRef.key });
+        state.projects = [
+          ...state.projects.filter((project) => project.id !== newProjectRef.key),
+          { id: newProjectRef.key, ...newProject }
+        ].sort(compareProjectsByPeriod);
+        state.isCreatingProject = false;
         state.activeProjectId = newProjectRef.key;
         localStorage.setItem("viaticos-active-project", state.activeProjectId);
+        rerenderActiveProject();
+        resetExpenseForm();
         setMessage("success", "Proyecto creado. Los nuevos gastos se guardar\u00e1n en este proyecto.");
       } catch (error) {
         console.error(error);
@@ -8001,6 +8048,13 @@
     function rerenderActiveProject() {
       state.activeProjectId = chooseAvailableProject();
       localStorage.setItem("viaticos-active-project", state.activeProjectId);
+      if (state.isCreatingProject) {
+        state.expenses = [];
+        renderProjectControls();
+        renderExpenses();
+        renderSummary();
+        return;
+      }
       syncActiveProjectBudget();
       refreshProjectExpenses();
       renderProjectControls();
@@ -8132,6 +8186,7 @@
     elements.saveProjectBtn.addEventListener("click", saveProjectDetails);
     elements.createProjectBtn.addEventListener("click", createProject);
     elements.projectSelect.addEventListener("change", () => {
+      state.isCreatingProject = false;
       setActiveProject(elements.projectSelect.value, true);
       clearMessage();
     });
