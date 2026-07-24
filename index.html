@@ -4871,6 +4871,49 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .fiscal-cell,
+    .document-cell {
+      vertical-align: middle;
+    }
+
+    .invoice-evidence-button {
+      display: block;
+      width: 100%;
+      height: 58px;
+      margin: 0 0 6px;
+      padding: 3px;
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, #22d3ee 38%, var(--glass-line));
+      border-radius: 9px;
+      background: #ffffff;
+      cursor: zoom-in;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+    }
+
+    .invoice-evidence-button img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .invoice-evidence-button:hover {
+      border-color: #22d3ee;
+      transform: translateY(-1px);
+    }
+
+    .invoice-evidence-large {
+      display: block;
+      width: min(100%, 1100px);
+      max-height: 76vh;
+      margin-inline: auto;
+      object-fit: contain;
+      image-rendering: auto;
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
     .fiscal-breakdown span {
       display: flex;
       justify-content: space-between;
@@ -4957,6 +5000,11 @@
 
       .fiscal-breakdown {
         width: min(260px, 100%);
+      }
+
+      .invoice-evidence-button {
+        width: min(320px, 100%);
+        height: 92px;
       }
 
       .document-code {
@@ -6454,7 +6502,7 @@
           const expense = expensesWithInvoices[index];
           elements.exportExcelBtn.textContent = `Leyendo facturas ${index + 1}/${expensesWithInvoices.length}`;
           try {
-            invoiceFieldsById.set(expense.id, await extractInvoiceFields(getInvoiceData(expense), expense, activeProject.name || ""));
+            invoiceFieldsById.set(expense.id, await extractInvoiceFields(getInvoiceData(expense), expense, activeProject.name || "", false));
           } catch (error) {
             console.error(error);
             unreadableInvoices += 1;
@@ -7065,7 +7113,7 @@
     }
 
     function getInvoiceFiscalSignature(expense) {
-      return `${expense.id}|${expense.updatedAt || ""}|${expense.invoiceName || ""}|${expense.invoiceSize || ""}`;
+      return `evidence-v1|${expense.id}|${expense.updatedAt || ""}|${expense.invoiceName || ""}|${expense.invoiceSize || ""}`;
     }
 
     function getStoredInvoiceFiscal(signature) {
@@ -7085,27 +7133,61 @@
       }
     }
 
+    function openEvidenceCrop(dataUrl, title) {
+      if (!dataUrl) return;
+      elements.mediaDialogTitle.textContent = title;
+      elements.mediaDialogBody.innerHTML = "";
+      const image = document.createElement("img");
+      image.src = dataUrl;
+      image.alt = title;
+      image.className = "invoice-evidence-large";
+      elements.mediaDialogBody.appendChild(image);
+      elements.mediaDialog.showModal();
+    }
+
+    function createEvidenceThumbnail(dataUrl, title) {
+      const button = document.createElement("button");
+      button.className = "invoice-evidence-button";
+      button.type = "button";
+      button.title = `${title}. Toca para ampliar`;
+      button.setAttribute("aria-label", `${title}. Ampliar recorte`);
+      const image = document.createElement("img");
+      image.src = dataUrl;
+      image.alt = title;
+      button.appendChild(image);
+      button.addEventListener("click", () => openEvidenceCrop(dataUrl, title));
+      return button;
+    }
+
     function renderFiscalBreakdown(cell, fiscal) {
       const subtotal = parseMoney(fiscal.subtotal);
       const iva = parseMoney(fiscal.iva);
       const total = Math.round((subtotal + iva) * 100) / 100 || parseMoney(fiscal.total);
       cell.className = "fiscal-cell";
-      cell.innerHTML = `
-        <div class="fiscal-breakdown">
+      cell.innerHTML = "";
+      if (fiscal.totalsCrop) {
+        cell.appendChild(createEvidenceThumbnail(fiscal.totalsCrop, "Recorte de totales de la factura"));
+      }
+      const breakdown = document.createElement("div");
+      breakdown.className = "fiscal-breakdown";
+      breakdown.innerHTML = `
           <span>Subtotal <strong>${formatter.format(subtotal)}</strong></span>
           <span>IVA <strong>${formatter.format(iva)}</strong></span>
           <span class="fiscal-total">Total <strong>${formatter.format(total)}</strong></span>
-        </div>
       `;
+      cell.appendChild(breakdown);
     }
 
-    function renderFiscalDocument(cell, documentValue) {
+    function renderFiscalDocument(cell, documentValue, documentCrop = "") {
       cell.className = "document-cell";
       cell.innerHTML = "";
       if (!documentValue) {
         cell.className = "document-cell muted-cell";
         cell.textContent = "No detectado";
         return;
+      }
+      if (documentCrop) {
+        cell.appendChild(createEvidenceThumbnail(documentCrop, "Recorte del documento de la factura"));
       }
       const code = document.createElement("span");
       code.className = "document-code";
@@ -7134,14 +7216,14 @@
       const cached = state.invoiceFiscalCache.get(expense.id);
       if (cached?.signature === signature && cached.data) {
         renderFiscalBreakdown(fiscalCell, cached.data);
-        renderFiscalDocument(documentCell, cached.data.document);
+        renderFiscalDocument(documentCell, cached.data.document, cached.data.documentCrop);
         return;
       }
       const stored = getStoredInvoiceFiscal(signature);
       if (stored) {
         state.invoiceFiscalCache.set(expense.id, { signature, data: stored });
         renderFiscalBreakdown(fiscalCell, stored);
-        renderFiscalDocument(documentCell, stored.document);
+        renderFiscalDocument(documentCell, stored.document, stored.documentCrop);
         return;
       }
 
@@ -7151,7 +7233,7 @@
         cached.promise.then((data) => {
           if (!fiscalCell.isConnected) return;
           renderFiscalBreakdown(fiscalCell, data);
-          renderFiscalDocument(documentCell, data.document);
+          renderFiscalDocument(documentCell, data.document, data.documentCrop);
         }).catch(() => {
           if (!fiscalCell.isConnected) return;
           fiscalCell.textContent = "No legible";
@@ -7167,7 +7249,7 @@
         storeInvoiceFiscal(signature, data);
         if (!fiscalCell.isConnected) return;
         renderFiscalBreakdown(fiscalCell, data);
-        renderFiscalDocument(documentCell, data.document);
+        renderFiscalDocument(documentCell, data.document, data.documentCrop);
       }).catch((error) => {
         console.error(error);
         state.invoiceFiscalCache.delete(expense.id);
@@ -7678,7 +7760,137 @@
       return /\b(?:RECEPTOR|INT INTELLIGENCE AND TELECOM)\b/i.test(socialReason) ? fallback : socialReason || fallback;
     }
 
-    async function extractInvoiceFields(invoice, expense, projectName) {
+    function normalizeEvidenceText(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toUpperCase();
+    }
+
+    function getPdfTextBox(pdfjs, viewport, item) {
+      const transform = pdfjs.Util.transform(viewport.transform, item.transform);
+      const height = Math.max(Math.hypot(transform[2], transform[3]), 8);
+      return {
+        text: String(item.str || ""),
+        normalized: normalizeEvidenceText(item.str),
+        x: transform[4],
+        y: transform[5] - height,
+        width: Math.max((item.width || 0) * viewport.scale, 4),
+        height: height * 1.25
+      };
+    }
+
+    function clampCropBounds(bounds, viewport) {
+      const x = Math.max(0, Math.floor(bounds.x));
+      const y = Math.max(0, Math.floor(bounds.y));
+      return {
+        x,
+        y,
+        width: Math.max(1, Math.min(Math.ceil(bounds.width), Math.ceil(viewport.width - x))),
+        height: Math.max(1, Math.min(Math.ceil(bounds.height), Math.ceil(viewport.height - y)))
+      };
+    }
+
+    function findInvoiceEvidenceBounds(pdfjs, pageDetails, type, documentValue) {
+      const documentTokens = normalizeEvidenceText(documentValue)
+        .split(/[\s-]+/)
+        .filter((token) => token.length >= 2);
+
+      for (const detail of pageDetails) {
+        const viewport = detail.page.getViewport({ scale: 1.35 });
+        const boxes = detail.content.items
+          .filter((item) => String(item.str || "").trim())
+          .map((item) => getPdfTextBox(pdfjs, viewport, item));
+        let anchor = null;
+
+        if (type === "totals") {
+          anchor = boxes.find((box) => /^SUBTOTAL\b/.test(box.normalized))
+            || boxes.find((box) => /\bTOTAL(?:\s+DE\s+LA\s+OPERACION)?\b/.test(box.normalized));
+          if (!anchor) continue;
+          return {
+            detail,
+            viewport,
+            bounds: clampCropBounds({
+              x: Math.max(anchor.x - viewport.width * 0.12, 0),
+              y: Math.max(anchor.y - 75, 0),
+              width: Math.min(viewport.width * 0.58, viewport.width - Math.max(anchor.x - viewport.width * 0.12, 0)),
+              height: 220
+            }, viewport)
+          };
+        }
+
+        anchor = boxes.find((box) => {
+          if (!documentTokens.length) return false;
+          return documentTokens.some((token) => token.length >= 4 && box.normalized.includes(token));
+        });
+        if (!anchor) {
+          anchor = boxes.find((box) =>
+            /\bFACTURA\b/.test(box.normalized)
+            || (/\bFOLIO\b/.test(box.normalized) && !/\bFISCAL\b/.test(box.normalized))
+          );
+        }
+        if (!anchor) continue;
+
+        const sameLine = boxes.filter((box) =>
+          Math.abs(box.y - anchor.y) <= Math.max(anchor.height, box.height) * 1.7
+        );
+        const lineStart = sameLine.length ? Math.min(...sameLine.map((box) => box.x)) : anchor.x;
+        const lineEnd = sameLine.length
+          ? Math.max(...sameLine.map((box) => box.x + box.width))
+          : anchor.x + anchor.width;
+        return {
+          detail,
+          viewport,
+          bounds: clampCropBounds({
+            x: Math.max(lineStart - 35, 0),
+            y: Math.max(anchor.y - 35, 0),
+            width: Math.min(Math.max(lineEnd - lineStart + 70, 260), viewport.width - Math.max(lineStart - 35, 0)),
+            height: 105
+          }, viewport)
+        };
+      }
+      return null;
+    }
+
+    async function renderInvoiceEvidenceCrops(pdfjs, pageDetails, documentValue) {
+      const selections = {
+        totalsCrop: findInvoiceEvidenceBounds(pdfjs, pageDetails, "totals", documentValue),
+        documentCrop: findInvoiceEvidenceBounds(pdfjs, pageDetails, "document", documentValue)
+      };
+      const renderedPages = new Map();
+      const result = {};
+
+      for (const [key, selection] of Object.entries(selections)) {
+        if (!selection) continue;
+        let sourceCanvas = renderedPages.get(selection.detail.pageNumber);
+        if (!sourceCanvas) {
+          sourceCanvas = document.createElement("canvas");
+          sourceCanvas.width = Math.ceil(selection.viewport.width);
+          sourceCanvas.height = Math.ceil(selection.viewport.height);
+          const context = sourceCanvas.getContext("2d", { alpha: false });
+          context.fillStyle = "#ffffff";
+          context.fillRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+          await selection.detail.page.render({ canvasContext: context, viewport: selection.viewport }).promise;
+          renderedPages.set(selection.detail.pageNumber, sourceCanvas);
+        }
+
+        const { x, y, width, height } = selection.bounds;
+        const scale = Math.min(1, 460 / width, 190 / height);
+        const crop = document.createElement("canvas");
+        crop.width = Math.max(1, Math.round(width * scale));
+        crop.height = Math.max(1, Math.round(height * scale));
+        const cropContext = crop.getContext("2d", { alpha: false });
+        cropContext.fillStyle = "#ffffff";
+        cropContext.fillRect(0, 0, crop.width, crop.height);
+        cropContext.drawImage(sourceCanvas, x, y, width, height, 0, 0, crop.width, crop.height);
+        result[key] = crop.toDataURL("image/jpeg", 0.82);
+      }
+      return result;
+    }
+
+    async function extractInvoiceFields(invoice, expense, projectName, includeEvidence = true) {
       if (!invoice?.dataUrl) return {};
       if (!pdfModulePromise) {
         pdfModulePromise = import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
@@ -7688,10 +7900,12 @@
       const response = await fetch(invoice.dataUrl);
       const pdf = await pdfjs.getDocument({ data: new Uint8Array(await response.arrayBuffer()) }).promise;
       const pageTexts = [];
+      const pageDetails = [];
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
         const page = await pdf.getPage(pageNumber);
         const content = await page.getTextContent();
         pageTexts.push(content.items.map((item) => item.str).join(" "));
+        pageDetails.push({ pageNumber, page, content });
       }
       const text = pageTexts.join("\n").replace(/[ \t]+/g, " ");
       const folioPatterns = [
@@ -7723,18 +7937,23 @@
         ? Math.round((expenseTotal - invoiceTotal) * 100) / 100
         : 0;
       const tip = explicitTip || derivedTip;
+      const documentValue = folioPatterns.map((pattern) => {
+        const match = text.match(pattern);
+        const value = match?.[2] ? `${match[1]}-${match[2]}` : match?.[1] || "";
+        return value.replace(/\s*-\s*/g, "-").replace(/\s+/g, " ").trim();
+      }).find(Boolean) || "";
+      const evidenceCrops = includeEvidence
+        ? await renderInvoiceEvidenceCrops(pdfjs, pageDetails, documentValue)
+        : {};
       return {
         origin: detectInvoiceOrigin(text, projectName),
-        document: folioPatterns.map((pattern) => {
-          const match = text.match(pattern);
-          const value = match?.[2] ? `${match[1]}-${match[2]}` : match?.[1] || "";
-          return value.replace(/\s*-\s*/g, "-").replace(/\s+/g, " ").trim();
-        }).find(Boolean) || "",
+        document: documentValue,
         name: findInvoiceIssuerName(text, parts.name || parts.concept),
         subtotal: subtotal || Math.max(expenseTotal - tip - iva, 0),
         tip,
         iva,
-        total: expenseTotal || invoiceTotal
+        total: expenseTotal || invoiceTotal,
+        ...evidenceCrops
       };
     }
 
