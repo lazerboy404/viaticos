@@ -7113,24 +7113,7 @@
     }
 
     function getInvoiceFiscalSignature(expense) {
-      return `evidence-v1|${expense.id}|${expense.updatedAt || ""}|${expense.invoiceName || ""}|${expense.invoiceSize || ""}`;
-    }
-
-    function getStoredInvoiceFiscal(signature) {
-      try {
-        const value = localStorage.getItem(`viaticos-fiscal:${signature}`);
-        return value ? JSON.parse(value) : null;
-      } catch (error) {
-        return null;
-      }
-    }
-
-    function storeInvoiceFiscal(signature, data) {
-      try {
-        localStorage.setItem(`viaticos-fiscal:${signature}`, JSON.stringify(data));
-      } catch (error) {
-        // The table still works with the in-memory cache when storage is unavailable.
-      }
+      return `evidence-v2|${expense.id}|${expense.updatedAt || ""}|${expense.invoiceName || ""}|${expense.invoiceSize || ""}`;
     }
 
     function openEvidenceCrop(dataUrl, title) {
@@ -7160,22 +7143,14 @@
     }
 
     function renderFiscalBreakdown(cell, fiscal) {
-      const subtotal = parseMoney(fiscal.subtotal);
-      const iva = parseMoney(fiscal.iva);
-      const total = Math.round((subtotal + iva) * 100) / 100 || parseMoney(fiscal.total);
       cell.className = "fiscal-cell";
       cell.innerHTML = "";
       if (fiscal.totalsCrop) {
         cell.appendChild(createEvidenceThumbnail(fiscal.totalsCrop, "Recorte de totales de la factura"));
+      } else {
+        cell.className = "fiscal-cell muted-cell";
+        cell.textContent = "Recorte no disponible";
       }
-      const breakdown = document.createElement("div");
-      breakdown.className = "fiscal-breakdown";
-      breakdown.innerHTML = `
-          <span>Subtotal <strong>${formatter.format(subtotal)}</strong></span>
-          <span>IVA <strong>${formatter.format(iva)}</strong></span>
-          <span class="fiscal-total">Total <strong>${formatter.format(total)}</strong></span>
-      `;
-      cell.appendChild(breakdown);
     }
 
     function renderFiscalDocument(cell, documentValue, documentCrop = "") {
@@ -7188,12 +7163,10 @@
       }
       if (documentCrop) {
         cell.appendChild(createEvidenceThumbnail(documentCrop, "Recorte del documento de la factura"));
+      } else {
+        cell.className = "document-cell muted-cell";
+        cell.textContent = "Recorte no disponible";
       }
-      const code = document.createElement("span");
-      code.className = "document-code";
-      code.title = documentValue;
-      code.textContent = documentValue;
-      cell.appendChild(code);
     }
 
     function renderFiscalPreviewCells(fiscalCell, documentCell, expense) {
@@ -7219,14 +7192,6 @@
         renderFiscalDocument(documentCell, cached.data.document, cached.data.documentCrop);
         return;
       }
-      const stored = getStoredInvoiceFiscal(signature);
-      if (stored) {
-        state.invoiceFiscalCache.set(expense.id, { signature, data: stored });
-        renderFiscalBreakdown(fiscalCell, stored);
-        renderFiscalDocument(documentCell, stored.document, stored.documentCrop);
-        return;
-      }
-
       fiscalCell.innerHTML = '<span class="fiscal-loading">Leyendo factura...</span>';
       documentCell.innerHTML = '<span class="fiscal-loading">Detectando...</span>';
       if (cached?.signature === signature && cached.promise) {
@@ -7246,7 +7211,6 @@
       state.invoiceFiscalCache.set(expense.id, { signature, promise });
       promise.then((data) => {
         state.invoiceFiscalCache.set(expense.id, { signature, data });
-        storeInvoiceFiscal(signature, data);
         if (!fiscalCell.isConnected) return;
         renderFiscalBreakdown(fiscalCell, data);
         renderFiscalDocument(documentCell, data.document, data.documentCrop);
@@ -7799,7 +7763,7 @@
         .filter((token) => token.length >= 2);
 
       for (const detail of pageDetails) {
-        const viewport = detail.page.getViewport({ scale: 1.35 });
+        const viewport = detail.page.getViewport({ scale: 2.4 });
         const boxes = detail.content.items
           .filter((item) => String(item.str || "").trim())
           .map((item) => getPdfTextBox(pdfjs, viewport, item));
@@ -7809,14 +7773,28 @@
           anchor = boxes.find((box) => /^SUBTOTAL\b/.test(box.normalized))
             || boxes.find((box) => /\bTOTAL(?:\s+DE\s+LA\s+OPERACION)?\b/.test(box.normalized));
           if (!anchor) continue;
+          const finalTotal = boxes
+            .filter((box) =>
+              /^(?:TOTAL|TOTAL\s+DE\s+LA\s+OPERACION)\b/.test(box.normalized)
+              && !/^SUBTOTAL\b/.test(box.normalized)
+              && box.y >= anchor.y - 25
+              && box.y <= anchor.y + 900
+              && box.x >= anchor.x - viewport.width * 0.22
+            )
+            .sort((first, second) => second.y - first.y)[0];
+          const cropTop = Math.max(anchor.y - 100, 0);
+          const cropBottom = finalTotal
+            ? Math.min(finalTotal.y + finalTotal.height + 90, viewport.height)
+            : Math.min(anchor.y + 430, viewport.height);
+          const cropLeft = Math.max(anchor.x - viewport.width * 0.14, 0);
           return {
             detail,
             viewport,
             bounds: clampCropBounds({
-              x: Math.max(anchor.x - viewport.width * 0.12, 0),
-              y: Math.max(anchor.y - 75, 0),
-              width: Math.min(viewport.width * 0.58, viewport.width - Math.max(anchor.x - viewport.width * 0.12, 0)),
-              height: 220
+              x: cropLeft,
+              y: cropTop,
+              width: Math.min(viewport.width * 0.62, viewport.width - cropLeft),
+              height: Math.max(cropBottom - cropTop, 260)
             }, viewport)
           };
         }
@@ -7877,7 +7855,7 @@
         }
 
         const { x, y, width, height } = selection.bounds;
-        const scale = Math.min(1, 460 / width, 190 / height);
+        const scale = Math.min(1, 1400 / width, 800 / height);
         const crop = document.createElement("canvas");
         crop.width = Math.max(1, Math.round(width * scale));
         crop.height = Math.max(1, Math.round(height * scale));
@@ -7885,7 +7863,7 @@
         cropContext.fillStyle = "#ffffff";
         cropContext.fillRect(0, 0, crop.width, crop.height);
         cropContext.drawImage(sourceCanvas, x, y, width, height, 0, 0, crop.width, crop.height);
-        result[key] = crop.toDataURL("image/jpeg", 0.82);
+        result[key] = crop.toDataURL("image/jpeg", 0.96);
       }
       return result;
     }
