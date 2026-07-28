@@ -1624,6 +1624,12 @@
       box-shadow: 0 0 16px rgba(0, 229, 255, 0.18);
     }
 
+    #deleteProjectBtn {
+      grid-area: deletebutton;
+      align-self: end;
+      min-height: 42px;
+    }
+
     .project-hint {
       grid-area: hint;
       color: #00f5ff;
@@ -2238,12 +2244,14 @@
       grid-template-columns: minmax(210px, 1fr) minmax(210px, 1fr) minmax(136px, 0.6fr) minmax(136px, 0.6fr);
       grid-template-areas:
         "project newlabel start end"
-        "save newbutton hint hint";
+        "save newbutton deletebutton deletebutton"
+        "hint hint hint hint";
       align-items: end;
     }
 
     #saveProjectBtn,
-    #createProjectBtn {
+    #createProjectBtn,
+    #deleteProjectBtn {
       min-height: 44px;
     }
 
@@ -2532,6 +2540,7 @@
           "newlabel newlabel"
           "start end"
           "save newbutton"
+          "deletebutton deletebutton"
           "hint hint";
       }
 
@@ -2597,6 +2606,7 @@
           "end"
           "save"
           "newbutton"
+          "deletebutton"
           "hint";
       }
 
@@ -5123,6 +5133,12 @@
         </svg>
         <span id="createProjectBtnText">Nuevo proyecto</span>
       </button>
+      <button class="button danger" id="deleteProjectBtn" type="button">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Eliminar proyecto
+      </button>
       <p class="project-hint" id="projectHint">Selecciona un proyecto para cargar su presupuesto, periodo e historial.</p>
     </section>
 
@@ -5538,6 +5554,7 @@
       saveProjectBtn: document.querySelector("#saveProjectBtn"),
       createProjectBtn: document.querySelector("#createProjectBtn"),
       createProjectBtnText: document.querySelector("#createProjectBtnText"),
+      deleteProjectBtn: document.querySelector("#deleteProjectBtn"),
       projectHint: document.querySelector("#projectHint"),
       budgetInput: document.querySelector("#budgetInput"),
       saveBudgetBtn: document.querySelector("#saveBudgetBtn"),
@@ -5675,6 +5692,7 @@
       elements.saveExpenseBtn.disabled = !isReady;
       elements.saveProjectBtn.disabled = !isReady;
       elements.createProjectBtn.disabled = !isReady;
+      elements.deleteProjectBtn.disabled = !isReady;
       elements.saveLimitsBtn.disabled = !isReady;
       elements.downloadReceiptsBtn.disabled = !isReady;
       elements.uploadSignedSheetBtn.disabled = !isReady;
@@ -5810,6 +5828,7 @@
       if (state.isCreatingProject) {
         elements.activeProjectTitle.textContent = "NUEVO PROYECTO";
         elements.saveProjectBtn.disabled = true;
+        elements.deleteProjectBtn.disabled = true;
         elements.saveBudgetBtn.disabled = true;
         elements.saveLimitsBtn.disabled = true;
         elements.projectHint.textContent = "Completa los datos desde cero y presiona Crear proyecto. Tus proyectos anteriores no se modificar\u00e1n.";
@@ -5822,6 +5841,10 @@
       elements.periodStartInput.value = activeProject.periodStart || "";
       elements.periodEndInput.value = activeProject.periodEnd || "";
       elements.saveProjectBtn.disabled = !state.isFirebaseReady;
+      elements.deleteProjectBtn.disabled = !state.isFirebaseReady || activeProject.isLegacy;
+      elements.deleteProjectBtn.title = activeProject.isLegacy
+        ? "El proyecto general conserva los gastos originales y no se puede eliminar."
+        : `Eliminar ${activeProject.name || "proyecto"}`;
       elements.projectHint.textContent = activeProject.isLegacy
         ? `${getPeriodLabel(activeProject)} Este proyecto conserva todos los gastos anteriores sin cambiar sus registros.`
         : `${getPeriodLabel(activeProject)} ${state.expenses.length} ${state.expenses.length === 1 ? "gasto" : "gastos"} en este proyecto.`;
@@ -6591,16 +6614,26 @@
           { items: groups.consumption, start: consumptionStart, total: 47 + extraTransport + extraLodging + extraConsumption }
         ];
 
-        const periodText = activeProject.periodStart || activeProject.periodEnd
-          ? `${activeProject.periodStart ? formatDate(activeProject.periodStart) : ""}${activeProject.periodStart && activeProject.periodEnd ? " al " : ""}${activeProject.periodEnd ? formatDate(activeProject.periodEnd) : ""}`
-          : "Periodo sin definir";
+        const periodText = activeProject.periodStart && activeProject.periodStart === activeProject.periodEnd
+          ? formatDate(activeProject.periodStart)
+          : activeProject.periodStart || activeProject.periodEnd
+            ? `${activeProject.periodStart ? formatDate(activeProject.periodStart) : ""}${activeProject.periodStart && activeProject.periodEnd ? " al " : ""}${activeProject.periodEnd ? formatDate(activeProject.periodEnd) : ""}`
+            : "Periodo sin definir";
         worksheet.getCell("E9").value = "Einar Ulises Arenas Hernandez";
         worksheet.getCell("E10").value = "Tecnico Operaciones";
         worksheet.getCell("E11").value = "Operaciones";
         worksheet.getCell("E12").value = null;
         worksheet.getCell("E13").value = periodText;
         worksheet.getCell("H13").value = state.budget;
-        worksheet.getCell("E15").value = "Queretaro";
+        const normalizedProjectName = String(activeProject.name || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toUpperCase();
+        worksheet.getCell("E15").value = /\bTOLUCA\b/.test(normalizedProjectName)
+          ? "Toluca"
+          : /\b(?:QRO|QUERETARO)\b/.test(normalizedProjectName)
+            ? "Queretaro"
+            : activeProject.name || null;
 
         sections.forEach((section) => {
           section.items.forEach((expense, index) => {
@@ -7569,6 +7602,46 @@
       }
     }
 
+    async function deleteActiveProject() {
+      if (!state.isFirebaseReady || state.isCreatingProject) return;
+      const project = getActiveProject();
+      if (!project || project.isLegacy || project.id === LEGACY_PROJECT_ID) {
+        setMessage("error", "El proyecto general conserva los gastos originales y no se puede eliminar.");
+        return;
+      }
+
+      const projectExpenses = state.allExpenses.filter((expense) => expense.projectId === project.id);
+      const expenseLabel = `${projectExpenses.length} ${projectExpenses.length === 1 ? "gasto" : "gastos"}`;
+      const confirmed = window.confirm(
+        `¿Eliminar definitivamente el proyecto "${project.name}"?\n\nTambién se eliminarán ${expenseLabel} y sus comprobantes. Los demás proyectos no cambiarán.`
+      );
+      if (!confirmed) return;
+
+      const fallbackProject = getProjectOptions().find((option) => option.id !== project.id) || getLegacyProject();
+      const updates = {
+        [`${PROJECTS_PATH}/${project.id}`]: null,
+        [`${BUDGET_PATH}/selectedProjectId`]: fallbackProject.id
+      };
+      projectExpenses.forEach((expense) => {
+        updates[`${EXPENSES_PATH}/${expense.id}`] = null;
+      });
+
+      elements.deleteProjectBtn.disabled = true;
+      try {
+        await update(dbRef(state.db), updates);
+        state.projects = state.projects.filter((item) => item.id !== project.id);
+        state.allExpenses = state.allExpenses.filter((expense) => expense.projectId !== project.id);
+        state.activeProjectId = fallbackProject.id;
+        localStorage.setItem("viaticos-active-project", fallbackProject.id);
+        rerenderActiveProject();
+        setMessage("success", `Proyecto "${project.name}" eliminado correctamente.`);
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudo eliminar el proyecto. Revisa los permisos de Realtime Database.");
+        elements.deleteProjectBtn.disabled = false;
+      }
+    }
+
     async function saveExpense(event) {
       event.preventDefault();
       if (!state.isFirebaseReady) return;
@@ -7706,6 +7779,10 @@
 
     function findInvoiceTax(text) {
       const patterns = [
+        /\$?\s*([\d,]+\.\d{2})\s+TOTAL\s+I\.?\s*V\.?\s*A\.?\s*:?/ig,
+        /\bTOTAL\s+I\.?\s*V\.?\s*A\.?\s*:?\s*\$?\s*([\d,]+\.\d{2})/ig,
+        /\bI\.?\s*V\.?\s*A\.?\s*:?\s*\$?\s*([\d,]+\.\d{2})/ig,
+        /\bIMPUESTO\s+0\.16(?:0000)?\s+TASA\s+\$?\s*([\d,]+\.\d{2})\s+IMPORTE\b/ig,
         /IVA.{0,90}?IMPORTE\s*[-:]?\s*\$\s*([\d,]+\.\d{2})/ig,
         /(?:IMPUESTOS\s+TRASLADADOS|IVA(?:T)?\s+0\.160000|IVA\s+16(?:\.00)?%|IVA\s+TRASLADADO\s+AL\s+16%)\s*\$?\s*([\d,]+\.\d{2})/ig,
         /\bIVA\s*\$\s*([\d,]+\.\d{2})/ig,
@@ -7728,19 +7805,37 @@
     let pdfModulePromise = null;
 
     function detectInvoiceOrigin(text, projectName = "") {
-      const normalized = `${text} ${projectName}`.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-      const routeMatch = normalized.match(/(?:ORIGEN|PUNTO DE PARTIDA|RECOGIDA|INICIO DEL VIAJE)\s*[:#-]?\s*([^\n]{0,140})/);
-      const routeText = routeMatch?.[1] || "";
-      const isCdmx = (value) => /\b(CDMX|CIUDAD DE MEXICO|MEXICO CITY)\b/.test(value);
-      const isQro = (value) => /\b(QRO|QUERETARO)\b/.test(value);
-      if (isCdmx(routeText)) return "CDMX";
-      if (isQro(routeText)) return "QRO";
-      const textHasCdmx = isCdmx(normalized);
-      const textHasQro = isQro(normalized);
-      if (textHasCdmx && !textHasQro) return "CDMX";
-      if (textHasQro && !textHasCdmx) return "QRO";
-      if (isQro(projectName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase())) return "QRO";
-      return "";
+      const normalizeLocationText = (value) => String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toUpperCase();
+      const normalized = normalizeLocationText(text);
+      const normalizedProject = normalizeLocationText(projectName);
+      const classifyLocation = (value) => {
+        const location = normalizeLocationText(value);
+        if (/\b(CDMX|CIUDAD DE MEXICO|MEXICO CITY)\b/.test(location)) return "CDMX";
+        if (/\b(TOLUCA|EDOMEX|ESTADO DE MEXICO|MEXIQUENSE)\b/.test(location)) return "TOL";
+        if (/\b(QRO|QUERETARO)\b/.test(location)) return "QRO";
+        const postalCode = location.match(/\b(\d{5})\b/)?.[1] || "";
+        if (/^(?:0[1-9]|1[0-6])\d{3}$/.test(postalCode)) return "CDMX";
+        if (/^5[0-7]\d{3}$/.test(postalCode)) return "TOL";
+        if (/^76\d{3}$/.test(postalCode)) return "QRO";
+        return "";
+      };
+
+      const routeMatch = normalized.match(
+        /(?:OBSERVACIONES?\s*:?\s*)?(?:VIAJE|ORIGEN|PUNTO DE PARTIDA|RECOGIDA|INICIO DEL VIAJE)\s*[:#-]?\s*([^\n]{0,160})/
+      );
+      const routeOrigin = classifyLocation(routeMatch?.[1]);
+      if (routeOrigin) return routeOrigin;
+
+      const issuePlaceMatch = normalized.match(
+        /(?:LUGAR(?:,\s*FECHA Y HORA)?\s+DE\s+(?:EXPEDICION|EMISION)|LUGAR,\s*FECHA Y HORA DE EMISION|CP,\s*FECHA Y HORA DE EXPEDICION)\s*[:#-]?\s*([^\n]{0,100})/
+      );
+      const issueOrigin = classifyLocation(issuePlaceMatch?.[1]);
+      if (issueOrigin) return issueOrigin;
+
+      return classifyLocation(normalizedProject);
     }
 
     function findInvoiceIssuerName(text, fallback = "") {
@@ -8185,6 +8280,7 @@
     elements.saveLimitsBtn.addEventListener("click", saveDailyLimits);
     elements.saveProjectBtn.addEventListener("click", saveProjectDetails);
     elements.createProjectBtn.addEventListener("click", createProject);
+    elements.deleteProjectBtn.addEventListener("click", deleteActiveProject);
     elements.projectSelect.addEventListener("change", () => {
       state.isCreatingProject = false;
       setActiveProject(elements.projectSelect.value, true);
