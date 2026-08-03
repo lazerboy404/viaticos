@@ -5419,6 +5419,7 @@
               <input class="visually-hidden" id="signedSheetInput" type="file" accept="application/pdf,.pdf,image/*">
               <span class="signed-sheet-status" id="signedSheetStatus">Sin hoja firmada</span>
               <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
+              <button class="button secondary" id="downloadInvoicesPdfBtn" type="button">Descargar PDF ordenado</button>
               <button class="button secondary" id="exportBackupBtn" type="button">Exportar respaldo</button>
               <button class="button secondary" id="importBackupBtn" type="button">Importar respaldo</button>
               <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
@@ -5488,6 +5489,7 @@
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
+    import { PDFDocument } from "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm";
     import {
       getDatabase,
       ref as dbRef,
@@ -5608,6 +5610,7 @@
       saveLimitsBtn: document.querySelector("#saveLimitsBtn"),
       limitAlerts: document.querySelector("#limitAlerts"),
       downloadReceiptsBtn: document.querySelector("#downloadReceiptsBtn"),
+      downloadInvoicesPdfBtn: document.querySelector("#downloadInvoicesPdfBtn"),
       uploadSignedSheetBtn: document.querySelector("#uploadSignedSheetBtn"),
       viewSignedSheetBtn: document.querySelector("#viewSignedSheetBtn"),
       downloadSignedSheetBtn: document.querySelector("#downloadSignedSheetBtn"),
@@ -5695,6 +5698,7 @@
       elements.deleteProjectBtn.disabled = !isReady;
       elements.saveLimitsBtn.disabled = !isReady;
       elements.downloadReceiptsBtn.disabled = !isReady;
+      elements.downloadInvoicesPdfBtn.disabled = !isReady;
       elements.uploadSignedSheetBtn.disabled = !isReady;
       elements.exportBackupBtn.disabled = !isReady;
       elements.exportExcelBtn.disabled = !isReady;
@@ -6403,6 +6407,52 @@ pause
       } finally {
         elements.downloadReceiptsBtn.disabled = false;
         elements.downloadReceiptsBtn.textContent = "Descargar comprobantes";
+      }
+    }
+
+    async function downloadOrderedInvoicesPdf() {
+      const expensesWithInvoices = getExpensesInExcelOrder(
+        state.expenses.filter((expense) => getInvoiceData(expense))
+      );
+      if (!expensesWithInvoices.length) {
+        setMessage("error", "Este proyecto no tiene facturas para descargar en PDF.");
+        return;
+      }
+
+      elements.downloadInvoicesPdfBtn.disabled = true;
+      elements.downloadInvoicesPdfBtn.textContent = "Preparando PDF...";
+      clearMessage();
+
+      try {
+        const mergedPdf = await PDFDocument.create();
+        let addedPages = 0;
+
+        for (const expense of expensesWithInvoices) {
+          const invoice = getInvoiceData(expense);
+          if (!invoice?.dataUrl) continue;
+          const response = await fetch(invoice.dataUrl);
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          const sourcePdf = await PDFDocument.load(bytes);
+          const copiedPages = await mergedPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
+          copiedPages.forEach((page) => mergedPdf.addPage(page));
+          addedPages += copiedPages.length;
+        }
+
+        if (!addedPages) {
+          throw new Error("No se pudo construir el PDF ordenado.");
+        }
+
+        const mergedBytes = await mergedPdf.save();
+        const blob = new Blob([mergedBytes], { type: "application/pdf" });
+        const projectName = slugifyFilePart(getActiveProject().name);
+        downloadBlob(blob, `facturas-ordenadas-${projectName}.pdf`);
+        setMessage("success", "PDF ordenado descargado correctamente.");
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudo generar el PDF ordenado. Revisa que las facturas sean PDFs válidos.");
+      } finally {
+        elements.downloadInvoicesPdfBtn.disabled = false;
+        elements.downloadInvoicesPdfBtn.textContent = "Descargar PDF ordenado";
       }
     }
 
@@ -8297,6 +8347,7 @@ pause
 
     elements.saveBudgetBtn.addEventListener("click", saveBudget);
     elements.downloadReceiptsBtn.addEventListener("click", downloadAllReceipts);
+    elements.downloadInvoicesPdfBtn.addEventListener("click", downloadOrderedInvoicesPdf);
     elements.historyOrderOptions.forEach((button) => {
       button.addEventListener("click", () => {
         state.historyOrder = button.dataset.historyOrder === "excel" ? "excel" : "date";
