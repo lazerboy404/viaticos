@@ -6350,6 +6350,35 @@
           usedNames.add(uniqueName);
           entries.push({ name: uniqueName, blob });
         };
+        const addTextEntry = (name, text) => {
+          const normalized = String(text).replace(/\r?\n/g, "\r\n");
+          addEntry(name, new Blob([normalized], { type: "text/plain" }));
+        };
+        addTextEntry("00-IMPRIMIR-TODO.bat", `@echo off
+setlocal enabledelayedexpansion
+set "ROOT=%~dp0"
+set "SUMATRA="
+for %%P in ("%ProgramFiles%\\SumatraPDF\\SumatraPDF.exe" "%ProgramFiles(x86)%\\SumatraPDF\\SumatraPDF.exe" "%LocalAppData%\\SumatraPDF\\SumatraPDF.exe") do (
+  if not defined SUMATRA if exist "%%~P" set "SUMATRA=%%~P"
+)
+if not defined SUMATRA (
+  echo No se encontro SumatraPDF.
+  echo Instala SumatraPDF o abre los PDF manualmente.
+  pause
+  exit /b 1
+)
+echo Imprimiendo en orden...
+for %%D in ("%ROOT%tickets" "%ROOT%facturas") do (
+  if exist "%%~fD" (
+    for /f "delims=" %%F in ('dir /b /on "%%~fD\\*.pdf" 2^>nul') do (
+      "%SUMATRA%" -print-to-default -silent -print-settings "monochrome,fit" "%%~fD\\%%F"
+      timeout /t 1 /nobreak >nul
+    )
+  )
+)
+echo Listo.
+pause
+`);
         for (let expenseIndex = 0; expenseIndex < expensesWithFiles.length; expenseIndex += 1) {
           const expense = expensesWithFiles[expenseIndex];
           const sortPrefix = String(expenseIndex + 1).padStart(2, "0");
