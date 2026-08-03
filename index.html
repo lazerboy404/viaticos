@@ -6357,20 +6357,20 @@
         addTextEntry("00-IMPRIMIR-TODO.bat", `@echo off
 setlocal
 set "ROOT=%~dp0"
-set "PS1=%TEMP%\\viaticos-print-one.ps1"
-> "%PS1%" (
-  echo param([string]$File)
-  echo $shell = New-Object -ComObject Shell.Application
-  echo $shell.ShellExecute($File, $null, $null, "print", 0)
+set "VBS=%TEMP%\\viaticos-print-one.vbs"
+> "%VBS%" (
+  echo Set shell = CreateObject("Shell.Application"^)
+  echo Set args = WScript.Arguments
+  echo shell.ShellExecute args(0^), "", "", "print", 0
 )
 echo Imprimiendo facturas en orden...
 if exist "%ROOT%facturas" (
   for /f "delims=" %%F in ('dir /b /on "%ROOT%facturas\\*.pdf" 2^>nul') do (
-    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" "%ROOT%facturas\\%%F"
+    cscript //nologo "%VBS%" "%ROOT%facturas\\%%F"
     timeout /t 3 /nobreak >nul
   )
 )
-del "%PS1%" >nul 2>nul
+del "%VBS%" >nul 2>nul
 echo Listo.
 pause
 `);
