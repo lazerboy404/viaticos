@@ -6363,13 +6363,11 @@ set "PS1=%TEMP%\\viaticos-print-one.ps1"
   echo $shell = New-Object -ComObject Shell.Application
   echo $shell.ShellExecute($File, $null, $null, "print", 0)
 )
-echo Imprimiendo en orden...
-for %%D in ("%ROOT%tickets" "%ROOT%facturas") do (
-  if exist "%%~fD" (
-    for /f "delims=" %%F in ('dir /b /on "%%~fD\\*.pdf" 2^>nul') do (
-      powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" "%%~fD\\%%F"
-      timeout /t 3 /nobreak >nul
-    )
+echo Imprimiendo facturas en orden...
+if exist "%ROOT%facturas" (
+  for /f "delims=" %%F in ('dir /b /on "%ROOT%facturas\\*.pdf" 2^>nul') do (
+    powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" "%ROOT%facturas\\%%F"
+    timeout /t 3 /nobreak >nul
   )
 )
 del "%PS1%" >nul 2>nul
