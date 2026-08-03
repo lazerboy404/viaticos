@@ -6323,7 +6323,9 @@
     }
 
     async function downloadAllReceipts() {
-      const expensesWithFiles = state.expenses.filter((expense) => getTicketList(expense).length || getInvoiceData(expense));
+      const expensesWithFiles = getExpensesInExcelOrder(
+        state.expenses.filter((expense) => getTicketList(expense).length || getInvoiceData(expense))
+      );
       if (!expensesWithFiles.length) {
         setMessage("error", "Este proyecto no tiene comprobantes para descargar.");
         return;
@@ -6348,15 +6350,23 @@
           usedNames.add(uniqueName);
           entries.push({ name: uniqueName, blob });
         };
-        for (const expense of expensesWithFiles) {
+        for (let expenseIndex = 0; expenseIndex < expensesWithFiles.length; expenseIndex += 1) {
+          const expense = expensesWithFiles[expenseIndex];
+          const sortPrefix = String(expenseIndex + 1).padStart(2, "0");
           const tickets = getTicketList(expense);
           for (let index = 0; index < tickets.length; index += 1) {
             const ticket = tickets[index];
-            addEntry(`tickets/${buildDownloadFileName(expense, "ticket", index, ticket.name)}`, await dataUrlToBlob(ticket.dataUrl));
+            addEntry(
+              `tickets/${sortPrefix}-${buildDownloadFileName(expense, "ticket", index, ticket.name)}`,
+              await dataUrlToBlob(ticket.dataUrl)
+            );
           }
           const invoice = getInvoiceData(expense);
           if (invoice) {
-            addEntry(`facturas/${buildDownloadFileName(expense, "factura", 0, invoice.name)}`, await dataUrlToBlob(invoice.dataUrl));
+            addEntry(
+              `facturas/${sortPrefix}-${buildDownloadFileName(expense, "factura", 0, invoice.name)}`,
+              await dataUrlToBlob(invoice.dataUrl)
+            );
           }
         }
         const projectName = slugifyFilePart(getActiveProject().name);
