@@ -6355,27 +6355,24 @@
           addEntry(name, new Blob([normalized], { type: "text/plain" }));
         };
         addTextEntry("00-IMPRIMIR-TODO.bat", `@echo off
-setlocal enabledelayedexpansion
+setlocal
 set "ROOT=%~dp0"
-set "SUMATRA="
-for %%P in ("%ProgramFiles%\\SumatraPDF\\SumatraPDF.exe" "%ProgramFiles(x86)%\\SumatraPDF\\SumatraPDF.exe" "%LocalAppData%\\SumatraPDF\\SumatraPDF.exe") do (
-  if not defined SUMATRA if exist "%%~P" set "SUMATRA=%%~P"
-)
-if not defined SUMATRA (
-  echo No se encontro SumatraPDF.
-  echo Instala SumatraPDF o abre los PDF manualmente.
-  pause
-  exit /b 1
+set "PS1=%TEMP%\\viaticos-print-one.ps1"
+> "%PS1%" (
+  echo param([string]$File)
+  echo $shell = New-Object -ComObject Shell.Application
+  echo $shell.ShellExecute($File, $null, $null, "print", 0)
 )
 echo Imprimiendo en orden...
 for %%D in ("%ROOT%tickets" "%ROOT%facturas") do (
   if exist "%%~fD" (
     for /f "delims=" %%F in ('dir /b /on "%%~fD\\*.pdf" 2^>nul') do (
-      "%SUMATRA%" -print-to-default -silent -print-settings "monochrome,fit" "%%~fD\\%%F"
-      timeout /t 1 /nobreak >nul
+      powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" "%%~fD\\%%F"
+      timeout /t 3 /nobreak >nul
     )
   )
 )
+del "%PS1%" >nul 2>nul
 echo Listo.
 pause
 `);
