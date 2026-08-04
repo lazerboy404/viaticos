@@ -3943,14 +3943,24 @@
     }
 
     .project-tools-actions {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, max-content));
-      grid-auto-rows: minmax(0, auto);
-      gap: 10px 12px;
-      justify-content: end;
-      align-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 12px;
       width: min(100%, 820px);
       margin-left: auto;
+    }
+
+    .project-tools-primary-row {
+      display: flex;
+      justify-content: center;
+    }
+
+    .project-tools-secondary-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px 12px;
+      align-items: center;
     }
 
     .project-tools-actions .button {
@@ -3980,9 +3990,14 @@
       border-color: color-mix(in srgb, var(--primary) 34%, var(--line));
     }
 
+    .project-tools-secondary-row .button {
+      width: 100%;
+      justify-content: center;
+    }
+
     .project-tools-actions .signed-sheet-status {
-      grid-column: 1 / -1;
       justify-self: end;
+      align-self: end;
       margin-top: 2px;
       padding: 0 2px 0 0;
       font-size: 0.82rem;
@@ -4104,12 +4119,18 @@
       }
 
       .project-tools-actions {
-        display: grid;
-        grid-template-columns: 1fr;
-        justify-content: stretch;
+        width: 100%;
         width: 100%;
         margin-left: 0;
         gap: 10px;
+      }
+
+      .project-tools-secondary-row {
+        grid-template-columns: 1fr;
+      }
+
+      .project-tools-primary-row {
+        justify-content: stretch;
       }
 
       .project-tools-actions .signed-sheet-status {
@@ -5469,15 +5490,19 @@
               <p>Comprobantes, respaldo completo e importaci&oacute;n segura.</p>
             </div>
             <div class="project-tools-actions">
-              <button class="button secondary" id="uploadSignedSheetBtn" type="button">Subir hoja firmada</button>
-              <button class="button secondary" id="viewSignedSheetBtn" type="button" hidden>Ver hoja</button>
-              <a class="button secondary" id="downloadSignedSheetBtn" hidden>Descargar hoja</a>
-              <button class="button danger" id="deleteSignedSheetBtn" type="button" hidden>Eliminar hoja</button>
-              <input class="visually-hidden" id="signedSheetInput" type="file" accept="application/pdf,.pdf,image/*">
-              <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
-              <button class="button secondary" id="downloadInvoicesPdfBtn" type="button">Descargar PDF ordenado</button>
-              <button class="button secondary" id="exportBackupBtn" type="button">Exportar respaldo</button>
-              <button class="button secondary" id="importBackupBtn" type="button">Importar respaldo</button>
+              <div class="project-tools-primary-row">
+                <button class="button secondary" id="uploadSignedSheetBtn" type="button">Subir hoja firmada</button>
+                <input class="visually-hidden" id="signedSheetInput" type="file" accept="application/pdf,.pdf,image/*">
+              </div>
+              <div class="project-tools-secondary-row">
+                <button class="button secondary" id="viewSignedSheetBtn" type="button" hidden>Ver hoja</button>
+                <a class="button secondary" id="downloadSignedSheetBtn" hidden>Descargar hoja</a>
+                <button class="button danger" id="deleteSignedSheetBtn" type="button" hidden>Eliminar hoja</button>
+                <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
+                <button class="button secondary" id="downloadInvoicesPdfBtn" type="button">Descargar PDF ordenado</button>
+                <button class="button secondary" id="exportBackupBtn" type="button">Exportar respaldo</button>
+                <button class="button secondary" id="importBackupBtn" type="button">Importar respaldo</button>
+              </div>
               <span class="signed-sheet-status" id="signedSheetStatus">Sin hoja firmada</span>
               <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
             </div>
