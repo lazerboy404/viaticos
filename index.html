@@ -3901,26 +3901,159 @@
       }
     }
 
-    .project-tools-panel,
+    .project-tools-panel {
+      margin-top: 16px;
+      padding: 20px;
+      border: 1px solid var(--glass-line);
+      border-radius: 20px;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.05)),
+        var(--glass-bg-strong);
+      box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.20);
+      backdrop-filter: blur(22px) saturate(145%);
+      -webkit-backdrop-filter: blur(22px) saturate(145%);
+    }
+
     .expense-report-panel {
       margin-top: 16px;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
+      padding: 20px;
+      border: 1px solid var(--glass-line);
+      border-radius: 20px;
       background:
-        linear-gradient(145deg, color-mix(in srgb, var(--surface) 82%, transparent), color-mix(in srgb, var(--surface-2) 58%, transparent)),
-        color-mix(in srgb, var(--panel) 78%, transparent);
-      box-shadow: var(--shadow);
+        linear-gradient(145deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.05)),
+        var(--glass-bg-strong);
+      box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.20);
+      backdrop-filter: blur(22px) saturate(145%);
+      -webkit-backdrop-filter: blur(22px) saturate(145%);
     }
 
-    [data-theme="dark"] .project-tools-panel,
-    [data-theme="dark"] .expense-report-panel {
-      background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
-        color-mix(in srgb, var(--surface) 92%, transparent);
+    .project-tools-headline h3 {
+      margin: 0 0 4px;
+      font-size: 1rem;
+      color: var(--glass-heading);
     }
 
-    .project-tools-header,
+    .project-tools-headline p {
+      margin: 0 0 16px;
+      color: var(--glass-muted);
+      font-size: 0.8rem;
+    }
+
+    .project-tools-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .tools-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px;
+      border: 1px solid var(--glass-line);
+      border-radius: 16px;
+      background: color-mix(in srgb, var(--glass-bg-soft) 70%, transparent);
+      transition: border-color 180ms ease, box-shadow 180ms ease, transform 160ms ease;
+    }
+
+    .tools-card:hover {
+      border-color: color-mix(in srgb, var(--glass-primary) 42%, transparent);
+      box-shadow: 0 0 26px color-mix(in srgb, var(--glass-primary) 10%, transparent);
+      transform: translateY(-1px);
+    }
+
+    .tools-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .tools-card-header h4 {
+      margin: 0;
+      color: var(--glass-heading);
+      font-size: 0.88rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .tools-card-header > div span {
+      display: block;
+      margin-top: 2px;
+      color: var(--glass-muted);
+      font-size: 0.72rem;
+      line-height: 1.3;
+    }
+
+    .tools-card-icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--glass-primary) 14%, transparent);
+      color: var(--glass-primary);
+      box-shadow: 0 0 16px color-mix(in srgb, var(--glass-primary) 14%, transparent);
+    }
+
+    .tools-card-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .tools-card-body {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .tools-card-body .button {
+      flex: 1 1 auto;
+      min-width: 0;
+      min-height: 38px;
+      padding-inline: 12px;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .tools-card-body .button .icon {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
+    }
+
+    .project-tools-signed-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .project-tools-signed-actions .button {
+      min-height: 34px;
+      padding-inline: 10px;
+      font-size: 0.72rem;
+    }
+
+    .tools-card--signed .tools-card-icon {
+      background: color-mix(in srgb, #f59e0b 16%, transparent);
+      color: #f59e0b;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.18);
+    }
+
+    .tools-card--receipts .tools-card-icon {
+      background: color-mix(in srgb, #06b6d4 16%, transparent);
+      color: #06b6d4;
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.18);
+    }
+
+    .tools-card--backup .tools-card-icon {
+      background: color-mix(in srgb, #8b5cf6 16%, transparent);
+      color: #8b5cf6;
+      box-shadow: 0 0 16px rgba(139, 92, 246, 0.18);
+    }
+
     .report-header {
       display: flex;
       align-items: center;
@@ -3929,113 +4062,15 @@
       margin-bottom: 0;
     }
 
-    .project-tools-header h3,
     .report-header h3 {
       margin: 0 0 4px;
       font-size: 1rem;
     }
 
-    .project-tools-header p,
     .report-header p {
       margin: 0;
       color: var(--muted);
       font-size: 0.8rem;
-    }
-
-    .project-tools-actions {
-      display: grid;
-      grid-template-columns: minmax(190px, 0.8fr) minmax(290px, 1.25fr) minmax(220px, 0.95fr);
-      align-items: stretch;
-      gap: 10px;
-      width: min(100%, 850px);
-      margin-left: auto;
-    }
-
-    .project-tools-primary-row {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px 12px;
-      border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--line));
-      border-radius: 14px;
-      background: color-mix(in srgb, var(--surface) 54%, transparent);
-    }
-
-    .project-tools-secondary-row {
-      display: contents;
-    }
-
-    .project-tools-group {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      align-items: center;
-      padding: 10px;
-      border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
-      border-radius: 14px;
-      background: color-mix(in srgb, var(--surface-2) 38%, transparent);
-    }
-
-    .project-tools-group-label {
-      grid-column: 1 / -1;
-      color: var(--muted);
-      font-size: 0.7rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .project-tools-actions .button {
-      min-height: 40px;
-      padding-inline: 12px;
-      font-size: 0.8rem;
-      white-space: nowrap;
-      border: 1px solid color-mix(in srgb, var(--primary) 38%, var(--line));
-      background:
-        linear-gradient(180deg, color-mix(in srgb, var(--primary) 10%, transparent), color-mix(in srgb, var(--surface) 86%, transparent)),
-        color-mix(in srgb, var(--panel) 62%, transparent);
-      box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.22),
-        0 8px 22px rgba(15, 23, 42, 0.08);
-    }
-
-    [data-theme="light"] .project-tools-actions .button {
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(240, 247, 252, 0.96)),
-        color-mix(in srgb, var(--surface) 88%, transparent);
-      border-color: color-mix(in srgb, var(--primary) 28%, var(--line));
-    }
-
-    [data-theme="dark"] .project-tools-actions .button {
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
-        color-mix(in srgb, var(--surface) 92%, transparent);
-      border-color: color-mix(in srgb, var(--primary) 34%, var(--line));
-    }
-
-    .project-tools-group .button {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .project-tools-actions .signed-sheet-status {
-      font-size: 0.75rem;
-      opacity: 0.92;
-      text-align: center;
-    }
-
-    .project-tools-signed-actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .project-tools-signed-actions .button {
-      min-height: 34px;
-      padding-inline: 9px;
-      font-size: 0.72rem;
     }
 
     .report-grid {
@@ -4139,36 +4174,32 @@
       font-size: 0.8rem;
     }
 
+    @media (max-width: 1100px) {
+      .project-tools-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (max-width: 760px) {
-      .project-tools-header,
       .report-header {
         align-items: flex-start;
         flex-direction: column;
       }
 
-      .project-tools-actions,
-      .project-tools-actions .button,
-      .report-grid {
+      .project-tools-panel {
+        padding: 14px;
+      }
+
+      .tools-card {
+        padding: 14px;
+      }
+
+      .tools-card-body {
+        flex-direction: column;
+      }
+
+      .tools-card-body .button {
         width: 100%;
-      }
-
-      .project-tools-actions {
-        width: 100%;
-        margin-left: 0;
-        gap: 10px;
-        grid-template-columns: 1fr;
-      }
-
-      .project-tools-primary-row {
-        justify-content: stretch;
-      }
-
-      .project-tools-group {
-        grid-template-columns: 1fr;
-      }
-
-      .project-tools-actions .signed-sheet-status {
-        text-align: left;
       }
 
       .report-grid {
@@ -5517,35 +5548,80 @@
 
         <section class="project-tools-panel history-secondary" aria-labelledby="projectToolsTitle">
           <div class="project-tools-header">
-            <div>
+            <div class="project-tools-headline">
               <h3 id="projectToolsTitle">Herramientas del proyecto</h3>
               <p>Comprobantes, respaldo completo e importaci&oacute;n segura.</p>
             </div>
-            <div class="project-tools-actions">
-              <div class="project-tools-primary-row">
-                <button class="button secondary" id="uploadSignedSheetBtn" type="button">Subir hoja firmada</button>
-                <span class="signed-sheet-status" id="signedSheetStatus">Sin hoja firmada</span>
+          </div>
+          <div class="project-tools-grid">
+            <article class="tools-card tools-card--signed">
+              <header class="tools-card-header">
+                <span class="tools-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M9 12h6M9 16h3M7 3h10l2 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5l2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <div>
+                  <h4>Hoja firmada</h4>
+                  <span class="signed-sheet-status" id="signedSheetStatus">Sin hoja firmada</span>
+                </div>
+              </header>
+              <div class="tools-card-body">
+                <button class="button secondary" id="uploadSignedSheetBtn" type="button">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Subir hoja
+                </button>
                 <div class="project-tools-signed-actions">
-                  <button class="button secondary" id="viewSignedSheetBtn" type="button" hidden>Ver hoja</button>
-                  <a class="button secondary" id="downloadSignedSheetBtn" hidden>Descargar hoja</a>
-                  <button class="button danger" id="deleteSignedSheetBtn" type="button" hidden>Eliminar hoja</button>
+                  <button class="button secondary" id="viewSignedSheetBtn" type="button" hidden>Ver</button>
+                  <a class="button secondary" id="downloadSignedSheetBtn" hidden>Descargar</a>
+                  <button class="button danger" id="deleteSignedSheetBtn" type="button" hidden>Eliminar</button>
                 </div>
                 <input class="visually-hidden" id="signedSheetInput" type="file" accept="application/pdf,.pdf,image/*">
               </div>
-              <div class="project-tools-secondary-row">
-                <div class="project-tools-group">
-                  <span class="project-tools-group-label">Comprobantes</span>
-                  <button class="button secondary" id="downloadReceiptsBtn" type="button">Descargar comprobantes</button>
-                  <button class="button secondary" id="downloadInvoicesPdfBtn" type="button">PDF ordenado</button>
+            </article>
+
+            <article class="tools-card tools-card--receipts">
+              <header class="tools-card-header">
+                <span class="tools-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M17 2v8l-3-2-3 2V2H7a1 1 0 00-1 1v18a1 1 0 001 1h10a1 1 0 001-1V2h-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                </span>
+                <div>
+                  <h4>Comprobantes</h4>
+                  <span>Descarga de tickets y facturas</span>
                 </div>
-                <div class="project-tools-group">
-                  <span class="project-tools-group-label">Respaldo</span>
-                  <button class="button secondary" id="exportBackupBtn" type="button">Exportar</button>
-                  <button class="button secondary" id="importBackupBtn" type="button">Importar</button>
+              </header>
+              <div class="tools-card-body">
+                <button class="button secondary" id="downloadReceiptsBtn" type="button">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17v4h20v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Descargar ZIP
+                </button>
+                <button class="button secondary" id="downloadInvoicesPdfBtn" type="button">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 4h16v12H4zM4 16l4-4 4 4 4-6 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  PDF ordenado
+                </button>
+              </div>
+            </article>
+
+            <article class="tools-card tools-card--backup">
+              <header class="tools-card-header">
+                <span class="tools-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" stroke="currentColor" stroke-width="2"/><path d="M12 11v3M12 11l-3 2M12 11l3 2M8 7V5h8v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <div>
+                  <h4>Respaldo</h4>
+                  <span>Exporta e importa tus datos</span>
                 </div>
+              </header>
+              <div class="tools-card-body">
+                <button class="button secondary" id="exportBackupBtn" type="button">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Exportar
+                </button>
+                <button class="button secondary" id="importBackupBtn" type="button">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Importar
+                </button>
               </div>
               <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
-            </div>
+            </article>
           </div>
         </section>
 
