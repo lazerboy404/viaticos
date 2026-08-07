@@ -4809,7 +4809,7 @@
       height: 20px;
     }
 
-    .history-panel .concept-neon img {
+    .brand-logo-img {
       display: block;
       width: 100%;
       height: 100%;
@@ -6074,58 +6074,56 @@
     }
 
     const brandLogoMap = {
-      uber: "https://logo.clearbit.com/uber.com?size=80",
-      "uber eats": "https://logo.clearbit.com/ubereats.com?size=80",
-      didi: "https://logo.clearbit.com/didiglobal.com?size=80",
-      rappi: "https://logo.clearbit.com/rappi.com?size=80",
-      oxxo: "https://logo.clearbit.com/oxxo.com?size=80",
-      starbucks: "https://logo.clearbit.com/starbucks.com?size=80",
-      "tim hortons": "https://logo.clearbit.com/timhortons.com?size=80",
-      dominos: "https://logo.clearbit.com/dominos.com?size=80",
-      "pizza hut": "https://logo.clearbit.com/pizzahut.com?size=80",
-      "little caesars": "https://logo.clearbit.com/littlecaesars.com?size=80",
-      "burger king": "https://logo.clearbit.com/burgerking.com?size=80",
-      mcdonalds: "https://logo.clearbit.com/mcdonalds.com?size=80",
-      kfc: "https://logo.clearbit.com/kfc.com?size=80",
-      subway: "https://logo.clearbit.com/subway.com?size=80",
-      "carls jr": "https://logo.clearbit.com/carlsjr.com?size=80",
-      ihop: "https://logo.clearbit.com/ihop.com?size=80",
-      walmart: "https://logo.clearbit.com/walmart.com?size=80",
-      costco: "https://logo.clearbit.com/costco.com?size=80",
-      "sams club": "https://logo.clearbit.com/samsclub.com?size=80",
-      soriana: "https://logo.clearbit.com/soriana.com?size=80",
-      chedraui: "https://logo.clearbit.com/chedraui.com.mx?size=80",
-      airbnb: "https://logo.clearbit.com/airbnb.com?size=80",
-      amazon: "https://logo.clearbit.com/amazon.com?size=80",
-      "mercado libre": "https://logo.clearbit.com/mercadolibre.com?size=80",
-      spotify: "https://logo.clearbit.com/spotify.com?size=80",
-      netflix: "https://logo.clearbit.com/netflix.com?size=80",
-      telcel: "https://logo.clearbit.com/telcel.com?size=80",
-      movistar: "https://logo.clearbit.com/movistar.com?size=80",
-      "sanborns": "https://logo.clearbit.com/sanborns.com.mx?size=80",
-      cinepolis: "https://logo.clearbit.com/cinepolis.com?size=80",
-      cinemex: "https://logo.clearbit.com/cinemex.com?size=80",
-      volaris: "https://logo.clearbit.com/volaris.com?size=80",
-      "viva aerobus": "https://logo.clearbit.com/vivaaerobus.com?size=80",
-      aeromexico: "https://logo.clearbit.com/aeromexico.com?size=80",
-      ado: "https://logo.clearbit.com/ado.com.mx?size=80",
-      etn: "https://logo.clearbit.com/etn.com.mx?size=80",
-      "primera plus": "https://logo.clearbit.com/primeraplus.com.mx?size=80",
-      coppel: "https://logo.clearbit.com/coppel.com?size=80",
-      elektra: "https://logo.clearbit.com/elektra.com.mx?size=80",
-      liverpool: "https://logo.clearbit.com/liverpool.com.mx?size=80",
-      sears: "https://logo.clearbit.com/sears.com.mx?size=80",
-      pemex: "https://logo.clearbit.com/pemex.com?size=80",
-      vips: "https://logo.clearbit.com/vips.com.mx?size=80",
-      toks: "https://logo.clearbit.com/toks.com.mx?size=80",
-      "el porton": "https://logo.clearbit.com/elporton.mx?size=80",
-      "rebel wings": "https://logo.clearbit.com/rebelwings.com?size=80",
-      wingstop: "https://logo.clearbit.com/wingstop.com?size=80",
-      "chilis": "https://logo.clearbit.com/chilis.com?size=80",
-      "applebees": "https://logo.clearbit.com/applebees.com?size=80",
-      "pf changs": "https://logo.clearbit.com/pfchangs.com?size=80",
-      "tacos": null,
-      "gorditas": null
+      uber: "https://www.google.com/s2/favicons?domain=uber.com&sz=64",
+      "uber eats": "https://www.google.com/s2/favicons?domain=ubereats.com&sz=64",
+      didi: "https://www.google.com/s2/favicons?domain=didiglobal.com&sz=64",
+      rappi: "https://www.google.com/s2/favicons?domain=rappi.com&sz=64",
+      oxxo: "https://www.google.com/s2/favicons?domain=oxxo.com&sz=64",
+      starbucks: "https://www.google.com/s2/favicons?domain=starbucks.com&sz=64",
+      "tim hortons": "https://www.google.com/s2/favicons?domain=timhortons.com&sz=64",
+      dominos: "https://www.google.com/s2/favicons?domain=dominos.com&sz=64",
+      "pizza hut": "https://www.google.com/s2/favicons?domain=pizzahut.com&sz=64",
+      "little caesars": "https://www.google.com/s2/favicons?domain=littlecaesars.com&sz=64",
+      "burger king": "https://www.google.com/s2/favicons?domain=burgerking.com&sz=64",
+      mcdonalds: "https://www.google.com/s2/favicons?domain=mcdonalds.com&sz=64",
+      kfc: "https://www.google.com/s2/favicons?domain=kfc.com&sz=64",
+      subway: "https://www.google.com/s2/favicons?domain=subway.com&sz=64",
+      "carls jr": "https://www.google.com/s2/favicons?domain=carlsjr.com&sz=64",
+      ihop: "https://www.google.com/s2/favicons?domain=ihop.com&sz=64",
+      walmart: "https://www.google.com/s2/favicons?domain=walmart.com&sz=64",
+      costco: "https://www.google.com/s2/favicons?domain=costco.com&sz=64",
+      "sams club": "https://www.google.com/s2/favicons?domain=samsclub.com&sz=64",
+      soriana: "https://www.google.com/s2/favicons?domain=soriana.com&sz=64",
+      chedraui: "https://www.google.com/s2/favicons?domain=chedraui.com.mx&sz=64",
+      airbnb: "https://www.google.com/s2/favicons?domain=airbnb.com&sz=64",
+      amazon: "https://www.google.com/s2/favicons?domain=amazon.com&sz=64",
+      "mercado libre": "https://www.google.com/s2/favicons?domain=mercadolibre.com&sz=64",
+      spotify: "https://www.google.com/s2/favicons?domain=spotify.com&sz=64",
+      netflix: "https://www.google.com/s2/favicons?domain=netflix.com&sz=64",
+      telcel: "https://www.google.com/s2/favicons?domain=telcel.com&sz=64",
+      movistar: "https://www.google.com/s2/favicons?domain=movistar.com&sz=64",
+      sanborns: "https://www.google.com/s2/favicons?domain=sanborns.com.mx&sz=64",
+      cinepolis: "https://www.google.com/s2/favicons?domain=cinepolis.com&sz=64",
+      cinemex: "https://www.google.com/s2/favicons?domain=cinemex.com&sz=64",
+      volaris: "https://www.google.com/s2/favicons?domain=volaris.com&sz=64",
+      "viva aerobus": "https://www.google.com/s2/favicons?domain=vivaaerobus.com&sz=64",
+      aeromexico: "https://www.google.com/s2/favicons?domain=aeromexico.com&sz=64",
+      ado: "https://www.google.com/s2/favicons?domain=ado.com.mx&sz=64",
+      etn: "https://www.google.com/s2/favicons?domain=etn.com.mx&sz=64",
+      "primera plus": "https://www.google.com/s2/favicons?domain=primeraplus.com.mx&sz=64",
+      coppel: "https://www.google.com/s2/favicons?domain=coppel.com&sz=64",
+      elektra: "https://www.google.com/s2/favicons?domain=elektra.com.mx&sz=64",
+      liverpool: "https://www.google.com/s2/favicons?domain=liverpool.com.mx&sz=64",
+      sears: "https://www.google.com/s2/favicons?domain=sears.com.mx&sz=64",
+      pemex: "https://www.google.com/s2/favicons?domain=pemex.com&sz=64",
+      vips: "https://www.google.com/s2/favicons?domain=vips.com.mx&sz=64",
+      toks: "https://www.google.com/s2/favicons?domain=toks.com.mx&sz=64",
+      "el porton": null,
+      "rebel wings": null,
+      wingstop: "https://www.google.com/s2/favicons?domain=wingstop.com&sz=64",
+      chilis: "https://www.google.com/s2/favicons?domain=chilis.com&sz=64",
+      applebees: "https://www.google.com/s2/favicons?domain=applebees.com&sz=64",
+      "pf changs": "https://www.google.com/s2/favicons?domain=pfchangs.com&sz=64",
     };
 
     function findBrandLogo(text) {
@@ -7475,8 +7473,9 @@ pause
         const conceptMeta = getConceptMeta(conceptParts.combined);
         row.classList.toggle("uber-concept", Boolean(conceptMeta.isUber));
 
-        const neonContent = conceptMeta.logoUrl
-          ? `<img src="${conceptMeta.logoUrl}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:100%;height:100%;object-fit:contain;border-radius:8px" referrerpolicy="no-referrer" loading="lazy"><svg viewBox="0 0 24 24" fill="none" style="display:none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        const hasLogo = Boolean(conceptMeta.logoUrl);
+        const neonContent = hasLogo
+          ? `<img src="${conceptMeta.logoUrl}" alt="" class="brand-logo-img"><svg viewBox="0 0 24 24" fill="none" class="brand-logo-fallback" style="display:none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
           : `<svg viewBox="0 0 24 24" fill="none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
         row.querySelector(".concept-cell").innerHTML = `
@@ -7490,6 +7489,17 @@ pause
             </span>
           </span>
         `;
+
+        if (hasLogo) {
+          const img = row.querySelector(".brand-logo-img");
+          const fallback = row.querySelector(".brand-logo-fallback");
+          if (img && fallback) {
+            img.addEventListener("error", () => {
+              img.remove();
+              fallback.style.display = "";
+            });
+          }
+        }
         row.querySelector(".concept-text strong").textContent = conceptParts.concept;
         row.querySelector(".concept-text small").textContent = conceptParts.name || "Sin nombre";
         row.querySelector(".concept-text").classList.toggle("single-line", !conceptParts.name);
