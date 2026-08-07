@@ -4809,6 +4809,14 @@
       height: 20px;
     }
 
+    .history-panel .concept-neon img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
     .history-panel .concept-text strong {
       font-size: 0.9rem;
     }
@@ -6065,15 +6073,83 @@
       renderSignedSheetControls();
     }
 
+    const brandLogoMap = {
+      uber: "https://logo.clearbit.com/uber.com?size=80",
+      "uber eats": "https://logo.clearbit.com/ubereats.com?size=80",
+      didi: "https://logo.clearbit.com/didiglobal.com?size=80",
+      rappi: "https://logo.clearbit.com/rappi.com?size=80",
+      oxxo: "https://logo.clearbit.com/oxxo.com?size=80",
+      starbucks: "https://logo.clearbit.com/starbucks.com?size=80",
+      "tim hortons": "https://logo.clearbit.com/timhortons.com?size=80",
+      dominos: "https://logo.clearbit.com/dominos.com?size=80",
+      "pizza hut": "https://logo.clearbit.com/pizzahut.com?size=80",
+      "little caesars": "https://logo.clearbit.com/littlecaesars.com?size=80",
+      "burger king": "https://logo.clearbit.com/burgerking.com?size=80",
+      mcdonalds: "https://logo.clearbit.com/mcdonalds.com?size=80",
+      kfc: "https://logo.clearbit.com/kfc.com?size=80",
+      subway: "https://logo.clearbit.com/subway.com?size=80",
+      "carls jr": "https://logo.clearbit.com/carlsjr.com?size=80",
+      ihop: "https://logo.clearbit.com/ihop.com?size=80",
+      walmart: "https://logo.clearbit.com/walmart.com?size=80",
+      costco: "https://logo.clearbit.com/costco.com?size=80",
+      "sams club": "https://logo.clearbit.com/samsclub.com?size=80",
+      soriana: "https://logo.clearbit.com/soriana.com?size=80",
+      chedraui: "https://logo.clearbit.com/chedraui.com.mx?size=80",
+      airbnb: "https://logo.clearbit.com/airbnb.com?size=80",
+      amazon: "https://logo.clearbit.com/amazon.com?size=80",
+      "mercado libre": "https://logo.clearbit.com/mercadolibre.com?size=80",
+      spotify: "https://logo.clearbit.com/spotify.com?size=80",
+      netflix: "https://logo.clearbit.com/netflix.com?size=80",
+      telcel: "https://logo.clearbit.com/telcel.com?size=80",
+      movistar: "https://logo.clearbit.com/movistar.com?size=80",
+      "sanborns": "https://logo.clearbit.com/sanborns.com.mx?size=80",
+      cinepolis: "https://logo.clearbit.com/cinepolis.com?size=80",
+      cinemex: "https://logo.clearbit.com/cinemex.com?size=80",
+      volaris: "https://logo.clearbit.com/volaris.com?size=80",
+      "viva aerobus": "https://logo.clearbit.com/vivaaerobus.com?size=80",
+      aeromexico: "https://logo.clearbit.com/aeromexico.com?size=80",
+      ado: "https://logo.clearbit.com/ado.com.mx?size=80",
+      etn: "https://logo.clearbit.com/etn.com.mx?size=80",
+      "primera plus": "https://logo.clearbit.com/primeraplus.com.mx?size=80",
+      coppel: "https://logo.clearbit.com/coppel.com?size=80",
+      elektra: "https://logo.clearbit.com/elektra.com.mx?size=80",
+      liverpool: "https://logo.clearbit.com/liverpool.com.mx?size=80",
+      sears: "https://logo.clearbit.com/sears.com.mx?size=80",
+      pemex: "https://logo.clearbit.com/pemex.com?size=80",
+      vips: "https://logo.clearbit.com/vips.com.mx?size=80",
+      toks: "https://logo.clearbit.com/toks.com.mx?size=80",
+      "el porton": "https://logo.clearbit.com/elporton.mx?size=80",
+      "rebel wings": "https://logo.clearbit.com/rebelwings.com?size=80",
+      wingstop: "https://logo.clearbit.com/wingstop.com?size=80",
+      "chilis": "https://logo.clearbit.com/chilis.com?size=80",
+      "applebees": "https://logo.clearbit.com/applebees.com?size=80",
+      "pf changs": "https://logo.clearbit.com/pfchangs.com?size=80",
+      "tacos": null,
+      "gorditas": null
+    };
+
+    function findBrandLogo(text) {
+      const lowerText = text.toLowerCase();
+      for (const [brand, url] of Object.entries(brandLogoMap)) {
+        if (!url) continue;
+        if (lowerText.includes(brand)) return url;
+      }
+      return null;
+    }
+
     function getConceptMeta(concept = "") {
       const text = concept.toLowerCase();
-      if (/\buber\b/.test(text)) {
+      const logoUrl = findBrandLogo(text);
+
+      if (/\buber\b/.test(text) && !text.includes("uber eats")) {
         return {
           color: "#ffffff",
           isUber: true,
-          path: "M7 5v8a5 5 0 0 0 10 0V5M7 19h10"
+          path: "M7 5v8a5 5 0 0 0 10 0V5M7 19h10",
+          logoUrl: brandLogoMap["uber"]
         };
       }
+
       const catalog = [
         { keys: ["comida", "restaurante", "desayuno", "cena", "alimento", "cafe"], color: "#f472ff", path: "M6 3v8M9 3v8M6 7h3M7.5 11v10M17 3v18M14 3v7a3 3 0 0 0 6 0V3" },
         { keys: ["hotel", "hospedaje", "hostal", "airbnb"], color: "#22d3ee", path: "M4 21V5M20 21V11a3 3 0 0 0-3-3H9a3 3 0 0 0-3 3v10M6 14h14M9 8V5h6v3M9 17h2M15 17h2" },
@@ -6083,9 +6159,12 @@
         { keys: ["vuelo", "avion", "avión", "aeropuerto"], color: "#38bdf8", path: "M2 16l20-8-8 20-3-9-9-3ZM11 19l3-3" },
         { keys: ["pdf", "factura", "oficina", "papeleria"], color: "#34d399", path: "M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6ZM14 2v6h6M8 13h8M8 17h5" }
       ];
-      return catalog.find((item) => item.keys.some((key) => text.includes(key))) || {
-        color: "#2dd4bf",
-        path: "M5 6h14v14H5zM8 10h8M8 14h8M8 18h4M9 3h6l2 3H7l2-3Z"
+
+      const match = catalog.find((item) => item.keys.some((key) => text.includes(key)));
+      return {
+        color: match?.color || "#2dd4bf",
+        path: match?.path || "M5 6h14v14H5zM8 10h8M8 14h8M8 18h4M9 3h6l2 3H7l2-3Z",
+        logoUrl
       };
     }
 
@@ -7395,12 +7474,15 @@ pause
         const conceptParts = getExpenseConceptParts(expense);
         const conceptMeta = getConceptMeta(conceptParts.combined);
         row.classList.toggle("uber-concept", Boolean(conceptMeta.isUber));
+
+        const neonContent = conceptMeta.logoUrl
+          ? `<img src="${conceptMeta.logoUrl}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='block'" style="width:100%;height:100%;object-fit:contain;border-radius:8px" referrerpolicy="no-referrer" loading="lazy"><svg viewBox="0 0 24 24" fill="none" style="display:none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+          : `<svg viewBox="0 0 24 24" fill="none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
         row.querySelector(".concept-cell").innerHTML = `
           <span class="concept-wrap" style="--concept-color: ${conceptMeta.color}">
             <span class="concept-neon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              ${neonContent}
             </span>
             <span class="concept-text">
               <strong></strong>
