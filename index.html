@@ -6073,78 +6073,92 @@
       renderSignedSheetControls();
     }
 
-    const brandLogoMap = {
-      uber: "https://www.google.com/s2/favicons?domain=uber.com&sz=64",
-      "uber eats": "https://www.google.com/s2/favicons?domain=ubereats.com&sz=64",
-      didi: "https://www.google.com/s2/favicons?domain=didiglobal.com&sz=64",
-      rappi: "https://www.google.com/s2/favicons?domain=rappi.com&sz=64",
-      oxxo: "https://www.google.com/s2/favicons?domain=oxxo.com&sz=64",
-      starbucks: "https://www.google.com/s2/favicons?domain=starbucks.com&sz=64",
-      "tim hortons": "https://www.google.com/s2/favicons?domain=timhortons.com&sz=64",
-      dominos: "https://www.google.com/s2/favicons?domain=dominos.com&sz=64",
-      "pizza hut": "https://www.google.com/s2/favicons?domain=pizzahut.com&sz=64",
-      "little caesars": "https://www.google.com/s2/favicons?domain=littlecaesars.com&sz=64",
-      "burger king": "https://www.google.com/s2/favicons?domain=burgerking.com&sz=64",
-      mcdonalds: "https://www.google.com/s2/favicons?domain=mcdonalds.com&sz=64",
-      kfc: "https://www.google.com/s2/favicons?domain=kfc.com&sz=64",
-      subway: "https://www.google.com/s2/favicons?domain=subway.com&sz=64",
-      "carls jr": "https://www.google.com/s2/favicons?domain=carlsjr.com&sz=64",
-      ihop: "https://www.google.com/s2/favicons?domain=ihop.com&sz=64",
-      walmart: "https://www.google.com/s2/favicons?domain=walmart.com&sz=64",
-      costco: "https://www.google.com/s2/favicons?domain=costco.com&sz=64",
-      "sams club": "https://www.google.com/s2/favicons?domain=samsclub.com&sz=64",
-      soriana: "https://www.google.com/s2/favicons?domain=soriana.com&sz=64",
-      chedraui: "https://www.google.com/s2/favicons?domain=chedraui.com.mx&sz=64",
-      airbnb: "https://www.google.com/s2/favicons?domain=airbnb.com&sz=64",
-      amazon: "https://www.google.com/s2/favicons?domain=amazon.com&sz=64",
-      "mercado libre": "https://www.google.com/s2/favicons?domain=mercadolibre.com&sz=64",
-      spotify: "https://www.google.com/s2/favicons?domain=spotify.com&sz=64",
-      netflix: "https://www.google.com/s2/favicons?domain=netflix.com&sz=64",
-      telcel: "https://www.google.com/s2/favicons?domain=telcel.com&sz=64",
-      movistar: "https://www.google.com/s2/favicons?domain=movistar.com&sz=64",
-      sanborns: "https://www.google.com/s2/favicons?domain=sanborns.com.mx&sz=64",
-      cinepolis: "https://www.google.com/s2/favicons?domain=cinepolis.com&sz=64",
-      cinemex: "https://www.google.com/s2/favicons?domain=cinemex.com&sz=64",
-      volaris: "https://www.google.com/s2/favicons?domain=volaris.com&sz=64",
-      "viva aerobus": "https://www.google.com/s2/favicons?domain=vivaaerobus.com&sz=64",
-      aeromexico: "https://www.google.com/s2/favicons?domain=aeromexico.com&sz=64",
-      ado: "https://www.google.com/s2/favicons?domain=ado.com.mx&sz=64",
-      etn: "https://www.google.com/s2/favicons?domain=etn.com.mx&sz=64",
-      "primera plus": "https://www.google.com/s2/favicons?domain=primeraplus.com.mx&sz=64",
-      coppel: "https://www.google.com/s2/favicons?domain=coppel.com&sz=64",
-      elektra: "https://www.google.com/s2/favicons?domain=elektra.com.mx&sz=64",
-      liverpool: "https://www.google.com/s2/favicons?domain=liverpool.com.mx&sz=64",
-      sears: "https://www.google.com/s2/favicons?domain=sears.com.mx&sz=64",
-      pemex: "https://www.google.com/s2/favicons?domain=pemex.com&sz=64",
-      vips: "https://www.google.com/s2/favicons?domain=vips.com.mx&sz=64",
-      toks: "https://www.google.com/s2/favicons?domain=toks.com.mx&sz=64",
-      "el porton": null,
-      "rebel wings": null,
-      wingstop: "https://www.google.com/s2/favicons?domain=wingstop.com&sz=64",
-      chilis: "https://www.google.com/s2/favicons?domain=chilis.com&sz=64",
-      applebees: "https://www.google.com/s2/favicons?domain=applebees.com&sz=64",
-      "pf changs": "https://www.google.com/s2/favicons?domain=pfchangs.com&sz=64",
+    const BRAND_LOGO_SIZE = 256;
+
+    function makeLogoUrl(domain) {
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=${BRAND_LOGO_SIZE}`;
+    }
+
+    const brandLogoDomains = {
+      uber: ["uber.com"],
+      "uber eats": ["ubereats.com"],
+      didi: ["didiglobal.com", "web.didiglobal.com"],
+      rappi: ["rappi.com"],
+      oxxo: ["oxxo.com"],
+      starbucks: ["starbucks.com", "starbucks.com.mx"],
+      "tim hortons": ["timhortons.com", "timhortons.com.mx"],
+      dominos: ["dominos.com", "dominos.com.mx"],
+      "pizza hut": ["pizzahut.com", "pizzahut.com.mx"],
+      "little caesars": ["littlecaesars.com", "littlecaesars.com.mx"],
+      "burger king": ["burgerking.com", "burgerking.com.mx"],
+      mcdonalds: ["mcdonalds.com", "mcdonalds.com.mx"],
+      kfc: ["kfc.com", "kfc.com.mx"],
+      subway: ["subway.com"],
+      "carls jr": ["carlsjr.com", "carlsjr.com.mx"],
+      ihop: ["ihop.com", "ihop.com.mx"],
+      walmart: ["walmart.com", "walmart.com.mx"],
+      costco: ["costco.com.mx", "costco.com"],
+      "sams club": ["samsclub.com", "sams.com.mx"],
+      soriana: ["soriana.com"],
+      chedraui: ["chedraui.com.mx", "chedraui.com"],
+      airbnb: ["airbnb.com", "airbnb.com.mx"],
+      amazon: ["amazon.com", "amazon.com.mx"],
+      "mercado libre": ["mercadolibre.com", "mercadolibre.com.mx"],
+      spotify: ["spotify.com"],
+      netflix: ["netflix.com"],
+      telcel: ["telcel.com"],
+      movistar: ["movistar.com", "movistar.com.mx"],
+      sanborns: ["sanborns.com.mx", "sanborns.com"],
+      cinepolis: ["cinepolis.com"],
+      cinemex: ["cinemex.com"],
+      volaris: ["volaris.com"],
+      "viva aerobus": ["vivaaerobus.com"],
+      aeromexico: ["aeromexico.com"],
+      ado: ["ado.com.mx"],
+      etn: ["etn.com.mx"],
+      "primera plus": ["primeraplus.com.mx", "primeraplus.com"],
+      coppel: ["coppel.com"],
+      elektra: ["elektra.com.mx", "elektra.com"],
+      liverpool: ["liverpool.com.mx"],
+      sears: ["sears.com.mx", "sears.com"],
+      pemex: ["pemex.com"],
+      vips: ["vips.com.mx"],
+      toks: ["toks.com.mx"],
+      wingstop: ["wingstop.com", "wingstop.com.mx"],
+      chilis: ["chilis.com", "chilis.com.mx"],
+      applebees: ["applebees.com", "applebees.com.mx"],
+      "pf changs": ["pfchangs.com", "pfchangs.com.mx"],
+      "farmacias guadalajara": ["farmaciasguadalajara.com.mx"],
+      "farmacias del ahorro": ["farmaciasdelahorro.com.mx"],
+      benavides: ["benavides.com.mx"],
+      "la comer": ["lacomer.com.mx"],
+      "bodega aurrera": ["bodegaaurrera.com.mx"],
+      "chedraui selecto": ["chedraui.com.mx"],
+      superama: ["superama.com.mx"],
+      "el porton": ["elportonrestaurante.com.mx"],
+      "rebel wings": ["rebelwings.mx", "rebelwings.com", "rebel-wings.com"],
+      toyo: [],
     };
 
-    function findBrandLogo(text) {
+    function findBrandLogoDomains(text) {
       const lowerText = text.toLowerCase();
-      for (const [brand, url] of Object.entries(brandLogoMap)) {
-        if (!url) continue;
-        if (lowerText.includes(brand)) return url;
+      for (const [brand, domains] of Object.entries(brandLogoDomains)) {
+        if (!domains || !domains.length) continue;
+        if (lowerText.includes(brand)) return domains.map((d) => makeLogoUrl(d));
       }
       return null;
     }
 
     function getConceptMeta(concept = "") {
       const text = concept.toLowerCase();
-      const logoUrl = findBrandLogo(text);
+      const logoUrls = findBrandLogoDomains(text);
 
       if (/\buber\b/.test(text) && !text.includes("uber eats")) {
         return {
           color: "#ffffff",
           isUber: true,
           path: "M7 5v8a5 5 0 0 0 10 0V5M7 19h10",
-          logoUrl: brandLogoMap["uber"]
+          logoUrls: brandLogoDomains["uber"]?.map((d) => makeLogoUrl(d)) || null
         };
       }
 
@@ -6162,7 +6176,7 @@
       return {
         color: match?.color || "#2dd4bf",
         path: match?.path || "M5 6h14v14H5zM8 10h8M8 14h8M8 18h4M9 3h6l2 3H7l2-3Z",
-        logoUrl
+        logoUrls
       };
     }
 
@@ -7473,9 +7487,11 @@ pause
         const conceptMeta = getConceptMeta(conceptParts.combined);
         row.classList.toggle("uber-concept", Boolean(conceptMeta.isUber));
 
-        const hasLogo = Boolean(conceptMeta.logoUrl);
+        const logoUrls = conceptMeta.logoUrls;
+        const firstLogoUrl = (logoUrls && logoUrls.length) ? logoUrls[0] : null;
+        const hasLogo = Boolean(firstLogoUrl);
         const neonContent = hasLogo
-          ? `<img src="${conceptMeta.logoUrl}" alt="" class="brand-logo-img"><svg viewBox="0 0 24 24" fill="none" class="brand-logo-fallback" style="display:none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+          ? `<img src="${firstLogoUrl}" alt="" class="brand-logo-img"><svg viewBox="0 0 24 24" fill="none" class="brand-logo-fallback" style="display:none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
           : `<svg viewBox="0 0 24 24" fill="none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
         row.querySelector(".concept-cell").innerHTML = `
@@ -7493,10 +7509,24 @@ pause
         if (hasLogo) {
           const img = row.querySelector(".brand-logo-img");
           const fallback = row.querySelector(".brand-logo-fallback");
-          if (img && fallback) {
-            img.addEventListener("error", () => {
+          let urlIndex = 0;
+
+          const tryNextLogo = () => {
+            urlIndex += 1;
+            if (urlIndex < logoUrls.length) {
+              img.src = logoUrls[urlIndex];
+            } else {
               img.remove();
               fallback.style.display = "";
+            }
+          };
+
+          if (img && fallback) {
+            img.addEventListener("error", tryNextLogo);
+            img.addEventListener("load", () => {
+              if (img.naturalWidth <= 16 && img.naturalHeight <= 16) {
+                tryNextLogo();
+              }
             });
           }
         }
