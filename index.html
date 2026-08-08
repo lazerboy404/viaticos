@@ -6073,10 +6073,10 @@
       renderSignedSheetControls();
     }
 
-    const BRAND_LOGO_SIZE = 256;
+    const BRAND_LOGO_SIZE = 128;
 
     function makeLogoUrl(domain) {
-      return `https://www.google.com/s2/favicons?domain=${domain}&sz=${BRAND_LOGO_SIZE}`;
+      return `https://icon.horse/icon/${domain}`;
     }
 
     const brandLogoDomains = {
@@ -6139,7 +6139,7 @@
       porton: ["elportonrestaurante.com.mx"],
       "rebel wings": ["rebelwings.mx", "rebelwings.com", "rebel-wings.com"],
       "flecha roja": ["flecharoja.com.mx"],
-      "futura": ["flecharoja.com.mx"],
+      futura: ["flecharoja.com.mx"],
       "tren interurbano": ["treninterurbano.com.mx"],
       "rancheros del sur": ["rancherosdelsur.com.mx"],
       "hotel real alameda": ["hotelrealalameda.com"],
@@ -6147,7 +6147,7 @@
       fogon: ["fogondobrasil.com.mx"],
       "china lucky": ["chinalucky.com.mx"],
       "hotel real": ["hotelrealalameda.com"],
-      "estacionamiento": [],
+      estacionamiento: [],
       toyo: [],
     };
 
@@ -7549,11 +7549,6 @@ pause
 
           if (img && fallback) {
             img.addEventListener("error", tryNextLogo);
-            img.addEventListener("load", () => {
-              if (img.naturalWidth <= 16 && img.naturalHeight <= 16) {
-                tryNextLogo();
-              }
-            });
           }
         }
         row.querySelector(".concept-text strong").textContent = conceptParts.concept;
