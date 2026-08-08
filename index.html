@@ -6075,14 +6075,8 @@
       renderSignedSheetControls();
     }
 
-    const BRAND_LOGO_SIZE = 128;
-
     function makeIconHorseUrl(domain) {
       return `https://icon.horse/icon/${domain}`;
-    }
-
-    function makeGoogleFaviconUrl(domain) {
-      return `https://www.google.com/s2/favicons?domain=${domain}&sz=${BRAND_LOGO_SIZE}`;
     }
 
     function makeDirectFaviconUrl(domain) {
@@ -6107,7 +6101,6 @@
           continue;
         }
         chain.push(makeIconHorseUrl(d));
-        chain.push(makeGoogleFaviconUrl(d));
         chain.push(makeDirectFaviconUrl(d));
       }
       return chain;
