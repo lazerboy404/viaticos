@@ -7883,20 +7883,32 @@ pause
 
     async function updateLogosFromPdf() {
       const rows = elements.expensesBody.querySelectorAll("tr");
+      console.log(`[PDF Logo] Procesando ${rows.length} filas`);
       for (const row of rows) {
         const expenseId = row.dataset.expenseId;
         const expense = state.expenses.find(e => e.id === expenseId);
-        if (!expense || !expense.invoiceUrl) continue;
+        if (!expense || !expense.invoiceUrl) {
+          console.log(`[PDF Logo] Gasto ${expenseId} sin factura`);
+          continue;
+        }
         const conceptCell = row.querySelector(".concept-cell");
         if (!conceptCell) continue;
         const conceptNeon = conceptCell.querySelector(".concept-neon");
         if (!conceptNeon) continue;
         const existingImg = conceptNeon.querySelector(".brand-logo-img");
-        if (existingImg) continue;
+        if (existingImg) {
+          console.log(`[PDF Logo] Gasto ${expenseId} ya tiene logo`);
+          continue;
+        }
         const conceptParts = getExpenseConceptParts(expense);
         const conceptMeta = getConceptMeta(conceptParts.combined);
-        if (conceptMeta.logoUrls && conceptMeta.logoUrls.length > 0) continue;
+        if (conceptMeta.logoUrls && conceptMeta.logoUrls.length > 0) {
+          console.log(`[PDF Logo] Gasto ${expenseId} ya tiene logoUrls`);
+          continue;
+        }
+        console.log(`[PDF Logo] Buscando logo en PDF para gasto ${expenseId}: ${conceptParts.combined}`);
         const pdfLogoUrls = await findLogoFromPdf(expense);
+        console.log(`[PDF Logo] Resultado para ${expenseId}:`, pdfLogoUrls);
         if (pdfLogoUrls && pdfLogoUrls.length > 0) {
           const svg = conceptNeon.querySelector("svg");
           if (svg) {
@@ -8018,6 +8030,7 @@ pause
 
     function extractBrandFromInvoiceText(text) {
       if (!text) return null;
+      console.log(`[PDF Extract] Texto extraído del PDF (primeros 500 chars):`, text.substring(0, 500));
       const normalizedText = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       const brandPatterns = [
         /(?:razon\s+social|nombre|denominacion|emisor)\s*[:\-]?\s*([a-z0-9\s&]{3,50}?)(?:\s+(?:rfc|regimen|domicilio|cp))/i,
@@ -8026,11 +8039,13 @@ pause
         /\b([a-z0-9\s&]{3,30}?)\s+(?:s\.?\s*a\.?\s*de\s+c\.?\s*v\.?|s\.?\s*c\.?\s*|s\.?\s*e\.?\s*|s\.?\s*r\.?\s*l\.?)/i,
         /\b(uber|didi|oxxo|starbucks|mcdonalds|kfc|burger\s+king|pizza\s+hut|dominos|subway|walmart|costco|soriana|chedraui|airbnb|amazon|netflix|spotify|telcel|movistar|coppel|elektra|liverpool|sears|vips|toks|sanborns|cinepolis|cinemex|volaris|aeromexico|ado|etn|pemex|farmacias\s+guadalajara|farmacias\s+del\s+ahorro|benavides|la\s+comer|bodega\s+aurrera|superama|wingstop|chilis|applebees|pf\s+changs|tim\s+hortons|little\s+caesars|carls\s+jr|ihop|flecha\s+roja|primera\s+plus|tren\s+interurbano|rebel\s+wings|fogon|porton|hotel\s+real|rancheros|china\s+lucky)\b/i
       ];
-      for (const pattern of brandPatterns) {
+      for (let i = 0; i < brandPatterns.length; i++) {
+        const pattern = brandPatterns[i];
         const match = text.match(pattern);
         if (match) {
           const brand = match[1] || match[0];
           const cleaned = brand.trim().replace(/\s+/g, " ");
+          console.log(`[PDF Extract] Patrón ${i} coincidió:`, cleaned);
           if (cleaned.length >= 3 && cleaned.length <= 50) {
             return cleaned;
           }
@@ -8041,10 +8056,12 @@ pause
         if (word.length >= 4 && /^[a-z]+$/.test(word)) {
           const capitalized = word.charAt(0).toUpperCase() + word.slice(1);
           if (Object.keys(brandLogoDomains).some(key => key.includes(word))) {
+            console.log(`[PDF Extract] Palabra encontrada en brandLogoDomains:`, word);
             return capitalized;
           }
         }
       }
+      console.log(`[PDF Extract] No se encontró marca en el PDF`);
       return null;
     }
 
@@ -8052,8 +8069,12 @@ pause
       if (!expense.invoiceUrl) return null;
       const cacheKey = `brand_${expense.id}`;
       const cached = state.invoiceFiscalCache.get(cacheKey);
-      if (cached?.brand) return cached.brand;
+      if (cached?.brand) {
+        console.log(`[PDF Extract] Cache hit para ${expense.id}:`, cached.brand);
+        return cached.brand;
+      }
       try {
+        console.log(`[PDF Extract] Extrayendo marca del PDF para gasto ${expense.id}`);
         if (!pdfModulePromise) {
           pdfModulePromise = import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
         }
@@ -8064,29 +8085,38 @@ pause
         const page = await pdf.getPage(1);
         const content = await page.getTextContent();
         const text = content.items.map(item => item.str).join(" ");
+        console.log(`[PDF Extract] Texto completo extraído (${text.length} chars)`);
         const brand = extractBrandFromInvoiceText(text);
+        console.log(`[PDF Extract] Marca extraída:`, brand);
         state.invoiceFiscalCache.set(cacheKey, { brand });
         return brand;
       } catch (error) {
-        console.error("Error extracting brand from invoice:", error);
+        console.error("[PDF Extract] Error extrayendo marca:", error);
         return null;
       }
     }
 
     async function findLogoFromPdf(expense) {
       const brand = await extractBrandFromInvoice(expense);
-      if (!brand) return null;
+      if (!brand) {
+        console.log(`[PDF Logo] No se encontró marca en PDF para gasto ${expense.id}`);
+        return null;
+      }
+      console.log(`[PDF Logo] Marca encontrada: ${brand}`);
       const normalizedBrand = brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       for (const [key, domains] of Object.entries(brandLogoDomains)) {
         const normalizedKey = key.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         if (normalizedBrand.includes(normalizedKey) || normalizedKey.includes(normalizedBrand)) {
+          console.log(`[PDF Logo] Marca coincide con brandLogoDomains: ${key}`);
           return getFallbackChain(domains);
         }
       }
       const brandSlug = normalizedBrand.replace(/[^a-z0-9]+/g, "").replace(/^(el|la|los|las|de|del|y|e)\s*/g, "");
       if (brandSlug.length >= 3) {
+        console.log(`[PDF Logo] Intentando buscar logo para: ${brandSlug}`);
         return [makeIconHorseUrl(`${brandSlug}.com`), makeIconHorseUrl(`${brandSlug}.com.mx`)];
       }
+      console.log(`[PDF Logo] No se pudo generar URL para marca: ${brand}`);
       return null;
     }
 
