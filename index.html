@@ -6077,9 +6077,40 @@
 
     const BRAND_LOGO_SIZE = 128;
 
-    function makeLogoUrl(domain) {
-      if (/\.(png|jpg|jpeg|svg|ico|webp|gif)$/i.test(domain)) return domain;
+    function makeIconHorseUrl(domain) {
       return `https://icon.horse/icon/${domain}`;
+    }
+
+    function makeGoogleFaviconUrl(domain) {
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=${BRAND_LOGO_SIZE}`;
+    }
+
+    function makeDirectFaviconUrl(domain) {
+      return `https://${domain}/favicon.ico`;
+    }
+
+    function isLocalFile(path) {
+      return /\.(png|jpg|jpeg|svg|ico|webp|gif)$/i.test(path);
+    }
+
+    function makeLogoUrl(domain) {
+      if (isLocalFile(domain)) return domain;
+      return makeIconHorseUrl(domain);
+    }
+
+    function getFallbackChain(domains) {
+      if (!domains || !domains.length) return [];
+      const chain = [];
+      for (const d of domains) {
+        if (isLocalFile(d)) {
+          chain.push(d);
+          continue;
+        }
+        chain.push(makeIconHorseUrl(d));
+        chain.push(makeGoogleFaviconUrl(d));
+        chain.push(makeDirectFaviconUrl(d));
+      }
+      return chain;
     }
 
     const brandLogoDomains = {
@@ -6154,6 +6185,10 @@
       hospedaje: ["hotel.jpg", "hotelrealalameda.com"],
       "tren interurbano": ["tren.png", "treninterurbano.com.mx"],
       tren: ["tren.png", "treninterurbano.com.mx"],
+      "autobus": ["ado.com.mx", "etn.com.mx", "primeraplus.com.mx"],
+      "autobus": ["ado.com.mx", "etn.com.mx", "primeraplus.com.mx"],
+      taxi: ["uber.com", "didiglobal.com"],
+      "gasolinera": ["pemex.com"],
       estacionamiento: [],
       toyo: [],
     };
@@ -6161,10 +6196,14 @@
     function findBrandLogoDomains(text) {
       const lowerText = text.toLowerCase();
       const words = lowerText.split(/\s+/).filter((w) => w.length > 1);
+      const normText = lowerText.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
       for (const [brand, domains] of Object.entries(brandLogoDomains)) {
         if (!domains || !domains.length) continue;
-        if (lowerText.includes(brand)) return domains.map((d) => makeLogoUrl(d));
+        const normBrand = brand.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (lowerText.includes(brand) || normText.includes(normBrand)) {
+          return getFallbackChain(domains);
+        }
       }
 
       for (const [brand, domains] of Object.entries(brandLogoDomains)) {
@@ -6174,8 +6213,8 @@
         const significant = brandWords.filter(
           (w) => w.length > 2 && !["el", "la", "los", "las", "de", "del", "y", "e", "do", "da"].includes(w)
         );
-        if (significant.length && significant.every((w) => words.includes(w) || lowerText.includes(w))) {
-          return domains.map((d) => makeLogoUrl(d));
+        if (significant.length && significant.every((w) => words.includes(w) || lowerText.includes(w) || normText.includes(w.normalize("NFD").replace(/[\u0300-\u036f]/g, "")))) {
+          return getFallbackChain(domains);
         }
       }
 
