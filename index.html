@@ -7406,6 +7406,121 @@ pause
       }
     }
 
+    function validateDateString(value) {
+      if (typeof value !== "string") return "";
+      const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return "";
+      const year = Number(match[1]);
+      const month = Number(match[2]);
+      const day = Number(match[3]);
+      if (year < 2000 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) return "";
+      const date = new Date(year, month - 1, day);
+      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return "";
+      return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+
+    function isValidDataUrl(value) {
+      if (typeof value !== "string") return false;
+      if (!value.startsWith("data:")) return false;
+      const validPrefixes = ["data:image/jpeg", "data:image/png", "data:image/webp", "data:image/gif", "data:image/bmp", "data:application/pdf", "data:application/octet-stream", "data:image/jpg"];
+      return validPrefixes.some((prefix) => value.startsWith(prefix));
+    }
+
+    function validateTextValue(value, maxLength = 90) {
+      if (typeof value !== "string") return "";
+      return value.normalize("NFD").replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, maxLength);
+    }
+
+    function validateMoneyValue(value) {
+      const num = parseMoney(value);
+      if (!Number.isFinite(num) || num <= 0) return null;
+      return Math.round(num * 100) / 100;
+    }
+
+    function sanitizeExpense(expense) {
+      if (!expense || typeof expense !== "object") return null;
+      const monto = validateMoneyValue(expense.monto);
+      const fecha = validateDateString(expense.fecha);
+      const concepto = validateTextValue(expense.concepto, 90);
+      if (monto === null || !fecha || !concepto) return null;
+
+      const clean = {
+        concepto,
+        monto,
+        fecha,
+        valeAzul: Boolean(expense.valeAzul),
+        updatedAt: Number.isFinite(Number(expense.updatedAt)) ? Number(expense.updatedAt) : Date.now()
+      };
+      const nombreGasto = validateTextValue(expense.nombreGasto, 90);
+      if (nombreGasto) clean.nombreGasto = nombreGasto;
+      clean.conceptoCompleto = `${concepto} ${nombreGasto}`.trim();
+      if (expense.createdAt && Number.isFinite(Number(expense.createdAt))) clean.createdAt = Number(expense.createdAt);
+
+      if (expense.projectId && /^[A-Za-z0-9_-]+$/.test(String(expense.projectId))) {
+        clean.projectId = String(expense.projectId);
+        clean.projectName = validateTextValue(expense.projectName, 80);
+      }
+
+      if (Array.isArray(expense.tickets) && expense.tickets.length) {
+        const validTickets = expense.tickets.filter(
+          (t) => t && typeof t === "object" && isValidDataUrl(t.dataUrl)
+        ).map((t) => ({
+          dataUrl: t.dataUrl,
+          name: validateTextValue(t.name, 120) || "ticket",
+          type: typeof t.type === "string" ? t.type.slice(0, 60) : "",
+          size: Number.isFinite(Number(t.size)) ? Number(t.size) : 0
+        }));
+        if (validTickets.length) clean.tickets = validTickets;
+      }
+      if (isValidDataUrl(expense.ticketUrl)) {
+        clean.ticketUrl = expense.ticketUrl;
+        clean.ticketName = validateTextValue(expense.ticketName, 120) || "ticket";
+        clean.ticketType = typeof expense.ticketType === "string" ? expense.ticketType.slice(0, 60) : "";
+        clean.ticketSize = Number.isFinite(Number(expense.ticketSize)) ? Number(expense.ticketSize) : 0;
+      }
+
+      if (!clean.valeAzul && isValidDataUrl(expense.invoiceUrl)) {
+        clean.invoiceUrl = expense.invoiceUrl;
+        clean.invoiceName = validateTextValue(expense.invoiceName, 120) || "factura.pdf";
+        clean.invoiceType = typeof expense.invoiceType === "string" ? expense.invoiceType.slice(0, 60) : "";
+        clean.invoiceSize = Number.isFinite(Number(expense.invoiceSize)) ? Number(expense.invoiceSize) : 0;
+      }
+
+      return clean;
+    }
+
+    function sanitizeProject(project) {
+      if (!project || typeof project !== "object") return null;
+      const name = validateTextValue(project.name, 80);
+      if (!name) return null;
+      const clean = {
+        name,
+        budget: Math.max(parseMoney(project.budget), 0),
+        dailyLimits: normalizeDailyLimits(project.dailyLimits),
+        periodStart: validateDateString(project.periodStart),
+        periodEnd: validateDateString(project.periodEnd)
+      };
+      if (isValidDataUrl(project.signedSheet?.dataUrl)) {
+        clean.signedSheet = {
+          dataUrl: project.signedSheet.dataUrl,
+          name: validateTextValue(project.signedSheet.name, 120) || "hoja-firmada",
+          type: typeof project.signedSheet.type === "string" ? project.signedSheet.type.slice(0, 60) : "",
+          size: Number.isFinite(Number(project.signedSheet.size)) ? Number(project.signedSheet.size) : 0
+        };
+      }
+      return clean;
+    }
+
+    function sanitizeSignedSheet(sheet) {
+      if (!sheet || typeof sheet !== "object" || !isValidDataUrl(sheet.dataUrl)) return null;
+      return {
+        dataUrl: sheet.dataUrl,
+        name: validateTextValue(sheet.name, 120) || "hoja-firmada",
+        type: typeof sheet.type === "string" ? sheet.type.slice(0, 60) : "",
+        size: Number.isFinite(Number(sheet.size)) ? Number(sheet.size) : 0
+      };
+    }
+
     async function importBackup(file) {
       if (!file || !state.db) return;
       if (file.size > 50 * 1024 * 1024) {
@@ -7418,28 +7533,76 @@ pause
         if (backup?.app !== "control-viaticos" || backup?.version !== 1 || typeof backup.expenses !== "object") {
           throw new Error("backup-invalid");
         }
-        const expenseCount = Object.keys(backup.expenses || {}).length;
-        const projectCount = Object.keys(backup.settings?.projects || {}).length;
-        const confirmed = window.confirm(`Importar ${expenseCount} gastos y ${projectCount} proyectos. Los registros existentes no se eliminaran. ¿Continuar?`);
+
+        const validExpenses = {};
+        const validProjects = {};
+        let invalidExpenseCount = 0;
+        let invalidProjectCount = 0;
+
+        Object.entries(backup.expenses || {}).forEach(([id, expense]) => {
+          if (!/^[A-Za-z0-9_-]+$/.test(String(id))) {
+            invalidExpenseCount += 1;
+            return;
+          }
+          const clean = sanitizeExpense(expense);
+          if (clean) validExpenses[String(id)] = clean;
+          else invalidExpenseCount += 1;
+        });
+
+        Object.entries(backup.settings?.projects || {}).forEach(([id, project]) => {
+          if (!/^[A-Za-z0-9_-]+$/.test(String(id))) {
+            invalidProjectCount += 1;
+            return;
+          }
+          const clean = sanitizeProject(project);
+          if (clean) validProjects[String(id)] = clean;
+          else invalidProjectCount += 1;
+        });
+
+        const legacy = backup.settings?.legacy || {};
+        const cleanLegacy = {
+          projectName: validateTextValue(legacy.projectName, 80) || "Proyecto general",
+          periodStart: validateDateString(legacy.periodStart),
+          periodEnd: validateDateString(legacy.periodEnd),
+          totalDeposit: Math.max(parseMoney(legacy.totalDeposit), 0),
+          dailyLimits: normalizeDailyLimits(legacy.dailyLimits),
+          signedSheet: sanitizeSignedSheet(legacy.signedSheet)
+        };
+
+        const expenseCount = Object.keys(validExpenses).length;
+        const projectCount = Object.keys(validProjects).length;
+        if (expenseCount === 0 && projectCount === 0) {
+          setMessage("error", "El respaldo no contiene gastos ni proyectos validos. No se importo nada.");
+          return;
+        }
+
+        let confirmMessage = `Importar ${expenseCount} gastos y ${projectCount} proyectos. Los registros existentes no se eliminaran.`;
+        if (invalidExpenseCount > 0 || invalidProjectCount > 0) {
+          confirmMessage += `\n\nSe omitiran ${invalidExpenseCount} gastos y ${invalidProjectCount} proyectos invalidos.`;
+        }
+        const confirmed = window.confirm(confirmMessage);
         if (!confirmed) return;
 
         elements.importBackupBtn.disabled = true;
         const updates = {};
-        const legacy = backup.settings?.legacy || {};
-        updates[`${BUDGET_PATH}/projectName`] = String(legacy.projectName || "Proyecto general").slice(0, 80);
-        updates[`${BUDGET_PATH}/periodStart`] = legacy.periodStart || "";
-        updates[`${BUDGET_PATH}/periodEnd`] = legacy.periodEnd || "";
-        updates[`${BUDGET_PATH}/totalDeposit`] = parseMoney(legacy.totalDeposit);
-        updates[`${BUDGET_PATH}/dailyLimits`] = normalizeDailyLimits(legacy.dailyLimits);
-        updates[`${BUDGET_PATH}/signedSheet`] = legacy.signedSheet || null;
-        Object.entries(backup.settings?.projects || {}).forEach(([id, project]) => {
-          if (/^[A-Za-z0-9_-]+$/.test(id)) updates[`${PROJECTS_PATH}/${id}`] = project;
+        updates[`${BUDGET_PATH}/projectName`] = cleanLegacy.projectName;
+        updates[`${BUDGET_PATH}/periodStart`] = cleanLegacy.periodStart;
+        updates[`${BUDGET_PATH}/periodEnd`] = cleanLegacy.periodEnd;
+        updates[`${BUDGET_PATH}/totalDeposit`] = cleanLegacy.totalDeposit;
+        updates[`${BUDGET_PATH}/dailyLimits`] = cleanLegacy.dailyLimits;
+        updates[`${BUDGET_PATH}/signedSheet`] = cleanLegacy.signedSheet || null;
+        Object.entries(validProjects).forEach(([id, project]) => {
+          updates[`${PROJECTS_PATH}/${id}`] = project;
         });
-        Object.entries(backup.expenses || {}).forEach(([id, expense]) => {
-          if (/^[A-Za-z0-9_-]+$/.test(id)) updates[`${EXPENSES_PATH}/${id}`] = expense;
+        Object.entries(validExpenses).forEach(([id, expense]) => {
+          updates[`${EXPENSES_PATH}/${id}`] = expense;
         });
         await update(dbRef(state.db), updates);
-        setMessage("success", `Respaldo importado: ${expenseCount} gastos y ${projectCount} proyectos procesados.`);
+        let successMessage = `Respaldo importado: ${expenseCount} gastos y ${projectCount} proyectos.`;
+        if (invalidExpenseCount > 0 || invalidProjectCount > 0) {
+          successMessage += ` Se omitieron ${invalidExpenseCount} gastos y ${invalidProjectCount} proyectos invalidos.`;
+        }
+        setMessage("success", successMessage);
       } catch (error) {
         console.error(error);
         setMessage("error", "El archivo no es un respaldo valido de esta aplicacion o no pudo importarse.");
