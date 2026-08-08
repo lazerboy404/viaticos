@@ -4066,6 +4066,70 @@
       box-shadow: 0 0 16px rgba(139, 92, 246, 0.18);
     }
 
+    .storage-meter {
+      display: grid;
+      gap: 6px;
+      width: 100%;
+      margin-top: 2px;
+      padding: 10px;
+      border: 1px solid var(--glass-line);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--glass-bg-soft) 68%, transparent);
+    }
+
+    .storage-meter-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .storage-meter-header span {
+      color: var(--glass-muted);
+      font-size: 0.72rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .storage-meter-header strong {
+      color: var(--glass-heading);
+      font-size: 0.78rem;
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .storage-track {
+      width: 100%;
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--glass-line) 55%, transparent);
+    }
+
+    .storage-bar {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #8b5cf6, #22d3ee);
+      transition: width 260ms ease, background 260ms ease;
+    }
+
+    .storage-bar.warning {
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+    }
+
+    .storage-bar.danger {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+
+    .storage-note {
+      margin: 0;
+      color: var(--glass-muted);
+      font-size: 0.68rem;
+      line-height: 1.3;
+    }
+
     .report-header {
       display: flex;
       align-items: center;
@@ -5878,6 +5942,16 @@
                   Importar
                 </button>
               </div>
+              <div class="storage-meter" aria-label="Almacenamiento usado de Firebase">
+                <div class="storage-meter-header">
+                  <span>Almacenamiento</span>
+                  <strong id="storageUsedText">Calculando...</strong>
+                </div>
+                <div class="storage-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="storageTrack">
+                  <div class="storage-bar" id="storageBar" style="width: 0%"></div>
+                </div>
+                <p class="storage-note" id="storageNote">Límite: 1 GB</p>
+              </div>
               <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
             </article>
           </div>
@@ -6079,6 +6153,10 @@
       exportExcelBtn: document.querySelector("#exportExcelBtn"),
       importBackupBtn: document.querySelector("#importBackupBtn"),
       backupFileInput: document.querySelector("#backupFileInput"),
+      storageUsedText: document.querySelector("#storageUsedText"),
+      storageBar: document.querySelector("#storageBar"),
+      storageTrack: document.querySelector("#storageTrack"),
+      storageNote: document.querySelector("#storageNote"),
       categoryReport: document.querySelector("#categoryReport"),
       dayReport: document.querySelector("#dayReport"),
       emptyState: document.querySelector("#emptyState"),
@@ -7066,6 +7144,47 @@ pause
         elements.downloadInvoicesPdfBtn.disabled = false;
         elements.downloadInvoicesPdfBtn.textContent = "Descargar PDF ordenado";
       }
+    }
+
+    const FIREBASE_STORAGE_LIMIT_BYTES = 1024 * 1024 * 1024;
+
+    function estimateDataUrlBytes(dataUrl) {
+      if (!dataUrl || typeof dataUrl !== "string") return 0;
+      const base64Part = dataUrl.split(",")[1];
+      if (!base64Part) return 0;
+      const padding = (base64Part.match(/=+$/) || [""])[0].length;
+      return Math.round((base64Part.length * 3) / 4 - padding);
+    }
+
+    function updateStorageMeter() {
+      if (!elements.storageBar) return;
+      let usedBytes = 0;
+      let fileCount = 0;
+
+      state.allExpenses.forEach((expense) => {
+        const ticketList = getTicketList(expense);
+        ticketList.forEach((ticket) => {
+          usedBytes += estimateDataUrlBytes(ticket.dataUrl);
+          fileCount += 1;
+        });
+        const invoice = getInvoiceData(expense);
+        if (invoice) {
+          usedBytes += estimateDataUrlBytes(invoice.dataUrl);
+          fileCount += 1;
+        }
+      });
+
+      const ratio = Math.min(usedBytes / FIREBASE_STORAGE_LIMIT_BYTES, 1);
+      const percent = Math.round(ratio * 100);
+      const usedMb = usedBytes / (1024 * 1024);
+      const limitGb = (FIREBASE_STORAGE_LIMIT_BYTES / (1024 * 1024 * 1024)).toFixed(0);
+
+      elements.storageUsedText.textContent = usedBytes > 0 ? `${usedMb.toFixed(1)} MB` : "0 MB";
+      elements.storageBar.style.width = `${percent}%`;
+      elements.storageBar.classList.toggle("warning", percent >= 70 && percent < 90);
+      elements.storageBar.classList.toggle("danger", percent >= 90);
+      elements.storageTrack.setAttribute("aria-valuenow", String(percent));
+      elements.storageNote.textContent = `Límite: ${limitGb} GB · ${fileCount} archivo${fileCount === 1 ? "" : "s"} adjunto${fileCount === 1 ? "" : "s"}`;
     }
 
     function exportBackup() {
@@ -9430,6 +9549,7 @@ pause
             return parseMoney(a.createdAt) - parseMoney(b.createdAt);
           });
         elements.historyLoader.style.display = "none";
+        updateStorageMeter();
         rerenderActiveProject();
       }, (error) => {
         console.error(error);
