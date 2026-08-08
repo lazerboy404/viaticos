@@ -6084,7 +6084,7 @@
       "uber eats": ["ubereats.com"],
       didi: ["didiglobal.com", "web.didiglobal.com"],
       rappi: ["rappi.com"],
-      oxxo: ["oxxo.com"],
+      oxxo: ["oxxo.com", "oxxo.com.mx"],
       starbucks: ["starbucks.com", "starbucks.com.mx"],
       "tim hortons": ["timhortons.com", "timhortons.com.mx"],
       dominos: ["dominos.com", "dominos.com.mx"],
@@ -6136,16 +6136,42 @@
       "chedraui selecto": ["chedraui.com.mx"],
       superama: ["superama.com.mx"],
       "el porton": ["elportonrestaurante.com.mx"],
+      porton: ["elportonrestaurante.com.mx"],
       "rebel wings": ["rebelwings.mx", "rebelwings.com", "rebel-wings.com"],
+      "flecha roja": ["flecharoja.com.mx"],
+      "futura": ["flecharoja.com.mx"],
+      "tren interurbano": ["treninterurbano.com.mx"],
+      "rancheros del sur": ["rancherosdelsur.com.mx"],
+      "hotel real alameda": ["hotelrealalameda.com"],
+      "fogon do brasil": ["fogondobrasil.com.mx"],
+      fogon: ["fogondobrasil.com.mx"],
+      "china lucky": ["chinalucky.com.mx"],
+      "hotel real": ["hotelrealalameda.com"],
+      "estacionamiento": [],
       toyo: [],
     };
 
     function findBrandLogoDomains(text) {
       const lowerText = text.toLowerCase();
+      const words = lowerText.split(/\s+/).filter((w) => w.length > 1);
+
       for (const [brand, domains] of Object.entries(brandLogoDomains)) {
         if (!domains || !domains.length) continue;
         if (lowerText.includes(brand)) return domains.map((d) => makeLogoUrl(d));
       }
+
+      for (const [brand, domains] of Object.entries(brandLogoDomains)) {
+        if (!domains || !domains.length) continue;
+        const brandWords = brand.split(/\s+/);
+        if (brandWords.length <= 1) continue;
+        const significant = brandWords.filter(
+          (w) => w.length > 2 && !["el", "la", "los", "las", "de", "del", "y", "e", "do", "da"].includes(w)
+        );
+        if (significant.length && significant.every((w) => words.includes(w) || lowerText.includes(w))) {
+          return domains.map((d) => makeLogoUrl(d));
+        }
+      }
+
       return null;
     }
 
