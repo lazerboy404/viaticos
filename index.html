@@ -5759,16 +5759,6 @@
               <option value="TRANSPORTE">
               <option value="HOSPEDAJE">
               <option value="GASOLINA">
-              <option value="TAXI">
-              <option value="UBER">
-              <option value="DIDI">
-              <option value="AUTOBUS">
-              <option value="AVION">
-              <option value="CASETA">
-              <option value="OXXO">
-              <option value="LAVANDERIA">
-              <option value="FACTURA">
-              <option value="OFICINA">
             </datalist>
           </div>
 
@@ -8258,22 +8248,54 @@ pause
         : "Ordenado por fecha, con acceso a ticket, factura y acciones.";
     }
 
+    function getCanonicalConcept(expense) {
+      const text = getExpenseConceptParts(expense).combined.toLowerCase();
+      if (/\bgasolina\b|combustible|gasolinera/.test(text)) return "GASOLINA";
+      const group = getExcelExpenseGroup(expense);
+      if (group === "lodging") return "HOSPEDAJE";
+      if (group === "transport") return "TRANSPORTE";
+      return "COMIDA";
+    }
+
+    const providerSuggestionsByConcept = new Map();
+
     function updateProviderSuggestions() {
       if (!elements.providerSuggestions) return;
-      const providers = new Set();
-      const usedCount = new Map();
+      providerSuggestionsByConcept.clear();
 
       state.allExpenses.forEach((expense) => {
         const parts = getExpenseConceptParts(expense);
         const name = String(parts.name || "").trim();
         if (!name) return;
-        providers.add(name);
-        usedCount.set(name, (usedCount.get(name) || 0) + 1);
+        const concept = getCanonicalConcept(expense);
+        if (!providerSuggestionsByConcept.has(concept)) {
+          providerSuggestionsByConcept.set(concept, new Map());
+        }
+        const conceptMap = providerSuggestionsByConcept.get(concept);
+        conceptMap.set(name, (conceptMap.get(name) || 0) + 1);
       });
 
-      const sorted = [...providers].sort((a, b) => (usedCount.get(b) || 0) - (usedCount.get(a) || 0));
+      applyProviderConceptFilter();
+    }
+
+    function applyProviderConceptFilter() {
+      if (!elements.providerSuggestions) return;
+      const rawConcept = (elements.conceptInput.value || "").toUpperCase().trim();
+      const conceptMap = providerSuggestionsByConcept.get(rawConcept);
 
       elements.providerSuggestions.innerHTML = "";
+
+      let sorted = [];
+      if (conceptMap) {
+        sorted = [...conceptMap.entries()].sort((a, b) => b[1] - a[1]).map(([name]) => name);
+      } else if (!rawConcept) {
+        const all = new Set();
+        providerSuggestionsByConcept.forEach((map) => map.forEach((count, name) => all.add(name)));
+        const countMap = new Map();
+        providerSuggestionsByConcept.forEach((map) => map.forEach((count, name) => countMap.set(name, (countMap.get(name) || 0) + count)));
+        sorted = [...all].sort((a, b) => (countMap.get(b) || 0) - (countMap.get(a) || 0));
+      }
+
       sorted.forEach((name) => {
         const option = document.createElement("option");
         option.value = name;
@@ -9638,6 +9660,7 @@ pause
     });
     elements.themeToggle.addEventListener("click", toggleTheme);
     elements.expenseForm.addEventListener("submit", saveExpense);
+    elements.conceptInput.addEventListener("input", applyProviderConceptFilter);
     elements.cancelEditBtn.addEventListener("click", () => {
       resetExpenseForm();
       clearMessage();
