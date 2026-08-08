@@ -6076,6 +6076,7 @@
     const BRAND_LOGO_SIZE = 128;
 
     function makeLogoUrl(domain) {
+      if (/\.(png|jpg|jpeg|svg|ico|webp|gif)$/i.test(domain)) return domain;
       return `https://icon.horse/icon/${domain}`;
     }
 
@@ -6084,7 +6085,7 @@
       "uber eats": ["ubereats.com"],
       didi: ["didiglobal.com", "web.didiglobal.com"],
       rappi: ["rappi.com"],
-      oxxo: ["oxxo.com", "oxxo.com.mx"],
+      oxxo: ["oxxo.png", "oxxo.com", "oxxo.com.mx"],
       starbucks: ["starbucks.com", "starbucks.com.mx"],
       "tim hortons": ["timhortons.com", "timhortons.com.mx"],
       dominos: ["dominos.com", "dominos.com.mx"],
@@ -6140,13 +6141,13 @@
       "rebel wings": ["rebelwings.mx", "rebelwings.com", "rebel-wings.com"],
       "flecha roja": ["flecharoja.com.mx"],
       futura: ["flecharoja.com.mx"],
-      "tren interurbano": ["treninterurbano.com.mx"],
+      "tren interurbano": ["tren.png", "treninterurbano.com.mx"],
       "rancheros del sur": ["rancherosdelsur.com.mx"],
-      "hotel real alameda": ["hotelrealalameda.com"],
+      "hotel real alameda": ["hotel.jpg", "hotelrealalameda.com"],
       "fogon do brasil": ["fogondobrasil.com.mx"],
       fogon: ["fogondobrasil.com.mx"],
       "china lucky": ["chinalucky.com.mx"],
-      "hotel real": ["hotelrealalameda.com"],
+      "hotel real": ["hotel.jpg", "hotelrealalameda.com"],
       estacionamiento: [],
       toyo: [],
     };
