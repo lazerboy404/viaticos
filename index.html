@@ -5753,12 +5753,29 @@
         <form class="expense-form" id="expenseForm">
           <div class="field">
             <label for="conceptInput">Concepto</label>
-            <input id="conceptInput" type="text" placeholder="Ej. COMIDA" required maxlength="90">
+            <input id="conceptInput" type="text" placeholder="Ej. COMIDA" required maxlength="90" list="conceptSuggestions" autocomplete="off">
+            <datalist id="conceptSuggestions">
+              <option value="COMIDA">
+              <option value="TRANSPORTE">
+              <option value="HOSPEDAJE">
+              <option value="GASOLINA">
+              <option value="TAXI">
+              <option value="UBER">
+              <option value="DIDI">
+              <option value="AUTOBUS">
+              <option value="AVION">
+              <option value="CASETA">
+              <option value="OXXO">
+              <option value="LAVANDERIA">
+              <option value="FACTURA">
+              <option value="OFICINA">
+            </datalist>
           </div>
 
           <div class="field expense-name-field">
               <label for="expenseNameInput">Nombre / proveedor</label>
-              <input id="expenseNameInput" type="text" placeholder="Restaurante, hotel o conductor" maxlength="90">
+              <input id="expenseNameInput" type="text" placeholder="Restaurante, hotel o conductor" maxlength="90" list="providerSuggestions" autocomplete="off">
+              <datalist id="providerSuggestions"></datalist>
           </div>
 
           <div class="form-row">
@@ -6116,6 +6133,7 @@
       expenseForm: document.querySelector("#expenseForm"),
       conceptInput: document.querySelector("#conceptInput"),
       expenseNameInput: document.querySelector("#expenseNameInput"),
+      providerSuggestions: document.querySelector("#providerSuggestions"),
       amountInput: document.querySelector("#amountInput"),
       dateInput: document.querySelector("#dateInput"),
       blueVoucherInput: document.querySelector("#blueVoucherInput"),
@@ -6171,7 +6189,19 @@
       closeEditExpenseDialog: document.querySelector("#closeEditExpenseDialog")
     };
 
-    elements.dateInput.valueAsDate = new Date();
+    function getTodayLocalString() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function setDefaultDateInput() {
+      elements.dateInput.value = getTodayLocalString();
+    }
+
+    setDefaultDateInput();
 
     function getPreferredTheme() {
       const savedTheme = localStorage.getItem("viaticos-theme");
@@ -7455,7 +7485,7 @@ pause
             const row = section.start + index;
             const fiscal = getFiscalData(expense);
             worksheet.getCell(row, 3).value = fiscal.origin || null;
-            worksheet.getCell(row, 4).value = expense.fecha ? new Date(`${expense.fecha}T00:00:00Z`) : null;
+            worksheet.getCell(row, 4).value = expense.fecha ? new Date(`${expense.fecha}T00:00:00`) : null;
             worksheet.getCell(row, 5).value = expense.valeAzul ? "VALE" : fiscal.document ? String(fiscal.document).toUpperCase() : null;
             worksheet.getCell(row, 6).value = fiscal.name;
             worksheet.getCell(row, 7).value = getExcelConcept(expense);
@@ -7972,7 +8002,7 @@ pause
       restoreExpenseFormHome();
       state.editingId = null;
       elements.expenseForm.reset();
-      elements.dateInput.valueAsDate = new Date();
+      setDefaultDateInput();
       elements.ticketFileName.textContent = "Seleccionar fotos";
       elements.invoiceFileName.textContent = "Subir factura";
       syncBlueVoucherFields();
@@ -8226,6 +8256,29 @@ pause
       elements.historyOrderDescription.textContent = state.historyOrder === "excel"
         ? "Orden Excel: transporte, hospedaje y consumo; cada grupo ordenado por fecha."
         : "Ordenado por fecha, con acceso a ticket, factura y acciones.";
+    }
+
+    function updateProviderSuggestions() {
+      if (!elements.providerSuggestions) return;
+      const providers = new Set();
+      const usedCount = new Map();
+
+      state.allExpenses.forEach((expense) => {
+        const parts = getExpenseConceptParts(expense);
+        const name = String(parts.name || "").trim();
+        if (!name) return;
+        providers.add(name);
+        usedCount.set(name, (usedCount.get(name) || 0) + 1);
+      });
+
+      const sorted = [...providers].sort((a, b) => (usedCount.get(b) || 0) - (usedCount.get(a) || 0));
+
+      elements.providerSuggestions.innerHTML = "";
+      sorted.forEach((name) => {
+        const option = document.createElement("option");
+        option.value = name;
+        elements.providerSuggestions.appendChild(option);
+      });
     }
 
     function getInvoiceFiscalSignature(expense) {
@@ -8687,18 +8740,6 @@ pause
       `;
       editButton.addEventListener("click", () => setEditingExpense(expenseId));
 
-      const duplicateButton = document.createElement("button");
-      duplicateButton.className = "button secondary";
-      duplicateButton.type = "button";
-      duplicateButton.innerHTML = `
-        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="8" y="2" width="8" height="4" rx="1" stroke="currentColor" stroke-width="2"/>
-        </svg>
-        Duplicar
-      `;
-      duplicateButton.addEventListener("click", () => duplicateExpense(expenseId));
-
       const deleteButton = document.createElement("button");
       deleteButton.className = "button danger";
       deleteButton.type = "button";
@@ -8710,32 +8751,8 @@ pause
       `;
       deleteButton.addEventListener("click", () => deleteExpense(expenseId));
 
-      wrapper.append(editButton, duplicateButton, deleteButton);
+      wrapper.append(editButton, deleteButton);
       cell.appendChild(wrapper);
-    }
-
-    function duplicateExpense(expenseId) {
-      const expense = state.expenses.find((item) => item.id === expenseId);
-      if (!expense) return;
-
-      const conceptParts = getExpenseConceptParts(expense);
-      elements.conceptInput.value = conceptParts.concept === "SIN CONCEPTO" ? "" : conceptParts.concept;
-      elements.expenseNameInput.value = conceptParts.name || "";
-      elements.amountInput.value = parseMoney(expense.monto) || "";
-      elements.dateInput.value = new Date().toISOString().split("T")[0];
-      elements.blueVoucherInput.checked = Boolean(expense.valeAzul);
-      elements.ticketInput.value = "";
-      elements.invoiceInput.value = "";
-      elements.ticketFileName.textContent = "Seleccionar fotos";
-      elements.invoiceFileName.textContent = "Subir factura";
-      syncBlueVoucherFields();
-      state.editingId = null;
-      elements.expenseFormTitle.textContent = "Nuevo gasto (duplicado)";
-      elements.cancelEditBtn.classList.remove("show");
-      elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
-      clearMessage();
-      elements.conceptInput.focus();
-      window.scrollTo({ top: elements.expenseForm.offsetTop - 100, behavior: "smooth" });
     }
 
     async function saveBudget() {
@@ -9550,6 +9567,7 @@ pause
           });
         elements.historyLoader.style.display = "none";
         updateStorageMeter();
+        updateProviderSuggestions();
         rerenderActiveProject();
       }, (error) => {
         console.error(error);
