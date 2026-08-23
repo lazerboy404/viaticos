@@ -24,6 +24,8 @@
     }
   </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230d2b45'/%3E%3Cstop offset='1' stop-color='%2300747a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Crect x='4' y='4' width='56' height='56' rx='11' fill='none' stroke='rgba(255,255,255,0.14)' stroke-width='2'/%3E%3Cpath d='M16 42 27 31l7 7 12-14' fill='none' stroke='%2322d3ee' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M39 24h5v5' fill='none' stroke='%2322d3ee' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='17' cy='19' r='3.5' fill='%234ade80'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
     :root {
       --bg: #eef3f8;
@@ -5637,7 +5639,7 @@
             <span class="status-dot" aria-hidden="true"></span>
             <span id="firebaseStatusText">Configuraci&oacute;n pendiente</span>
           </div>
-          <button class="report-excel-button" id="exportExcelBtn" type="button">
+          <button class="report-excel-button" id="exportExcelBtn" type="button" data-ripple-light="true">
             <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
               <path d="M14 2v6h6M8 13l4 5M12 13l-4 5M15 13h2M15 17h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -5676,14 +5678,14 @@
         <label for="periodEndInput">Periodo fin</label>
         <input id="periodEndInput" type="date">
       </div>
-      <button class="button secondary" id="saveProjectBtn" type="button">
+      <button class="button secondary" id="saveProjectBtn" type="button" data-ripple-light="true">
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
           <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
         </svg>
         Guardar
       </button>
-      <button class="button" id="createProjectBtn" type="button">
+      <button class="button" id="createProjectBtn" type="button" data-ripple-light="true">
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
@@ -5704,7 +5706,7 @@
         <label id="budgetTitle" for="budgetInput">Monto Total Depositado</label>
         <input id="budgetInput" type="number" min="0" step="0.01" placeholder="Ej. 15000.00" inputmode="decimal">
       </div>
-      <button class="button" id="saveBudgetBtn" type="button">
+      <button class="button" id="saveBudgetBtn" type="button" data-ripple-light="true">
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
           <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
@@ -5721,7 +5723,7 @@
       <div class="daily-limit-fields">
         <label><span>Comida</span><input id="foodLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
         <label><span>Uber</span><input id="transportLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
-        <button class="button secondary" id="saveLimitsBtn" type="button">
+        <button class="button secondary" id="saveLimitsBtn" type="button" data-ripple-light="true">
           <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/></svg>
           Guardar l&iacute;mites
         </button>
@@ -5915,7 +5917,7 @@
           </div>
 
           <div class="form-actions">
-            <button class="button" id="saveExpenseBtn" type="submit">
+            <button class="button" id="saveExpenseBtn" type="submit" data-ripple-light="true">
               <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
               </svg>
@@ -9795,5 +9797,6 @@ pause
 
     initFirebase();
   </script>
+  <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/ripple.js"></script>
 </body>
 </html>
