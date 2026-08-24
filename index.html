@@ -2970,6 +2970,7 @@
       --glass-primary: #0f6cbd;
       --glass-primary-2: #42a5f5;
       --glass-danger: #dc2626;
+      --glass-danger-soft: #fef2f2;
     }
 
     [data-theme="dark"] {
@@ -2990,6 +2991,7 @@
       --glass-primary: #64b5f6;
       --glass-primary-2: #42a5f5;
       --glass-danger: #f87171;
+      --glass-danger-soft: #351821;
     }
 
     body,
@@ -4671,21 +4673,21 @@
     }
 
     .edit-expense-dialog {
-      width: min(1040px, calc(100% - 32px));
+      width: min(960px, calc(100% - 32px));
       max-height: min(92vh, 900px);
       padding: 0;
       overflow: hidden;
       border: 1px solid var(--glass-line);
-      border-radius: 16px;
+      border-radius: 20px;
       background: transparent;
       color: var(--glass-text);
-      box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28), 0 10px 20px rgba(0, 0, 0, 0.18);
     }
 
     .edit-expense-dialog::backdrop {
       background: rgba(15, 23, 42, 0.55);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
     }
 
     .edit-dialog-shell {
@@ -4702,7 +4704,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 18px;
-      padding: 20px 22px;
+      padding: 22px 26px;
       border-bottom: 1px solid var(--glass-line);
       background: color-mix(in srgb, var(--glass-bg-strong) 88%, transparent);
       backdrop-filter: blur(24px);
@@ -4714,25 +4716,34 @@
       font-size: 0.72rem;
       font-weight: 900;
       text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
 
     .edit-dialog-header h3 {
-      margin: 3px 0 0;
+      margin: 4px 0 0;
       color: var(--glass-heading);
-      font-size: 1.35rem;
+      font-size: 1.5rem;
+      font-weight: 800;
     }
 
     .edit-dialog-close {
       display: inline-grid;
       place-items: center;
-      width: 42px;
-      height: 42px;
-      flex: 0 0 42px;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 40px;
       border: 1px solid var(--glass-line);
       border-radius: 50%;
       background: var(--glass-input);
       color: var(--glass-heading);
       cursor: pointer;
+      transition: background 160ms ease, transform 160ms ease, border-color 160ms ease;
+    }
+
+    .edit-dialog-close:hover {
+      background: var(--glass-danger-soft);
+      border-color: var(--glass-danger);
+      transform: rotate(90deg);
     }
 
     .edit-dialog-close svg {
@@ -4741,62 +4752,157 @@
     }
 
     .edit-dialog-body {
-      padding: 22px;
+      padding: 28px;
     }
 
     .edit-dialog-body .expense-form {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      align-items: start;
     }
 
-    .edit-dialog-body .expense-form > .field:first-child,
-    .edit-dialog-body .expense-name-field {
-      grid-column: auto;
-    }
-
-    .edit-dialog-body .form-row,
-    .edit-dialog-body .file-grid,
-    .edit-dialog-body .form-actions,
-    .edit-dialog-body .attachment-preview,
-    .edit-dialog-body .expense-form .message {
+    .edit-dialog-body .expense-form > .field,
+    .edit-dialog-body .expense-form > .form-actions,
+    .edit-dialog-body .expense-form > .file-grid,
+    .edit-dialog-body .expense-form > .attachment-preview,
+    .edit-dialog-body .expense-form > .message {
       grid-column: 1 / -1;
     }
 
-    .edit-dialog-body .form-row {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
+    /* Sección: datos principales */
+    .edit-dialog-body .expense-form > .field:nth-child(-n+4) {
+      grid-column: auto;
     }
 
+    .edit-dialog-body .expense-form > .field:nth-child(1),
+    .edit-dialog-body .expense-form > .field:nth-child(2),
+    .edit-dialog-body .expense-form > .field:nth-child(3),
+    .edit-dialog-body .expense-form > .field:nth-child(4) {
+      margin-bottom: 18px;
+    }
+
+    @media (min-width: 640px) {
+      .edit-dialog-body .expense-form > .field:nth-child(1) { grid-column: 1 / 2; }
+      .edit-dialog-body .expense-form > .field:nth-child(2) { grid-column: 2 / 3; }
+      .edit-dialog-body .expense-form > .field:nth-child(3) { grid-column: 1 / 2; }
+      .edit-dialog-body .expense-form > .field:nth-child(4) { grid-column: 2 / 3; }
+
+      .edit-dialog-body .expense-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 18px;
+      }
+    }
+
+    /* Sección: adjuntos */
     .edit-dialog-body .file-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: 1fr;
       gap: 14px;
+      padding: 18px;
+      margin-top: 4px;
+      border: 1px solid var(--glass-line);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--glass-bg-soft) 42%, transparent);
     }
 
-    .edit-dialog-body .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
+    @media (min-width: 640px) {
+      .edit-dialog-body .file-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
     }
 
-    .edit-dialog-body .form-actions .button {
-      width: auto;
-      min-width: 190px;
+    .edit-dialog-body .file-grid .field {
+      margin: 0;
     }
 
-    .file-picker {
+    .edit-dialog-body .file-picker {
+      min-height: 48px;
+      padding: 10px 12px;
+      border-style: dashed;
+      border-color: color-mix(in srgb, var(--glass-line) 80%, transparent);
+      background: color-mix(in srgb, var(--glass-bg-soft) 52%, transparent);
       justify-content: center;
       justify-items: center;
       text-align: center;
     }
 
-    #ticketPreviewSection {
-      grid-column: 1 / 2;
+    .edit-dialog-body .file-picker:hover,
+    .edit-dialog-body .visually-hidden:focus + .file-picker {
+      border-style: solid;
+      border-color: var(--glass-primary);
+      background: color-mix(in srgb, var(--glass-primary) 10%, transparent);
     }
 
+    .edit-dialog-body .blue-voucher-option {
+      width: 100%;
+      min-height: 48px;
+      justify-content: center;
+      padding: 10px 12px;
+      border: 1px solid var(--glass-line);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--glass-bg-soft) 52%, transparent);
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
+
+    /* Sección: vista previa */
+    .edit-dialog-body .attachment-preview {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    @media (min-width: 640px) {
+      .edit-dialog-body .attachment-preview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .edit-dialog-body .preview-section {
+      padding: 14px;
+      border: 1px solid var(--glass-line);
+      border-radius: 14px;
+      background: color-mix(in srgb, var(--glass-bg-soft) 42%, transparent);
+    }
+
+    .edit-dialog-body .preview-title {
+      margin: 0 0 12px;
+      color: var(--glass-muted);
+      font-size: 0.78rem;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #ticketPreviewSection,
     #invoicePreviewSection {
-      grid-column: 2 / 3;
+      grid-column: auto;
+    }
+
+    /* Sección: acciones */
+    .edit-dialog-body .form-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 22px;
+      padding-top: 22px;
+      border-top: 1px solid var(--glass-line);
+    }
+
+    .edit-dialog-body .form-actions .button {
+      width: 100%;
+      min-width: 0;
+      min-height: 48px;
+    }
+
+    .edit-dialog-body #cancelEditBtn {
+      order: 1;
+    }
+
+    .edit-dialog-body #saveExpenseBtn {
+      order: 2;
     }
 
     .form-panel .panel-heading {
@@ -4926,18 +5032,32 @@
 
       .edit-dialog-header,
       .edit-dialog-body {
-        padding: 16px;
+        padding: 18px;
       }
 
-      .edit-dialog-body .expense-form,
-      .edit-dialog-body .form-row,
+      .edit-dialog-body .expense-form {
+        grid-template-columns: 1fr;
+      }
+
+      .edit-dialog-body .expense-form > .field:nth-child(-n+4) {
+        grid-column: 1 / -1 !important;
+        margin-bottom: 14px;
+      }
+
       .edit-dialog-body .file-grid {
+        grid-template-columns: 1fr;
+        padding: 14px;
+      }
+
+      .edit-dialog-body .attachment-preview {
         grid-template-columns: 1fr;
       }
 
       .edit-dialog-body .form-actions {
         display: grid;
         grid-template-columns: 1fr;
+        margin-top: 18px;
+        padding-top: 18px;
       }
 
       .edit-dialog-body .form-actions .button {
