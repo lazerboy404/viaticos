@@ -44,7 +44,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f1f5f9;
+      --bg: #e9edf3;
       --surface: #ffffff;
       --surface-2: #f8fafc;
       --input-bg: #ffffff;
@@ -3197,9 +3197,9 @@
     /* Material Design visual pass */
     :root,
     [data-theme="light"] {
-      --glass-page-1: #f1f5f9;
-      --glass-page-2: #f8fafc;
-      --glass-page-3: #eef2f7;
+      --glass-page-1: #eef2f7;
+      --glass-page-2: #e9edf3;
+      --glass-page-3: #e4e9f0;
       --glass-bg: #ffffff;
       --glass-bg-strong: #ffffff;
       --glass-bg-soft: #f8fafc;
@@ -3255,11 +3255,9 @@
     .table-wrap,
     .attachment-preview,
     .media-dialog {
-      background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.05)),
-        var(--glass-bg);
+      background: var(--glass-bg);
       border-color: var(--glass-line);
-      box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.20);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.10);
     }
 
     .summary-card,
@@ -3273,15 +3271,14 @@
     [data-theme="light"] .summary-card,
     [data-theme="dark"] .summary-card {
       background:
-        radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--gauge-color, var(--glass-primary)), transparent 78%), transparent 38%),
-        linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.07)),
+        radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--gauge-color, var(--glass-primary)), transparent 86%), transparent 40%),
         var(--glass-bg-strong);
-      box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 10px 24px rgba(0,0,0,0.12);
     }
 
     [data-theme="light"] .summary-card:hover,
     [data-theme="dark"] .summary-card:hover {
-      box-shadow: 0 24px 52px rgba(55, 91, 122, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.08), 0 16px 32px rgba(0,0,0,0.16);
     }
 
     .table-wrap {
@@ -4395,7 +4392,7 @@
       border-color: var(--glass-line);
       border-radius: 16px;
       background: var(--glass-bg-strong);
-      box-shadow: var(--glass-shadow);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.10);
     }
 
     .dashboard-config-grid,
@@ -5597,11 +5594,13 @@
 
     .tools-card {
       border-radius: 14px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--glass-line);
+      background: var(--glass-bg-strong);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05), 0 6px 16px rgba(0,0,0,0.08);
     }
 
     .tools-card:hover {
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.08), 0 12px 24px rgba(0,0,0,0.14);
       transform: translateY(-2px);
     }
 
