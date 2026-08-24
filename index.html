@@ -4891,11 +4891,17 @@
     .edit-dialog-body .form-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      grid-template-rows: none;
       gap: 12px;
       order: 7;
+      align-content: normal;
       margin-top: 22px;
       padding-top: 22px;
       border-top: 1px solid var(--glass-line);
+    }
+
+    .edit-dialog-body .form-actions::before {
+      display: none;
     }
 
     .edit-dialog-body .form-actions .button {
@@ -4906,11 +4912,13 @@
     }
 
     .edit-dialog-body #cancelEditBtn {
-      order: 1;
+      order: initial;
+      grid-column: 1;
     }
 
     .edit-dialog-body #saveExpenseBtn {
-      order: 2;
+      order: initial;
+      grid-column: 2;
     }
 
     .form-panel .panel-heading {
@@ -4971,11 +4979,13 @@
     }
 
     .edit-dialog-body #cancelEditBtn {
-      order: 1;
+      order: initial;
+      grid-column: 1;
     }
 
     .edit-dialog-body #saveExpenseBtn {
-      order: 2;
+      order: initial;
+      grid-column: 2;
     }
 
     @media (max-width: 900px) {
@@ -5071,6 +5081,11 @@
       .edit-dialog-body .form-actions .button {
         width: 100%;
         min-width: 0;
+      }
+
+      .edit-dialog-body #cancelEditBtn,
+      .edit-dialog-body #saveExpenseBtn {
+        grid-column: 1;
       }
 
       #ticketPreviewSection,
