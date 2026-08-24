@@ -4770,6 +4770,10 @@
       grid-column: 1 / -1;
     }
 
+    .edit-dialog-body .expense-form > .message {
+      order: 8;
+    }
+
     /* Sección: datos principales */
     .edit-dialog-body .expense-form > .field:nth-child(-n+4) {
       grid-column: auto;
@@ -4799,6 +4803,7 @@
       display: grid;
       grid-template-columns: 1fr;
       gap: 14px;
+      order: 5;
       padding: 18px;
       margin-top: 4px;
       border: 1px solid var(--glass-line);
@@ -4851,6 +4856,7 @@
       display: grid;
       grid-template-columns: 1fr;
       gap: 18px;
+      order: 6;
       margin-top: 18px;
     }
 
@@ -4886,6 +4892,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
+      order: 7;
       margin-top: 22px;
       padding-top: 22px;
       border-top: 1px solid var(--glass-line);
@@ -4895,6 +4902,7 @@
       width: 100%;
       min-width: 0;
       min-height: 48px;
+      align-self: stretch;
     }
 
     .edit-dialog-body #cancelEditBtn {
@@ -5039,10 +5047,10 @@
         grid-template-columns: 1fr;
       }
 
-      .edit-dialog-body .expense-form > .field:nth-child(-n+4) {
-        grid-column: 1 / -1 !important;
-        margin-bottom: 14px;
-      }
+    .edit-dialog-body .expense-form > .field:nth-child(-n+4) {
+      grid-column: 1 / -1 !important;
+      margin-bottom: 14px;
+    }
 
       .edit-dialog-body .file-grid {
         grid-template-columns: 1fr;
