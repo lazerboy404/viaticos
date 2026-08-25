@@ -6893,6 +6893,15 @@
       return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${formattedDate}`;
     }
 
+    function formatReportPeriodDay(value, includeYear = true) {
+      const date = new Date(`${value}T00:00:00`);
+      const weekday = new Intl.DateTimeFormat("es-MX", { weekday: "long" }).format(date);
+      const options = { day: "2-digit", month: "short" };
+      if (includeYear) options.year = "numeric";
+      const formatted = new Intl.DateTimeFormat("es-MX", options).format(date).replace(".", "");
+      return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${formatted}`;
+    }
+
     function normalizePeriodDays(value) {
       const values = Array.isArray(value) ? value : Object.values(value || {});
       return [...new Set(values.map((item) => validateDateString(item)).filter(Boolean))].sort();
@@ -8151,11 +8160,19 @@ pause
           { items: groups.consumption, start: consumptionStart, total: 47 + extraTransport + extraLodging + extraConsumption }
         ];
 
-        const periodText = activeProject.periodStart && activeProject.periodStart === activeProject.periodEnd
-          ? formatDate(activeProject.periodStart)
-          : activeProject.periodStart || activeProject.periodEnd
-            ? `${activeProject.periodStart ? formatDate(activeProject.periodStart) : ""}${activeProject.periodStart && activeProject.periodEnd ? " al " : ""}${activeProject.periodEnd ? formatDate(activeProject.periodEnd) : ""}`
-            : "Periodo sin definir";
+        const periodDays = normalizePeriodDays(activeProject.periodDays);
+        const formattedPeriodDays = periodDays.map((day, index) => formatReportPeriodDay(day, index === periodDays.length - 1));
+        const periodText = periodDays.length
+          ? periodDays.length === 1
+            ? formattedPeriodDays[0]
+            : periodDays.length === 2
+              ? formattedPeriodDays.join(" y ")
+              : `${formattedPeriodDays.slice(0, -1).join(", ")} y ${formattedPeriodDays.at(-1)}`
+          : activeProject.periodStart && activeProject.periodStart === activeProject.periodEnd
+            ? formatDate(activeProject.periodStart)
+            : activeProject.periodStart || activeProject.periodEnd
+              ? `${activeProject.periodStart ? formatDate(activeProject.periodStart) : ""}${activeProject.periodStart && activeProject.periodEnd ? " al " : ""}${activeProject.periodEnd ? formatDate(activeProject.periodEnd) : ""}`
+              : "Periodo sin definir";
         worksheet.getCell("E9").value = "Einar Ulises Arenas Hernandez";
         worksheet.getCell("E10").value = "Tecnico Operaciones";
         worksheet.getCell("E11").value = "Operaciones";
