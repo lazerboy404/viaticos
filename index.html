@@ -7004,6 +7004,16 @@
     }
 
     function getPeriodLabel(project) {
+      const periodDays = normalizePeriodDays(project?.periodDays);
+      if (periodDays.length) {
+        const formattedDays = periodDays.map((day, index) => formatReportPeriodDay(day, index === periodDays.length - 1));
+        const daysText = periodDays.length === 1
+          ? formattedDays[0]
+          : periodDays.length === 2
+            ? formattedDays.join(" y ")
+            : `${formattedDays.slice(0, -1).join(", ")} y ${formattedDays.at(-1)}`;
+        return `Días: ${daysText}.`;
+      }
       if (!project?.periodStart && !project?.periodEnd) return "Periodo sin definir.";
       if (project.periodStart && project.periodEnd) {
         return `Periodo: ${formatDate(project.periodStart)} al ${formatDate(project.periodEnd)}.`;
