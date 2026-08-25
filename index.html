@@ -390,6 +390,90 @@
       line-height: 1.45;
     }
 
+    .project-days-field {
+      grid-column: 1 / -1;
+      gap: 9px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+    }
+
+    .project-days-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .project-days-count,
+    .field-hint {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .period-days-picker {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+      gap: 8px;
+    }
+
+    .period-days-picker:empty {
+      display: none;
+    }
+
+    .period-day-option {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .period-day-option:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    .period-day-option:has(input:checked) {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      box-shadow: 0 3px 10px rgba(15, 108, 189, 0.1);
+    }
+
+    .period-day-option input {
+      width: 16px;
+      min-height: 16px;
+      padding: 0;
+      accent-color: var(--primary);
+    }
+
+    .period-day-label {
+      display: grid;
+      gap: 1px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .period-day-label small {
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    .field-hint {
+      margin: 0;
+      line-height: 1.4;
+    }
+
     .field {
       display: grid;
       gap: 7px;
@@ -6077,6 +6161,14 @@
         <label for="periodEndInput">Periodo fin</label>
         <input id="periodEndInput" type="date">
       </div>
+      <div class="field project-days-field">
+        <div class="project-days-heading">
+          <label for="periodDaysPicker">Días permitidos para registrar gastos</label>
+          <span class="project-days-count" id="periodDaysCount">Selecciona un periodo</span>
+        </div>
+        <div class="period-days-picker" id="periodDaysPicker" aria-live="polite"></div>
+        <p class="field-hint" id="periodDaysHint">Define primero el periodo para elegir días específicos.</p>
+      </div>
       <button class="button secondary" id="saveProjectBtn" type="button" data-ripple-light="true">
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
@@ -6563,6 +6655,7 @@
       legacyProjectName: "Proyecto general",
       legacyPeriodStart: "",
       legacyPeriodEnd: "",
+      legacyPeriodDays: [],
       legacySignedSheet: null,
       legacyDailyLimits: { ...DEFAULT_DAILY_LIMITS },
       dailyLimits: { ...DEFAULT_DAILY_LIMITS },
@@ -6591,6 +6684,9 @@
       projectNameInput: document.querySelector("#projectNameInput"),
       periodStartInput: document.querySelector("#periodStartInput"),
       periodEndInput: document.querySelector("#periodEndInput"),
+      periodDaysPicker: document.querySelector("#periodDaysPicker"),
+      periodDaysCount: document.querySelector("#periodDaysCount"),
+      periodDaysHint: document.querySelector("#periodDaysHint"),
       saveProjectBtn: document.querySelector("#saveProjectBtn"),
       createProjectBtn: document.querySelector("#createProjectBtn"),
       createProjectBtnText: document.querySelector("#createProjectBtnText"),
@@ -6797,6 +6893,107 @@
       return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${formattedDate}`;
     }
 
+    function normalizePeriodDays(value) {
+      const values = Array.isArray(value) ? value : Object.values(value || {});
+      return [...new Set(values.map((item) => validateDateString(item)).filter(Boolean))].sort();
+    }
+
+    function getDatesBetween(start, end) {
+      if (!start || !end || start > end) return [];
+      const dates = [];
+      const current = new Date(`${start}T00:00:00`);
+      const last = new Date(`${end}T00:00:00`);
+      while (current <= last && dates.length < 366) {
+        const year = current.getFullYear();
+        const month = String(current.getMonth() + 1).padStart(2, "0");
+        const day = String(current.getDate()).padStart(2, "0");
+        dates.push(`${year}-${month}-${day}`);
+        current.setDate(current.getDate() + 1);
+      }
+      return dates;
+    }
+
+    function getSelectedPeriodDays() {
+      return [...elements.periodDaysPicker.querySelectorAll("input:checked")]
+        .map((input) => input.value)
+        .sort();
+    }
+
+    function renderPeriodDays(days = null) {
+      const start = elements.periodStartInput.value;
+      const end = elements.periodEndInput.value;
+      const dates = getDatesBetween(start, end);
+      const currentSelection = getSelectedPeriodDays();
+      const providedSelection = days === null ? currentSelection : normalizePeriodDays(days);
+      const selected = new Set(providedSelection.length ? providedSelection.filter((date) => dates.includes(date)) : dates);
+
+      elements.periodDaysPicker.innerHTML = "";
+      if (!dates.length) {
+        elements.periodDaysCount.textContent = "Selecciona un periodo";
+        elements.periodDaysHint.textContent = "Define primero el periodo para elegir días específicos.";
+        return;
+      }
+
+      dates.forEach((date) => {
+        const inputId = `periodDay-${date}`;
+        const option = document.createElement("label");
+        option.className = "period-day-option";
+        option.htmlFor = inputId;
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.id = inputId;
+        input.value = date;
+        input.checked = selected.has(date);
+        input.addEventListener("change", updatePeriodDaysSummary);
+        const label = document.createElement("span");
+        label.className = "period-day-label";
+        label.innerHTML = `${formatDate(date).split(" ")[0]} <small>${formatDate(date).replace(/^\S+\s/, "")}</small>`;
+        option.append(input, label);
+        elements.periodDaysPicker.appendChild(option);
+      });
+      updatePeriodDaysSummary();
+    }
+
+    function updatePeriodDaysSummary() {
+      const selected = getSelectedPeriodDays();
+      const total = elements.periodDaysPicker.querySelectorAll("input").length;
+      elements.periodDaysCount.textContent = total ? `${selected.length} de ${total} días seleccionados` : "Selecciona un periodo";
+      elements.periodDaysHint.textContent = selected.length === total
+        ? "Todos los días del periodo están habilitados para registrar gastos."
+        : "Solo las fechas marcadas estarán permitidas al registrar gastos.";
+      syncExpenseDateConstraints();
+    }
+
+    function getActivePeriodDays() {
+      const project = getActiveProject();
+      return normalizePeriodDays(project.periodDays);
+    }
+
+    function isExpenseDateAllowed(date) {
+      if (!date) return false;
+      const project = getActiveProject();
+      const periodDays = getActivePeriodDays();
+      if (periodDays.length) return periodDays.includes(date);
+      if (project.periodStart && date < project.periodStart) return false;
+      if (project.periodEnd && date > project.periodEnd) return false;
+      return true;
+    }
+
+    function syncExpenseDateConstraints() {
+      if (state.isCreatingProject) {
+        elements.dateInput.min = "";
+        elements.dateInput.max = "";
+        elements.dateInput.title = "Define el periodo y los días permitidos del nuevo proyecto.";
+        return;
+      }
+      const project = getActiveProject();
+      elements.dateInput.min = project.periodStart || "";
+      elements.dateInput.max = project.periodEnd || "";
+      elements.dateInput.title = getActivePeriodDays().length
+        ? "Solo puedes registrar gastos en los días seleccionados del periodo."
+        : "La fecha debe estar dentro del periodo del proyecto.";
+    }
+
     function getPeriodLabel(project) {
       if (!project?.periodStart && !project?.periodEnd) return "Periodo sin definir.";
       if (project.periodStart && project.periodEnd) {
@@ -6813,6 +7010,7 @@
         dailyLimits: state.legacyDailyLimits,
         periodStart: state.legacyPeriodStart,
         periodEnd: state.legacyPeriodEnd,
+        periodDays: state.legacyPeriodDays,
         signedSheet: state.legacySignedSheet,
         isLegacy: true
       };
@@ -6900,6 +7098,8 @@
         elements.saveBudgetBtn.disabled = true;
         elements.saveLimitsBtn.disabled = true;
         elements.projectHint.textContent = "Completa los datos desde cero y presiona Crear proyecto. Tus proyectos anteriores no se modificar\u00e1n.";
+        renderPeriodDays();
+        syncExpenseDateConstraints();
         renderSignedSheetControls();
         return;
       }
@@ -6908,6 +7108,8 @@
       elements.projectNameInput.value = activeProject.name || "";
       elements.periodStartInput.value = activeProject.periodStart || "";
       elements.periodEndInput.value = activeProject.periodEnd || "";
+      renderPeriodDays(activeProject.periodDays);
+      syncExpenseDateConstraints();
       elements.saveProjectBtn.disabled = !state.isFirebaseReady;
       elements.deleteProjectBtn.disabled = !state.isFirebaseReady || activeProject.isLegacy;
       elements.deleteProjectBtn.title = activeProject.isLegacy
@@ -7716,6 +7918,7 @@ pause
             projectName: state.legacyProjectName,
             periodStart: state.legacyPeriodStart,
             periodEnd: state.legacyPeriodEnd,
+            periodDays: state.legacyPeriodDays,
             totalDeposit: state.legacyBudget,
             dailyLimits: state.legacyDailyLimits,
             signedSheet: state.legacySignedSheet
@@ -8136,7 +8339,8 @@ pause
         budget: Math.max(parseMoney(project.budget), 0),
         dailyLimits: normalizeDailyLimits(project.dailyLimits),
         periodStart: validateDateString(project.periodStart),
-        periodEnd: validateDateString(project.periodEnd)
+        periodEnd: validateDateString(project.periodEnd),
+        periodDays: normalizePeriodDays(project.periodDays)
       };
       if (isValidDataUrl(project.signedSheet?.dataUrl)) {
         clean.signedSheet = {
@@ -8202,6 +8406,7 @@ pause
           projectName: validateTextValue(legacy.projectName, 80) || "Proyecto general",
           periodStart: validateDateString(legacy.periodStart),
           periodEnd: validateDateString(legacy.periodEnd),
+          periodDays: normalizePeriodDays(legacy.periodDays),
           totalDeposit: Math.max(parseMoney(legacy.totalDeposit), 0),
           dailyLimits: normalizeDailyLimits(legacy.dailyLimits),
           signedSheet: sanitizeSignedSheet(legacy.signedSheet)
@@ -8226,6 +8431,7 @@ pause
         updates[`${BUDGET_PATH}/projectName`] = cleanLegacy.projectName;
         updates[`${BUDGET_PATH}/periodStart`] = cleanLegacy.periodStart;
         updates[`${BUDGET_PATH}/periodEnd`] = cleanLegacy.periodEnd;
+        updates[`${BUDGET_PATH}/periodDays`] = cleanLegacy.periodDays;
         updates[`${BUDGET_PATH}/totalDeposit`] = cleanLegacy.totalDeposit;
         updates[`${BUDGET_PATH}/dailyLimits`] = cleanLegacy.dailyLimits;
         updates[`${BUDGET_PATH}/signedSheet`] = cleanLegacy.signedSheet || null;
@@ -9330,6 +9536,9 @@ pause
       elements.projectNameInput.value = "";
       elements.periodStartInput.value = "";
       elements.periodEndInput.value = "";
+      elements.periodDaysPicker.innerHTML = "";
+      elements.periodDaysCount.textContent = "Selecciona un periodo";
+      elements.periodDaysHint.textContent = "Define primero el periodo para elegir días específicos.";
       elements.budgetInput.value = "";
       elements.foodLimitInput.value = DEFAULT_DAILY_LIMITS.food;
       elements.transportLimitInput.value = DEFAULT_DAILY_LIMITS.transport;
@@ -9379,8 +9588,13 @@ pause
 
       const periodStart = elements.periodStartInput.value;
       const periodEnd = elements.periodEndInput.value;
+      const periodDays = getSelectedPeriodDays();
       if (periodStart && periodEnd && periodStart > periodEnd) {
         setMessage("error", "La fecha inicial del periodo no puede ser posterior a la fecha final.");
+        return;
+      }
+      if (periodStart && periodEnd && !periodDays.length) {
+        setMessage("error", "Selecciona al menos un día permitido para el periodo.");
         return;
       }
 
@@ -9391,6 +9605,7 @@ pause
             projectName: name,
             periodStart,
             periodEnd,
+            periodDays,
             totalDeposit: parseMoney(elements.budgetInput.value),
             dailyLimits: getDailyLimitsFromInputs(),
             updatedAt: Date.now()
@@ -9400,6 +9615,7 @@ pause
             name,
             periodStart,
             periodEnd,
+            periodDays,
             budget: parseMoney(elements.budgetInput.value),
             dailyLimits: getDailyLimitsFromInputs(),
             updatedAt: Date.now()
@@ -9425,6 +9641,7 @@ pause
       const name = elements.projectNameInput.value.trim();
       const periodStart = elements.periodStartInput.value;
       const periodEnd = elements.periodEndInput.value;
+      const periodDays = getSelectedPeriodDays();
 
       if (!name) {
         setMessage("error", "Escribe un nombre para el nuevo proyecto.");
@@ -9435,6 +9652,10 @@ pause
         setMessage("error", "La fecha inicial del periodo no puede ser posterior a la fecha final.");
         return;
       }
+      if (periodStart && periodEnd && !periodDays.length) {
+        setMessage("error", "Selecciona al menos un día permitido para el periodo.");
+        return;
+      }
 
       elements.createProjectBtn.disabled = true;
       try {
@@ -9443,6 +9664,7 @@ pause
           name,
           periodStart,
           periodEnd,
+          periodDays,
           budget: parseMoney(elements.budgetInput.value),
           dailyLimits: getDailyLimitsFromInputs(),
           createdAt: Date.now(),
@@ -9528,6 +9750,14 @@ pause
 
       if (!concepto || monto <= 0 || !fecha) {
         setMessage("error", "Completa concepto, monto y fecha.");
+        return;
+      }
+
+      if (!isExpenseDateAllowed(fecha)) {
+        const hasSelectedDays = getActivePeriodDays().length > 0;
+        setMessage("error", hasSelectedDays
+          ? "La fecha elegida no está habilitada para este proyecto. Selecciona uno de los días permitidos."
+          : "La fecha elegida está fuera del periodo del proyecto.");
         return;
       }
 
@@ -10036,6 +10266,7 @@ pause
         state.legacyProjectName = String(data.projectName || "Proyecto general");
         state.legacyPeriodStart = data.periodStart || "";
         state.legacyPeriodEnd = data.periodEnd || "";
+        state.legacyPeriodDays = normalizePeriodDays(data.periodDays);
         state.legacySignedSheet = data.signedSheet || null;
         state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) {
@@ -10057,6 +10288,7 @@ pause
         state.legacyProjectName = String(data.projectName || "Proyecto general");
         state.legacyPeriodStart = data.periodStart || "";
         state.legacyPeriodEnd = data.periodEnd || "";
+        state.legacyPeriodDays = normalizePeriodDays(data.periodDays);
         state.legacySignedSheet = data.signedSheet || null;
         state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) state.activeProjectId = data.selectedProjectId;
@@ -10157,6 +10389,9 @@ pause
     elements.saveProjectBtn.addEventListener("click", saveProjectDetails);
     elements.createProjectBtn.addEventListener("click", createProject);
     elements.deleteProjectBtn.addEventListener("click", deleteActiveProject);
+    elements.periodStartInput.addEventListener("change", () => renderPeriodDays());
+    elements.periodEndInput.addEventListener("change", () => renderPeriodDays());
+    elements.dateInput.addEventListener("change", syncExpenseDateConstraints);
     elements.projectSelect.addEventListener("change", () => {
       state.isCreatingProject = false;
       setActiveProject(elements.projectSelect.value, true);
