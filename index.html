@@ -1905,6 +1905,17 @@
       grid-area: end;
     }
 
+    #projectSelect {
+      font-weight: 650;
+      letter-spacing: 0.01em;
+    }
+
+    #projectSelect option {
+      padding: 8px 10px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
     #saveProjectBtn {
       grid-area: save;
       align-self: end;
@@ -7102,7 +7113,10 @@
       options.forEach((project) => {
         const option = document.createElement("option");
         option.value = project.id;
-        option.textContent = project.name || "Proyecto sin nombre";
+        const projectBudget = parseMoney(project.budget);
+        option.textContent = projectBudget > 0
+          ? `${project.name || "Proyecto sin nombre"} · ${formatter.format(projectBudget)}`
+          : project.name || "Proyecto sin nombre";
         elements.projectSelect.appendChild(option);
       });
 
