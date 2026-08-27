@@ -8215,7 +8215,7 @@ pause
           .replace(/[\u0300-\u036f]/g, "")
           .toUpperCase();
         worksheet.getCell("E15").value = /\bTOLUCA\b/.test(normalizedProjectName)
-          ? "Toluca"
+          ? "EDO MEX TOLUCA"
           : /\b(?:QRO|QUERETARO)\b/.test(normalizedProjectName)
             ? "Queretaro"
             : activeProject.name || null;
