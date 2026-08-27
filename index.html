@@ -536,27 +536,37 @@
     .file-picker {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       width: 100%;
       min-width: 0;
-      min-height: 44px;
+      min-height: 52px;
       padding: 10px 14px;
-      border: 1px dashed #c4ceda;
-      border-radius: 10px;
-      background: #ffffff;
-      color: var(--muted);
+      border: 1px solid var(--glass-line);
+      border-radius: 12px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
+      color: var(--glass-muted);
       cursor: pointer;
-      box-shadow: 0 1px 2px rgba(13, 43, 69, 0.03);
+      box-shadow: 0 1px 2px rgba(13, 43, 69, 0.04);
       transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease, transform 160ms ease;
     }
 
     .file-picker:hover,
     .visually-hidden:focus + .file-picker {
-      border-color: var(--primary);
-      border-style: solid;
-      background: #f6fbff;
-      box-shadow: 0 0 0 4px rgba(15, 108, 189, 0.10), 0 2px 6px rgba(15, 108, 189, 0.06);
-      transform: translateY(-1px);
+      border-color: var(--glass-primary);
+      background: linear-gradient(145deg, #ffffff, #f2f8ff);
+      box-shadow: 0 4px 14px rgba(15, 108, 189, 0.12), 0 0 0 3px rgba(15, 108, 189, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .file-picker .icon {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      padding: 8px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #e7f0fb, #d6e8ff);
+      color: var(--glass-primary);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
     }
 
     .file-picker .file-name {
@@ -565,7 +575,8 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       font-size: 0.94rem;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--glass-heading);
     }
 
     .button {
@@ -4899,21 +4910,21 @@
     }
 
     .edit-dialog-body .file-picker {
-      min-height: 48px;
-      padding: 10px 12px;
-      border-style: dashed;
-      border-color: color-mix(in srgb, var(--glass-line) 80%, transparent);
-      background: color-mix(in srgb, var(--glass-bg-soft) 52%, transparent);
+      min-height: 52px;
+      padding: 10px 14px;
+      border: 1px solid var(--glass-line);
+      border-style: solid;
+      border-radius: 12px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.92));
       justify-content: center;
-      justify-items: center;
-      text-align: center;
     }
 
     .edit-dialog-body .file-picker:hover,
     .edit-dialog-body .visually-hidden:focus + .file-picker {
       border-style: solid;
       border-color: var(--glass-primary);
-      background: color-mix(in srgb, var(--glass-primary) 10%, transparent);
+      background: linear-gradient(145deg, #ffffff, #f2f8ff);
+      box-shadow: 0 4px 14px rgba(15, 108, 189, 0.12), 0 0 0 3px rgba(15, 108, 189, 0.08);
     }
 
     .edit-dialog-body .blue-voucher-option {
@@ -6050,6 +6061,47 @@
         animation-duration: 0.001ms !important;
         transition-duration: 0.001ms !important;
       }
+    }
+
+    /* File pickers premium (sobreescribe el tema neon). */
+    .file-picker {
+      display: flex !important;
+      align-items: center !important;
+      justify-items: initial !important;
+      gap: 12px;
+      min-height: 52px;
+      padding: 10px 14px;
+      border: 1px solid var(--glass-line);
+      border-style: solid !important;
+      border-radius: 12px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.92));
+      text-align: left;
+      box-shadow: 0 1px 2px rgba(13, 43, 69, 0.04);
+    }
+
+    .file-picker .icon {
+      width: 34px !important;
+      height: 34px !important;
+      flex: 0 0 34px;
+      padding: 8px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #e7f0fb, #d6e8ff);
+      color: var(--glass-primary);
+      filter: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .file-picker .file-name {
+      color: var(--glass-heading);
+    }
+
+    .file-picker:hover,
+    .visually-hidden:focus + .file-picker {
+      border-color: var(--glass-primary);
+      border-style: solid;
+      background: linear-gradient(145deg, #ffffff, #f2f8ff);
+      box-shadow: 0 4px 14px rgba(15, 108, 189, 0.12), 0 0 0 3px rgba(15, 108, 189, 0.08);
+      transform: translateY(-2px);
     }
   </style>
 </head>
