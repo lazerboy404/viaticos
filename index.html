@@ -7114,9 +7114,10 @@
         const option = document.createElement("option");
         option.value = project.id;
         const projectBudget = parseMoney(project.budget);
+        const projectName = (project.name || "Proyecto sin nombre").toUpperCase();
         option.textContent = projectBudget > 0
-          ? `${project.name || "Proyecto sin nombre"} · ${formatter.format(projectBudget)}`
-          : project.name || "Proyecto sin nombre";
+          ? `${projectName} · ${formatter.format(projectBudget)}`
+          : projectName;
         elements.projectSelect.appendChild(option);
       });
 
@@ -7137,8 +7138,8 @@
         return;
       }
 
-      elements.activeProjectTitle.textContent = activeProject.name || "Proyecto sin nombre";
-      elements.projectNameInput.value = activeProject.name || "";
+      elements.activeProjectTitle.textContent = (activeProject.name || "Proyecto sin nombre").toUpperCase();
+      elements.projectNameInput.value = (activeProject.name || "").toUpperCase();
       elements.periodStartInput.value = activeProject.periodStart || "";
       elements.periodEndInput.value = activeProject.periodEnd || "";
       renderPeriodDays(activeProject.periodDays);
@@ -9621,7 +9622,7 @@ pause
     async function saveProjectDetails() {
       if (!state.isFirebaseReady) return;
 
-      const name = elements.projectNameInput.value.trim();
+      const name = elements.projectNameInput.value.trim().toUpperCase();
       if (!name) {
         setMessage("error", "Escribe el nombre del proyecto.");
         return;
@@ -9679,7 +9680,7 @@ pause
         return;
       }
 
-      const name = elements.projectNameInput.value.trim();
+      const name = elements.projectNameInput.value.trim().toUpperCase();
       const periodStart = elements.periodStartInput.value;
       const periodEnd = elements.periodEndInput.value;
       const periodDays = getSelectedPeriodDays();
