@@ -3487,7 +3487,7 @@
     .attachment-preview,
     .media-dialog {
       background: var(--glass-bg);
-      border-color: var(--glass-line);
+      border-color: transparent;
       box-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.10);
     }
 
@@ -3497,6 +3497,8 @@
     .project-panel,
     .budget-panel {
       background: var(--glass-bg-strong);
+      border-color: transparent !important;
+      border: 1px solid transparent !important;
     }
 
     [data-theme="light"] .summary-card,
