@@ -1887,9 +1887,6 @@
       width: 100%;
       min-height: 42px;
       margin-bottom: 0;
-      border-color: #00e5ff;
-      color: #00e5ff;
-      box-shadow: 0 0 16px rgba(0, 229, 255, 0.18);
     }
 
     #createProjectBtn {
@@ -1897,10 +1894,6 @@
       align-self: end;
       min-height: 42px;
       padding-inline: 12px;
-      border: 1px solid #00e5ff;
-      background: transparent;
-      color: #00f5ff;
-      box-shadow: 0 0 16px rgba(0, 229, 255, 0.18);
     }
 
     #deleteProjectBtn {
@@ -3235,9 +3228,14 @@
     .button.secondary,
     .button.ghost {
       border-color: color-mix(in srgb, var(--glass-primary), transparent 18%);
-      background: color-mix(in srgb, var(--glass-bg-strong), transparent 6%);
-      color: var(--glass-heading);
-      box-shadow: none;
+      background: linear-gradient(135deg, var(--glass-primary), var(--glass-primary-2));
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(15, 108, 189, 0.2);
+    }
+
+    .button.secondary:hover,
+    .button.ghost:hover {
+      background: linear-gradient(135deg, color-mix(in srgb, var(--glass-primary), #000 8%), color-mix(in srgb, var(--glass-primary-2), #000 8%));
     }
 
     .button.danger {
@@ -6209,7 +6207,7 @@
       <div class="daily-limit-fields">
         <label><span>Comida</span><input id="foodLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
         <label><span>Uber</span><input id="transportLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
-        <button class="button secondary" id="saveLimitsBtn" type="button" data-ripple-light="true">
+        <button class="button" id="saveLimitsBtn" type="button" data-ripple-light="true">
           <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/></svg>
           Guardar l&iacute;mites
         </button>
