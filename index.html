@@ -1916,6 +1916,10 @@
       color: var(--text);
     }
 
+    #projectSelect option:disabled {
+      color: var(--muted);
+    }
+
     #saveProjectBtn {
       grid-area: save;
       align-self: end;
@@ -7115,9 +7119,12 @@
         option.value = project.id;
         const projectBudget = parseMoney(project.budget);
         const projectName = (project.name || "Proyecto sin nombre").toUpperCase();
-        option.textContent = projectBudget > 0
+        const isComplete = Boolean(project.signedSheet?.dataUrl);
+        const label = projectBudget > 0
           ? `${projectName} · ${formatter.format(projectBudget)}`
           : projectName;
+        option.textContent = isComplete ? `✓ ${label} · Completado` : label;
+        if (isComplete) option.style.color = "#16a34a";
         elements.projectSelect.appendChild(option);
       });
 
