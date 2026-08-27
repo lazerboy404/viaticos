@@ -3266,6 +3266,15 @@
       color: var(--glass-danger);
     }
 
+    .button:focus-visible,
+    .side-link:focus-visible,
+    .report-excel-button:focus-visible,
+    .theme-toggle:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--glass-primary, #0f6cbd);
+      outline-offset: 2px;
+    }
+
     .form-actions .button {
       min-height: 44px;
     }
@@ -6566,16 +6575,17 @@
 
         <div class="table-wrap" id="tableWrap">
           <table>
+            <caption class="visually-hidden">Historial de gastos</caption>
             <thead>
               <tr>
-                <th>Fecha</th>
-                <th>Concepto</th>
-                <th>Monto</th>
-                <th>Ticket</th>
-                <th>Factura</th>
-                <th>Total factura</th>
-                <th>Docto</th>
-                <th>Acciones</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Concepto</th>
+                <th scope="col">Monto</th>
+                <th scope="col">Ticket</th>
+                <th scope="col">Factura</th>
+                <th scope="col">Total factura</th>
+                <th scope="col">Docto</th>
+                <th scope="col">Acciones</th>
               </tr>
             </thead>
             <tbody id="expensesBody"></tbody>
@@ -8651,14 +8661,32 @@ pause
         item.className = "ticket-thumb";
         const title = ticket.name || `Ticket ${index + 1}`;
         const downloadName = buildDownloadFileName(expense, "ticket", index, title);
-        item.innerHTML = `
-          <img src="${ticket.dataUrl}" alt="Ticket ${index + 1}">
-          <span title="${title}">${title}</span>
-          <div class="thumb-actions">
-            <a class="button secondary" href="${ticket.dataUrl}" target="_blank" rel="noopener noreferrer">Ver</a>
-            <a class="button secondary" href="${ticket.dataUrl}" download="${downloadName}">Descargar</a>
-          </div>
-        `;
+        const image = document.createElement("img");
+        image.src = ticket.dataUrl;
+        image.alt = `Ticket ${index + 1}`;
+
+        const nameSpan = document.createElement("span");
+        nameSpan.title = title;
+        nameSpan.textContent = title;
+
+        const actions = document.createElement("div");
+        actions.className = "thumb-actions";
+
+        const viewLink = document.createElement("a");
+        viewLink.className = "button secondary";
+        viewLink.href = ticket.dataUrl;
+        viewLink.target = "_blank";
+        viewLink.rel = "noopener noreferrer";
+        viewLink.textContent = "Ver";
+
+        const downloadLink = document.createElement("a");
+        downloadLink.className = "button secondary";
+        downloadLink.href = ticket.dataUrl;
+        downloadLink.download = downloadName;
+        downloadLink.textContent = "Descargar";
+
+        actions.append(viewLink, downloadLink);
+        item.append(image, nameSpan, actions);
         elements.ticketPreview.appendChild(item);
       });
 
@@ -9040,12 +9068,10 @@ pause
 
     async function updateLogosFromPdf() {
       const rows = elements.expensesBody.querySelectorAll("tr");
-      console.log(`[PDF Logo] Procesando ${rows.length} filas`);
       for (const row of rows) {
         const expenseId = row.dataset.expenseId;
         const expense = state.expenses.find(e => e.id === expenseId);
         if (!expense || !expense.invoiceUrl) {
-          console.log(`[PDF Logo] Gasto ${expenseId} sin factura`);
           continue;
         }
         const conceptCell = row.querySelector(".concept-cell");
@@ -9054,18 +9080,14 @@ pause
         if (!conceptNeon) continue;
         const existingImg = conceptNeon.querySelector(".brand-logo-img");
         if (existingImg) {
-          console.log(`[PDF Logo] Gasto ${expenseId} ya tiene logo`);
           continue;
         }
         const conceptParts = getExpenseConceptParts(expense);
         const conceptMeta = getConceptMeta(conceptParts.combined);
         if (conceptMeta.logoUrls && conceptMeta.logoUrls.length > 0) {
-          console.log(`[PDF Logo] Gasto ${expenseId} ya tiene logoUrls`);
           continue;
         }
-        console.log(`[PDF Logo] Buscando logo en PDF para gasto ${expenseId}: ${conceptParts.combined}`);
         const pdfLogoUrls = await findLogoFromPdf(expense);
-        console.log(`[PDF Logo] Resultado para ${expenseId}:`, pdfLogoUrls);
         if (pdfLogoUrls && pdfLogoUrls.length > 0) {
           const svg = conceptNeon.querySelector("svg");
           if (svg) {
@@ -9242,24 +9264,20 @@ pause
 
     function extractBrandFromInvoiceText(text) {
       if (!text) return null;
-      console.log(`[PDF Extract] Texto extraído del PDF (primeros 500 chars):`, text.substring(0, 500));
       
       // Buscar sección "INFORMACIÓN DEL EMISOR" o "DATOS DEL EMISOR"
       const issuerMatch = text.match(/(?:INFORMACIÓN|DATOS)\s+DEL\s+EMISOR[:\s]*([^\n]+(?:\n[^\n]+){0,3})/i);
       if (issuerMatch) {
         const issuerBlock = issuerMatch[1];
-        console.log(`[PDF Extract] Bloque del emisor encontrado:`, issuerBlock);
         
         // Buscar "NOMBRE:" dentro del bloque
         const nameMatch = issuerBlock.match(/NOMBRE[:\s]*([A-ZÁÉÍÓÚÑa-záéíóúñ\s&.,-]{3,80}?)(?=\s*(?:RFC|R.F\.C|REGIMEN|RÉGIMEN|DOMICILIO|CP|SERIE|FOLIO|$))/i);
         if (nameMatch) {
           const legalName = nameMatch[1].trim();
-          console.log(`[PDF Extract] Nombre legal extraído:`, legalName);
           
           // Limpiar el nombre legal para obtener el nombre comercial
           const commercialName = extractCommercialName(legalName);
           if (commercialName) {
-            console.log(`[PDF Extract] Nombre comercial extraído:`, commercialName);
             return commercialName;
           }
         }
@@ -9276,10 +9294,8 @@ pause
         const match = text.match(pattern);
         if (match) {
           const legalName = match[1].trim();
-          console.log(`[PDF Extract] Nombre legal (patrón alternativo):`, legalName);
           const commercialName = extractCommercialName(legalName);
           if (commercialName) {
-            console.log(`[PDF Extract] Nombre comercial (alternativo):`, commercialName);
             return commercialName;
           }
         }
@@ -9303,12 +9319,10 @@ pause
       for (const brand of knownBrands) {
         const normalizedBrand = brand.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         if (normalizedText.includes(normalizedBrand)) {
-          console.log(`[PDF Extract] Marca conocida encontrada en texto:`, brand);
           return brand;
         }
       }
       
-      console.log(`[PDF Extract] No se encontró marca en el PDF`);
       return null;
     }
     
@@ -9375,11 +9389,9 @@ pause
       const cacheKey = `brand_${expense.id}`;
       const cached = state.invoiceFiscalCache.get(cacheKey);
       if (cached?.brand) {
-        console.log(`[PDF Extract] Cache hit para ${expense.id}:`, cached.brand);
         return cached.brand;
       }
       try {
-        console.log(`[PDF Extract] Extrayendo marca del PDF para gasto ${expense.id}`);
         if (!pdfModulePromise) {
           pdfModulePromise = import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
         }
@@ -9390,9 +9402,7 @@ pause
         const page = await pdf.getPage(1);
         const content = await page.getTextContent();
         const text = content.items.map(item => item.str).join(" ");
-        console.log(`[PDF Extract] Texto completo extraído (${text.length} chars)`);
         const brand = extractBrandFromInvoiceText(text);
-        console.log(`[PDF Extract] Marca extraída:`, brand);
         state.invoiceFiscalCache.set(cacheKey, { brand });
         return brand;
       } catch (error) {
@@ -9404,19 +9414,16 @@ pause
     async function findLogoFromPdf(expense) {
       const brand = await extractBrandFromInvoice(expense);
       if (!brand) {
-        console.log(`[PDF Logo] No se encontró marca en PDF para gasto ${expense.id}, usando concepto como fallback`);
         // Usar el nombre del concepto como fallback
         const conceptParts = getExpenseConceptParts(expense);
         const conceptName = conceptParts.name || conceptParts.concept;
         if (conceptName && conceptName !== "SIN CONCEPTO") {
-          console.log(`[PDF Logo] Usando nombre del concepto: ${conceptName}`);
           const normalizedConcept = conceptName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
           
           // Buscar en brandLogoDomains
           for (const [key, domains] of Object.entries(brandLogoDomains)) {
             const normalizedKey = key.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             if (normalizedConcept.includes(normalizedKey) || normalizedKey.includes(normalizedConcept)) {
-              console.log(`[PDF Logo] Concepto coincide con brandLogoDomains: ${key}`);
               return getFallbackChain(domains);
             }
           }
@@ -9424,21 +9431,18 @@ pause
           // Intentar buscar logo para el nombre del concepto
           const conceptSlug = normalizedConcept.replace(/[^a-z0-9]+/g, "").replace(/^(comida|cena|desayuno|almuerzo|hotel|hospedaje|transporte|uber|taxi)\s*/g, "");
           if (conceptSlug.length >= 3) {
-            console.log(`[PDF Logo] Intentando buscar logo para concepto: ${conceptSlug}`);
             return [makeIconHorseUrl(`${conceptSlug}.com`), makeIconHorseUrl(`${conceptSlug}.com.mx`)];
           }
         }
         return null;
       }
       
-      console.log(`[PDF Logo] Marca encontrada: ${brand}`);
       const normalizedBrand = brand.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
       
       // Buscar en brandLogoDomains
       for (const [key, domains] of Object.entries(brandLogoDomains)) {
         const normalizedKey = key.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         if (normalizedBrand.includes(normalizedKey) || normalizedKey.includes(normalizedBrand)) {
-          console.log(`[PDF Logo] Marca coincide con brandLogoDomains: ${key}`);
           return getFallbackChain(domains);
         }
       }
@@ -9446,11 +9450,9 @@ pause
       // Intentar buscar logo para la marca extraída
       const brandSlug = normalizedBrand.replace(/[^a-z0-9]+/g, "").replace(/^(el|la|los|las|de|del|y|e)\s*/g, "");
       if (brandSlug.length >= 3) {
-        console.log(`[PDF Logo] Intentando buscar logo para: ${brandSlug}`);
         return [makeIconHorseUrl(`${brandSlug}.com`), makeIconHorseUrl(`${brandSlug}.com.mx`)];
       }
       
-      console.log(`[PDF Logo] No se pudo generar URL para marca: ${brand}`);
       return null;
     }
 
