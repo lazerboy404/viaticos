@@ -3501,6 +3501,14 @@
       border: 1px solid transparent !important;
     }
 
+    /* Quitar la caja grande que agrupa todo el contenido. */
+    .app,
+    main {
+      border: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+
     [data-theme="light"] .summary-card,
     [data-theme="dark"] .summary-card {
       background: var(--glass-bg-strong);
