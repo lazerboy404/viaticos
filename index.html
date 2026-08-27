@@ -9932,9 +9932,10 @@ pause
         /\bI\.?\s*V\.?\s*A\.?\s*:?\s*\$?\s*([\d,]+\.\d{2})/ig,
         /\bIMPUESTO\s+0\.16(?:0000)?\s+TASA\s+\$?\s*([\d,]+\.\d{2})\s+IMPORTE\b/ig,
         /IVA.{0,90}?IMPORTE\s*[-:]?\s*\$\s*([\d,]+\.\d{2})/ig,
-        /(?:IMPUESTOS\s+TRASLADADOS|IVA(?:T)?\s+0\.160000|IVA\s+16(?:\.00)?%|IVA\s+TRASLADADO\s+AL\s+16%)\s*\$?\s*([\d,]+\.\d{2})/ig,
-        /\bIVA\s*\$\s*([\d,]+\.\d{2})/ig,
-        /\bIVA\s+([\d,]+\.\d{2})\s*(?:MXN|$)/ig
+        /(?:IMPUESTOS\s+TRASLADADOS|IVA(?:T)?\s+0\.160000|IVA\s+16(?:\.00)?%|IVA\s+TRASLADADO\s+AL\s+16%)\s*(?:TASA\s*0\.160000\s*)?\s*(?:IMPORTE\s*:?)?\s*\$?\s*([\d,]+\.\d{2})/ig,
+        /\bIMPUESTOS\s+TRASLADADOS\b[\s\S]{0,120}?\bIMPORTE\b\s*:?\s*\$?\s*([\d,]+\.\d{2})/ig,
+        /\$?\s*([\d,]+\.\d{2})\s+(?:TASA\s*0\.160000\s+)?IMPUESTOS?\s+TRASLADADOS?/ig,
+        /\bI\.?\s*V\.?\s*A\.?\s*:?\s*\$?\s*([\d,]+\.\d{2})/ig,
       ];
       for (const pattern of patterns) {
         const matches = [...text.matchAll(pattern)];
