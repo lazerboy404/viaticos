@@ -3428,9 +3428,9 @@
     /* Material Design visual pass */
     :root,
     [data-theme="light"] {
-      --glass-page-1: #eef2f7;
-      --glass-page-2: #e9edf3;
-      --glass-page-3: #e4e9f0;
+      --glass-page-1: #dfe6ee;
+      --glass-page-2: #d9e1ea;
+      --glass-page-3: #d3dce6;
       --glass-bg: #ffffff;
       --glass-bg-strong: #ffffff;
       --glass-bg-soft: #f8fafc;
@@ -3507,6 +3507,17 @@
       border: none !important;
       border-radius: 0 !important;
       box-shadow: none !important;
+    }
+
+    /* Fondo principal de la página (un poco más oscuro en ambos modos). */
+    :root,
+    [data-theme="light"],
+    [data-theme="light"] body {
+      --glass-page-2: #d9e1ea;
+    }
+    [data-theme="dark"],
+    [data-theme="dark"] body {
+      --glass-page-2: #0d1728;
     }
 
     [data-theme="light"] .summary-card,
@@ -4546,10 +4557,10 @@
 
     .budget-limits-row {
       display: grid;
-      grid-template-columns: minmax(420px, 0.85fr) minmax(0, 1.15fr);
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
       align-items: stretch;
-      margin: 0 22px 18px;
+      margin: 0 0 18px;
     }
 
     .budget-limits-row .budget-panel,
