@@ -4698,19 +4698,19 @@
     }
 
     .history-panel tbody td {
-      border-top: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
-      border-bottom: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
+      border-top: 1px solid rgba(15, 23, 42, 0.14);
+      border-bottom: 1px solid rgba(15, 23, 42, 0.14);
       background: var(--expense-card-bg);
       box-shadow: none;
     }
 
     .history-panel tbody td:first-child {
-      border-left: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
+      border-left: 1px solid rgba(15, 23, 42, 0.14);
       border-radius: 16px 0 0 16px;
     }
 
     .history-panel tbody td:last-child {
-      border-right: 1px solid color-mix(in srgb, var(--glass-line) 76%, transparent);
+      border-right: 1px solid rgba(15, 23, 42, 0.14);
       border-radius: 0 16px 16px 0;
     }
 
@@ -5373,8 +5373,8 @@
       padding: 6px 9px;
       border: 0;
       border-radius: 999px;
-      background: transparent;
-      box-shadow: none;
+      background: linear-gradient(135deg, var(--glass-primary), var(--glass-primary-2));
+      box-shadow: 0 2px 5px rgba(15, 108, 189, 0.18);
       font-size: 0.7rem;
       line-height: 1;
       white-space: nowrap;
@@ -5383,8 +5383,8 @@
 
     .history-panel .ticket-actions .button:hover,
     .history-panel .invoice-actions .button:hover {
-      background: color-mix(in srgb, #22d3ee 14%, var(--glass-input));
-      transform: none;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--glass-primary), #000 8%), color-mix(in srgb, var(--glass-primary-2), #000 8%));
+      box-shadow: 0 4px 8px rgba(15, 108, 189, 0.24);
     }
 
     .history-panel .ticket-actions .button + .button,
@@ -5993,11 +5993,13 @@
     }
 
     .history-panel tbody tr {
-      transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease;
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      transition: transform 160ms ease, filter 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
     }
 
     .history-panel tbody tr:hover {
       transform: translateY(-2px);
+      border-color: rgba(15, 23, 42, 0.3);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
