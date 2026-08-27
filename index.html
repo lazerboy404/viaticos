@@ -4725,6 +4725,25 @@
       border-radius: 0 16px 16px 0;
     }
 
+    /* Tarjetas de gasto en modo oscuro: contorno blanco sutil */
+    [data-theme="dark"] .history-panel tbody tr {
+      --expense-card-bg: color-mix(in srgb, var(--glass-bg-strong) 88%, var(--glass-heading) 12%);
+      filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.35));
+    }
+
+    [data-theme="dark"] .history-panel tbody td {
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    [data-theme="dark"] .history-panel tbody td:first-child {
+      border-left: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    [data-theme="dark"] .history-panel tbody td:last-child {
+      border-right: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
     .history-panel .invoice-actions {
       display: grid;
       grid-template-columns: 38px minmax(118px, 1fr);
@@ -6102,6 +6121,26 @@
       background: linear-gradient(145deg, #ffffff, #f2f8ff);
       box-shadow: 0 4px 14px rgba(15, 108, 189, 0.12), 0 0 0 3px rgba(15, 108, 189, 0.08);
       transform: translateY(-2px);
+    }
+
+    /* File pickers en modo oscuro */
+    [data-theme="dark"] .file-picker {
+      border-color: var(--glass-line);
+      background: linear-gradient(145deg, #263449, #1e293b);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    [data-theme="dark"] .file-picker .icon {
+      background: linear-gradient(135deg, #33445d, #263449);
+      color: #90caf9;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    [data-theme="dark"] .file-picker:hover,
+    [data-theme="dark"] .visually-hidden:focus + .file-picker {
+      border-color: var(--glass-primary);
+      background: linear-gradient(145deg, #2b3c57, #22304a);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3), 0 0 0 3px rgba(100, 181, 246, 0.12);
     }
   </style>
 </head>
