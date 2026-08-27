@@ -7123,7 +7123,7 @@
         const label = projectBudget > 0
           ? `${projectName} · ${formatter.format(projectBudget)}`
           : projectName;
-        option.textContent = isComplete ? `✓ ${label} · Completado` : label;
+        option.textContent = isComplete ? `✅ ${label}` : label;
         if (isComplete) option.style.color = "#16a34a";
         elements.projectSelect.appendChild(option);
       });
