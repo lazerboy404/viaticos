@@ -508,7 +508,7 @@
       min-width: 0;
       min-height: 44px;
       padding: 10px 14px;
-      border: 1px solid #d8e0e9;
+      border: 1px solid #bfcedd;
       border-radius: 10px;
       background: #ffffff;
       color: var(--text);
@@ -3240,7 +3240,7 @@
     .status-pill,
     .theme-toggle {
       min-height: 44px;
-      border-color: var(--glass-line);
+      border-color: #bfcedd;
       background-color: var(--glass-input);
       color: var(--glass-text);
       font-size: 0.95rem;
@@ -6690,6 +6690,19 @@
       --line: #334155;
       --brand: #3b82f6;
       --brand-dark: #2563eb;
+    }
+
+    /* Contorno de inputs/selects más marcado (diferenciado por tema) */
+    :root,
+    [data-theme="light"] {
+      --input-border: #b9c7d6;
+    }
+    [data-theme="dark"] {
+      --input-border: #475569;
+    }
+    input,
+    select {
+      border-color: var(--input-border) !important;
     }
   </style>
 </head>
