@@ -5727,7 +5727,7 @@
     .history-order-option {
       min-height: 34px;
       padding: 7px 13px;
-      border: 0;
+      border: 1px solid transparent;
       border-radius: 999px;
       background: transparent;
       color: var(--glass-muted);
@@ -5735,13 +5735,18 @@
       font-size: 0.76rem;
       font-weight: 850;
       cursor: pointer;
-      transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+      transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .history-order-option:hover:not(.active) {
+      color: var(--glass-heading);
     }
 
     .history-order-option.active {
-      background: color-mix(in srgb, #22d3ee 18%, var(--glass-input));
+      background: color-mix(in srgb, var(--glass-primary) 14%, var(--glass-input));
+      border-color: var(--glass-primary);
       color: var(--glass-heading);
-      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.14);
+      box-shadow: 0 4px 14px rgba(15, 108, 189, 0.18);
     }
 
     .fiscal-breakdown {
