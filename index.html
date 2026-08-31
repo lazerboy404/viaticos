@@ -4959,6 +4959,113 @@
       min-height: 44px;
     }
 
+    .new-project-dialog {
+      width: min(560px, calc(100% - 32px));
+      margin: 8vh auto auto;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--glass-line);
+      border-radius: 20px;
+      background: transparent;
+      color: var(--glass-text);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28), 0 10px 20px rgba(0, 0, 0, 0.18);
+    }
+
+    .new-project-dialog::backdrop {
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .new-project-shell {
+      background: var(--glass-bg-strong);
+    }
+
+    .new-project-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--glass-line);
+    }
+
+    .new-project-header span {
+      color: var(--glass-muted);
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .new-project-header h3 {
+      margin: 3px 0 0;
+      color: var(--glass-heading);
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .new-project-close {
+      display: inline-grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      border: 1px solid var(--glass-line);
+      border-radius: 50%;
+      background: var(--glass-input);
+      color: var(--glass-heading);
+      cursor: pointer;
+    }
+
+    .new-project-close svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .new-project-body {
+      display: grid;
+      gap: 16px;
+      padding: 24px;
+    }
+
+    .new-project-body .dialog-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .new-project-body input,
+    .new-project-body select {
+      min-height: 44px;
+      padding: 10px 14px;
+      border: 1px solid var(--glass-line);
+      border-radius: 10px;
+      background: var(--glass-input);
+      color: var(--glass-text);
+      outline: none;
+    }
+
+    .new-project-body input:focus,
+    .new-project-body select:focus {
+      border-color: var(--glass-primary);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--glass-primary) 20%, transparent);
+    }
+
+    .new-project-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 4px;
+      padding-top: 16px;
+      border-top: 1px solid var(--glass-line);
+    }
+
+    .new-project-actions .button {
+      width: 100%;
+      min-height: 46px;
+    }
+
     .edit-dialog-header {
       position: sticky;
       top: 0;
@@ -6426,6 +6533,52 @@
       <p class="project-hint" id="projectHint">Selecciona un proyecto para cargar su presupuesto, periodo e historial.</p>
     </section>
 
+    <dialog class="new-project-dialog" id="newProjectDialog" aria-labelledby="newProjectDialogTitle">
+      <div class="new-project-shell">
+        <div class="new-project-header">
+          <div>
+            <span>Nuevo registro</span>
+            <h3 id="newProjectDialogTitle">Crear proyecto</h3>
+          </div>
+          <button class="new-project-close" id="closeNewProjectDialog" type="button" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="new-project-body">
+          <div class="field">
+            <label for="newProjectNameInput">Nombre del proyecto</label>
+            <input id="newProjectNameInput" type="text" placeholder="Ej. QUERETARO - JULIO" maxlength="80">
+          </div>
+          <div class="dialog-row">
+            <div class="field">
+              <label for="newPeriodStartInput">Periodo inicio</label>
+              <input id="newPeriodStartInput" type="date">
+            </div>
+            <div class="field">
+              <label for="newPeriodEndInput">Periodo fin</label>
+              <input id="newPeriodEndInput" type="date">
+            </div>
+          </div>
+          <div class="field project-days-field">
+            <div class="project-days-heading">
+              <label for="newPeriodDaysPicker">Días permitidos para registrar gastos</label>
+              <span class="project-days-count" id="newPeriodDaysCount">Selecciona un periodo</span>
+            </div>
+            <div class="period-days-picker" id="newPeriodDaysPicker" aria-live="polite"></div>
+            <p class="field-hint" id="newPeriodDaysHint">Define primero el periodo para elegir días específicos.</p>
+          </div>
+          <div class="field">
+            <label for="newBudgetInput">Monto Total Depositado</label>
+            <input id="newBudgetInput" type="number" min="0" step="0.01" placeholder="Ej. 15000.00" inputmode="decimal">
+          </div>
+          <div class="new-project-actions">
+            <button class="button secondary" id="cancelNewProjectBtn" type="button">Cancelar</button>
+            <button class="button" id="confirmNewProjectBtn" type="button">Crear proyecto</button>
+          </div>
+        </div>
+      </div>
+    </dialog>
+
     <div class="budget-limits-row">
     <section class="budget-panel" aria-labelledby="budgetTitle">
       <div class="field">
@@ -7031,7 +7184,18 @@
       closeDateDialog: document.querySelector("#closeDateDialog"),
       deliveryDateInput: document.querySelector("#deliveryDateInput"),
       confirmDateBtn: document.querySelector("#confirmDateBtn"),
-      cancelDateBtn: document.querySelector("#cancelDateBtn")
+      cancelDateBtn: document.querySelector("#cancelDateBtn"),
+      newProjectDialog: document.querySelector("#newProjectDialog"),
+      closeNewProjectDialog: document.querySelector("#closeNewProjectDialog"),
+      newProjectNameInput: document.querySelector("#newProjectNameInput"),
+      newPeriodStartInput: document.querySelector("#newPeriodStartInput"),
+      newPeriodEndInput: document.querySelector("#newPeriodEndInput"),
+      newPeriodDaysCount: document.querySelector("#newPeriodDaysCount"),
+      newPeriodDaysHint: document.querySelector("#newPeriodDaysHint"),
+      newPeriodDaysPicker: document.querySelector("#newPeriodDaysPicker"),
+      newBudgetInput: document.querySelector("#newBudgetInput"),
+      cancelNewProjectBtn: document.querySelector("#cancelNewProjectBtn"),
+      confirmNewProjectBtn: document.querySelector("#confirmNewProjectBtn")
     };
 
     function getTodayLocalString() {
@@ -7375,19 +7539,6 @@
       const activeProject = getActiveProject();
       elements.projectSelect.value = activeProject.id;
       elements.createProjectBtnText.textContent = "Nuevo proyecto";
-
-      if (state.isCreatingProject) {
-        elements.activeProjectTitle.textContent = "NUEVO PROYECTO";
-        elements.saveProjectBtn.disabled = !state.isFirebaseReady;
-        elements.deleteProjectBtn.disabled = true;
-        elements.saveBudgetBtn.disabled = true;
-        elements.saveLimitsBtn.disabled = true;
-        elements.projectHint.textContent = "Completa el nombre, el periodo y los d\u00edas permitidos, escribe el monto depositado y presiona Guardar para crear el proyecto. Tus proyectos anteriores no se modificar\u00e1n.";
-        renderPeriodDays();
-        syncExpenseDateConstraints();
-        renderSignedSheetControls();
-        return;
-      }
 
       elements.activeProjectTitle.textContent = (activeProject.name || "Proyecto sin nombre").toUpperCase();
       elements.projectNameInput.value = (activeProject.name || "").toUpperCase();
@@ -9920,11 +10071,6 @@ pause
     async function saveProjectDetails() {
       if (!state.isFirebaseReady) return;
 
-      if (state.isCreatingProject) {
-        await createProject();
-        return;
-      }
-
       const name = elements.projectNameInput.value.trim().toUpperCase();
       if (!name) {
         setMessage("error", "Escribe el nombre del proyecto.");
@@ -9978,15 +10124,11 @@ pause
     async function createProject() {
       if (!state.isFirebaseReady) return;
 
-      if (!state.isCreatingProject) {
-        startNewProject();
-        return;
-      }
-
-      const name = elements.projectNameInput.value.trim().toUpperCase();
-      const periodStart = elements.periodStartInput.value;
-      const periodEnd = elements.periodEndInput.value;
-      const periodDays = getSelectedPeriodDays();
+      const name = elements.newProjectNameInput.value.trim().toUpperCase();
+      const periodStart = elements.newPeriodStartInput.value;
+      const periodEnd = elements.newPeriodEndInput.value;
+      const periodDays = getSelectedNewPeriodDays();
+      const budget = parseMoney(elements.newBudgetInput.value);
 
       if (!name) {
         setMessage("error", "Escribe un nombre para el nuevo proyecto.");
@@ -10002,7 +10144,7 @@ pause
         return;
       }
 
-      elements.createProjectBtn.disabled = true;
+      elements.confirmNewProjectBtn.disabled = true;
       try {
         const newProjectRef = push(dbRef(state.db, PROJECTS_PATH));
         const newProject = {
@@ -10010,7 +10152,7 @@ pause
           periodStart,
           periodEnd,
           periodDays,
-          budget: parseMoney(elements.budgetInput.value),
+          budget,
           dailyLimits: getDailyLimitsFromInputs(),
           createdAt: Date.now(),
           updatedAt: Date.now()
@@ -10021,9 +10163,9 @@ pause
           ...state.projects.filter((project) => project.id !== newProjectRef.key),
           { id: newProjectRef.key, ...newProject }
         ].sort(compareProjectsByPeriod);
-        state.isCreatingProject = false;
         state.activeProjectId = newProjectRef.key;
         localStorage.setItem("viaticos-active-project", state.activeProjectId);
+        closeNewProjectDialog();
         rerenderActiveProject();
         resetExpenseForm();
         setMessage("success", "Proyecto creado. Los nuevos gastos se guardar\u00e1n en este proyecto.");
@@ -10031,8 +10173,71 @@ pause
         console.error(error);
         setMessage("error", "No se pudo crear el proyecto. Revisa permisos de Realtime Database.");
       } finally {
-        elements.createProjectBtn.disabled = false;
+        elements.confirmNewProjectBtn.disabled = false;
       }
+    }
+
+    function openNewProjectDialog() {
+      elements.newProjectNameInput.value = "";
+      elements.newPeriodStartInput.value = "";
+      elements.newPeriodEndInput.value = "";
+      elements.newBudgetInput.value = "";
+      renderNewPeriodDays();
+      if (typeof elements.newProjectDialog.showModal === "function") {
+        elements.newProjectDialog.showModal();
+      }
+      setTimeout(() => elements.newProjectNameInput.focus(), 50);
+    }
+
+    function closeNewProjectDialog() {
+      if (typeof elements.newProjectDialog.close === "function") elements.newProjectDialog.close();
+    }
+
+    function getSelectedNewPeriodDays() {
+      return [...elements.newPeriodDaysPicker.querySelectorAll("input:checked")]
+        .map((input) => input.value)
+        .sort();
+    }
+
+    function renderNewPeriodDays() {
+      const start = elements.newPeriodStartInput.value;
+      const end = elements.newPeriodEndInput.value;
+      const dates = getDatesBetween(start, end);
+      const selected = new Set(getSelectedNewPeriodDays());
+      const validSelection = [...selected].filter((date) => dates.includes(date));
+      elements.newPeriodDaysPicker.innerHTML = "";
+      if (!dates.length) {
+        elements.newPeriodDaysCount.textContent = "Selecciona un periodo";
+        elements.newPeriodDaysHint.textContent = "Define primero el periodo para elegir d\u00edas espec\u00edficos.";
+        return;
+      }
+      dates.forEach((date) => {
+        const inputId = `newPeriodDay-${date}`;
+        const option = document.createElement("label");
+        option.className = "period-day-option";
+        option.htmlFor = inputId;
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.id = inputId;
+        input.value = date;
+        input.checked = validSelection.includes(date);
+        input.addEventListener("change", updateNewPeriodDaysSummary);
+        const label = document.createElement("span");
+        label.className = "period-day-label";
+        label.innerHTML = `${formatDate(date).split(" ")[0]} <small>${formatDate(date).replace(/^\S+\s/, "")}</small>`;
+        option.append(input, label);
+        elements.newPeriodDaysPicker.appendChild(option);
+      });
+      updateNewPeriodDaysSummary();
+    }
+
+    function updateNewPeriodDaysSummary() {
+      const selected = getSelectedNewPeriodDays();
+      const total = elements.newPeriodDaysPicker.querySelectorAll("input").length;
+      elements.newPeriodDaysCount.textContent = total ? `${selected.length} de ${total} d\u00edas seleccionados` : "Selecciona un periodo";
+      elements.newPeriodDaysHint.textContent = selected.length === total
+        ? "Todos los d\u00edas del periodo est\u00e1n habilitados para registrar gastos."
+        : "Solo las fechas marcadas estar\u00e1n permitidas al registrar gastos.";
     }
 
     async function deleteActiveProject() {
@@ -10740,7 +10945,16 @@ pause
     elements.backupFileInput.addEventListener("change", () => importBackup(elements.backupFileInput.files[0]));
     elements.saveLimitsBtn.addEventListener("click", saveDailyLimits);
     elements.saveProjectBtn.addEventListener("click", saveProjectDetails);
-    elements.createProjectBtn.addEventListener("click", startNewProject);
+    elements.createProjectBtn.addEventListener("click", openNewProjectDialog);
+    elements.confirmNewProjectBtn.addEventListener("click", createProject);
+    elements.cancelNewProjectBtn.addEventListener("click", closeNewProjectDialog);
+    elements.closeNewProjectDialog.addEventListener("click", closeNewProjectDialog);
+    elements.newProjectDialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeNewProjectDialog();
+    });
+    elements.newPeriodStartInput.addEventListener("change", renderNewPeriodDays);
+    elements.newPeriodEndInput.addEventListener("change", renderNewPeriodDays);
     elements.deleteProjectBtn.addEventListener("click", deleteActiveProject);
     elements.periodStartInput.addEventListener("change", () => renderPeriodDays());
     elements.periodEndInput.addEventListener("change", () => renderPeriodDays());
