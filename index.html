@@ -41,7 +41,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #e9edf3;
@@ -787,12 +787,12 @@
 
     .summary-card.balance.low::before,
     .summary-card.balance.negative::before {
-      background: var(--red);
+      background: var(--orange);
     }
 
     .summary-card.balance.low,
     .summary-card.balance.negative {
-      --gauge-color: var(--red);
+      --gauge-color: var(--orange);
     }
 
     .summary-top {
@@ -969,13 +969,13 @@
 
     .balance.low,
     .balance.negative {
-      background: linear-gradient(180deg, var(--surface) 0%, var(--red-soft) 100%);
-      border-color: #fecaca;
+      background: linear-gradient(180deg, var(--surface) 0%, #fff7ed 100%);
+      border-color: #fed7aa;
     }
 
     .balance.low .summary-value,
     .balance.negative .summary-value {
-      color: var(--red);
+      color: var(--orange);
     }
 
     .progress-track {
@@ -997,7 +997,7 @@
     }
 
     .progress-bar.warning {
-      background: var(--red);
+      background: var(--orange);
     }
 
     .workspace {
@@ -3249,10 +3249,16 @@
 
     .button.secondary,
     .button.ghost {
-      border-color: color-mix(in srgb, var(--glass-primary), transparent 18%);
-      background: linear-gradient(135deg, var(--glass-primary), var(--glass-primary-2));
-      color: #ffffff;
-      box-shadow: 0 2px 6px rgba(15, 108, 189, 0.2);
+      border: 1px solid color-mix(in srgb, var(--glass-primary), transparent 35%);
+      background: color-mix(in srgb, var(--glass-bg-strong) 55%, transparent);
+      color: var(--glass-primary);
+      box-shadow: none;
+    }
+
+    .button.secondary:hover,
+    .button.ghost:hover {
+      background: color-mix(in srgb, var(--glass-primary) 12%, transparent);
+      border-color: var(--glass-primary);
     }
 
     .button.secondary:hover,
@@ -3547,6 +3553,11 @@
     [data-theme="dark"],
     [data-theme="dark"] body {
       --glass-page-2: #0d1728;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(66, 165, 245, 0.10), transparent 30%),
+        radial-gradient(circle at 90% 12%, rgba(20, 184, 166, 0.08), transparent 28%),
+        radial-gradient(circle at 80% 88%, rgba(99, 102, 241, 0.08), transparent 32%),
+        var(--glass-page-2);
     }
 
     [data-theme="light"] .summary-card,
@@ -4038,10 +4049,10 @@
       max-width: 100%;
       margin-top: 7px;
       padding: 6px 8px;
-      border: 1px solid color-mix(in srgb, var(--glass-danger), transparent 24%);
+      border: 1px solid color-mix(in srgb, var(--orange), transparent 24%);
       border-radius: 8px;
-      color: var(--glass-danger);
-      background: color-mix(in srgb, var(--glass-danger), transparent 88%);
+      color: var(--orange);
+      background: color-mix(in srgb, var(--orange), transparent 88%);
       font-size: 0.74rem;
       font-weight: 900;
       line-height: 1.15;
@@ -4546,9 +4557,20 @@
     }
 
     .report-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 80px;
       padding: 14px;
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.82rem;
+    }
+
+    .report-empty svg {
+      width: 20px;
+      height: 20px;
+      opacity: 0.7;
     }
 
     @media (max-width: 1100px) {
@@ -5440,10 +5462,11 @@
       min-width: 0;
       min-height: 30px;
       padding: 6px 9px;
-      border: 0;
+      border: 1px solid color-mix(in srgb, var(--glass-primary) 30%, transparent);
       border-radius: 999px;
-      background: linear-gradient(135deg, var(--glass-primary), var(--glass-primary-2));
-      box-shadow: 0 2px 5px rgba(15, 108, 189, 0.18);
+      background: color-mix(in srgb, var(--glass-primary) 8%, transparent);
+      box-shadow: none;
+      color: var(--glass-primary);
       font-size: 0.7rem;
       line-height: 1;
       white-space: nowrap;
@@ -5452,13 +5475,15 @@
 
     .history-panel .ticket-actions .button:hover,
     .history-panel .invoice-actions .button:hover {
-      background: linear-gradient(135deg, color-mix(in srgb, var(--glass-primary), #000 8%), color-mix(in srgb, var(--glass-primary-2), #000 8%));
-      box-shadow: 0 4px 8px rgba(15, 108, 189, 0.24);
+      background: color-mix(in srgb, var(--glass-primary) 16%, transparent);
+      border-color: color-mix(in srgb, var(--glass-primary) 55%, transparent);
+      box-shadow: none;
+      color: var(--glass-primary);
     }
 
     .history-panel .ticket-actions .button + .button,
     .history-panel .invoice-button-stack .button + .button {
-      border-left: 1px solid color-mix(in srgb, var(--glass-line) 82%, transparent);
+      border-left: 1px solid color-mix(in srgb, var(--glass-primary) 22%, transparent);
       border-radius: 0 999px 999px 0;
     }
 
@@ -5475,17 +5500,35 @@
     }
 
     .history-panel .row-actions {
-      gap: 8px;
+      gap: 6px;
       flex-wrap: nowrap;
     }
 
     .history-panel .row-actions .button {
-      transition: transform 160ms ease, box-shadow 160ms ease;
+      min-height: 30px;
+      padding: 5px 9px;
+      border: 1px solid color-mix(in srgb, var(--glass-primary) 30%, transparent);
+      background: color-mix(in srgb, var(--glass-primary) 8%, transparent);
+      color: var(--glass-primary);
+      box-shadow: none;
+      font-size: 0.72rem;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
     }
 
     .history-panel .row-actions .button:hover {
       transform: translateY(-1px);
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+      background: color-mix(in srgb, var(--glass-primary) 16%, transparent);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .history-panel .row-actions .button.danger {
+      border-color: color-mix(in srgb, var(--glass-danger) 32%, transparent);
+      background: color-mix(in srgb, var(--glass-danger) 8%, transparent);
+      color: var(--glass-danger);
+    }
+
+    .history-panel .row-actions .button.danger:hover {
+      background: color-mix(in srgb, var(--glass-danger) 16%, transparent);
     }
 
     @media (max-width: 1100px) and (min-width: 761px) {
@@ -6185,46 +6228,6 @@
 </head>
 <body>
   <div class="dashboard-shell">
-    <aside class="sidebar" aria-label="Navegación principal">
-      <div class="brand-lockup">
-        <span class="brand-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M4 7h16v13H4zM8 7V5h8v2M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </span>
-        <h1>Control<br>de Viáticos</h1>
-      </div>
-
-      <nav class="side-nav" aria-label="Secciones">
-        <a class="side-link active" href="#dashboardTop">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M4 13a8 8 0 1 1 16 0M12 13l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          Dashboard
-        </a>
-        <a class="side-link" href="#historyTitle">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M6 3h12v18H6zM9 8h6M9 12h6M9 16h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Gastos
-        </a>
-        <a class="side-link" href="#projectTitle">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M4 9h16v11H4zM8 9V6h8v3" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          </svg>
-          Proyectos
-        </a>
-        <a class="side-link" href="#budgetTitle">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          Reportes
-        </a>
-      </nav>
-
-      <div class="sidebar-bottom"></div>
-    </aside>
-
     <main class="app" id="dashboardTop">
       <header class="topbar transition-all duration-300" aria-label="Estado de la aplicacion">
         <div class="topbar-title">
@@ -6294,14 +6297,14 @@
         <div class="period-days-picker" id="periodDaysPicker" aria-live="polite"></div>
         <p class="field-hint" id="periodDaysHint">Define primero el periodo para elegir días específicos.</p>
       </div>
-      <button class="button secondary" id="saveProjectBtn" type="button" data-ripple-light="true">
+      <button class="button" id="saveProjectBtn" type="button" data-ripple-light="true">
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
           <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
         </svg>
         Guardar
       </button>
-      <button class="button" id="createProjectBtn" type="button" data-ripple-light="true">
+      <button class="button secondary" id="createProjectBtn" type="button" data-ripple-light="true">
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
         </svg>
@@ -7641,9 +7644,14 @@
     function renderReportList(container, entries, formatLabel) {
       container.innerHTML = "";
       if (!entries.length) {
-        const empty = document.createElement("p");
+        const empty = document.createElement("div");
         empty.className = "report-empty";
-        empty.textContent = "Sin gastos para mostrar.";
+        empty.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-7"/>
+          </svg>
+          <span>Sin gastos para mostrar.</span>
+        `;
         container.appendChild(empty);
         return;
       }
