@@ -7374,15 +7374,15 @@
 
       const activeProject = getActiveProject();
       elements.projectSelect.value = activeProject.id;
-      elements.createProjectBtnText.textContent = state.isCreatingProject ? "Crear proyecto" : "Nuevo proyecto";
+      elements.createProjectBtnText.textContent = "Nuevo proyecto";
 
       if (state.isCreatingProject) {
         elements.activeProjectTitle.textContent = "NUEVO PROYECTO";
-        elements.saveProjectBtn.disabled = true;
+        elements.saveProjectBtn.disabled = !state.isFirebaseReady;
         elements.deleteProjectBtn.disabled = true;
         elements.saveBudgetBtn.disabled = true;
         elements.saveLimitsBtn.disabled = true;
-        elements.projectHint.textContent = "Completa los datos desde cero y presiona Crear proyecto. Tus proyectos anteriores no se modificar\u00e1n.";
+        elements.projectHint.textContent = "Completa el nombre, el periodo y los d\u00edas permitidos, escribe el monto depositado y presiona Guardar para crear el proyecto. Tus proyectos anteriores no se modificar\u00e1n.";
         renderPeriodDays();
         syncExpenseDateConstraints();
         renderSignedSheetControls();
@@ -9865,6 +9865,10 @@ pause
     }
 
     function startNewProject() {
+      if (state.isCreatingProject) {
+        const confirmed = window.confirm("Ya est\u00e1s creando un proyecto. \u00bfQuieres empezar de nuevo y perder los datos sin guardar?");
+        if (!confirmed) return;
+      }
       state.isCreatingProject = true;
       state.budget = 0;
       state.dailyLimits = { ...DEFAULT_DAILY_LIMITS };
@@ -9915,6 +9919,11 @@ pause
 
     async function saveProjectDetails() {
       if (!state.isFirebaseReady) return;
+
+      if (state.isCreatingProject) {
+        await createProject();
+        return;
+      }
 
       const name = elements.projectNameInput.value.trim().toUpperCase();
       if (!name) {
@@ -10731,7 +10740,7 @@ pause
     elements.backupFileInput.addEventListener("change", () => importBackup(elements.backupFileInput.files[0]));
     elements.saveLimitsBtn.addEventListener("click", saveDailyLimits);
     elements.saveProjectBtn.addEventListener("click", saveProjectDetails);
-    elements.createProjectBtn.addEventListener("click", createProject);
+    elements.createProjectBtn.addEventListener("click", startNewProject);
     elements.deleteProjectBtn.addEventListener("click", deleteActiveProject);
     elements.periodStartInput.addEventListener("change", () => renderPeriodDays());
     elements.periodEndInput.addEventListener("change", () => renderPeriodDays());
