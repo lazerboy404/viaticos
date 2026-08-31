@@ -8210,6 +8210,17 @@ pause
         return;
       }
 
+      const deliveryDate = prompt(
+        "Fecha de entrega del reporte (YYYY-MM-DD):\nSe colocar\u00e1 en el campo 'Fecha de entrega de Reporte' del Excel.",
+        getTodayLocalString()
+      );
+      if (deliveryDate === null) return;
+      const cleanDeliveryDate = validateDateString(deliveryDate.trim());
+      if (!cleanDeliveryDate) {
+        setMessage("error", "La fecha de entrega no es v\u00e1lida. Usa el formato YYYY-MM-DD.");
+        return;
+      }
+
       elements.exportExcelBtn.disabled = true;
       elements.exportExcelBtn.textContent = "Generando Excel...";
       clearMessage();
@@ -8318,7 +8329,8 @@ pause
         worksheet.getCell("E9").value = "Einar Ulises Arenas Hernandez";
         worksheet.getCell("E10").value = "Tecnico Operaciones";
         worksheet.getCell("E11").value = "Operaciones";
-        worksheet.getCell("E12").value = null;
+        worksheet.getCell("E12").value = cleanDeliveryDate ? new Date(`${cleanDeliveryDate}T00:00:00`) : null;
+        if (cleanDeliveryDate) worksheet.getCell("E12").numFmt = "dd/mm/yyyy";
         worksheet.getCell("E13").value = periodText;
         worksheet.getCell("H13").value = state.budget;
         const normalizedProjectName = String(activeProject.name || "")
