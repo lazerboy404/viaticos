@@ -1872,21 +1872,10 @@
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
-    .project-panel .field:nth-child(1) {
-      grid-area: project;
-    }
-
-    .project-panel .field:nth-child(2) {
-      grid-area: newlabel;
-    }
-
-    .project-panel .field:nth-child(3) {
-      grid-area: start;
-    }
-
-    .project-panel .field:nth-child(4) {
-      grid-area: end;
-    }
+    .project-panel .field:has(> #projectSelect) { grid-area: project; }
+    .project-panel .field:has(> #projectNameInput) { grid-area: newlabel; }
+    .project-panel .field:has(> #periodStartInput) { grid-area: start; }
+    .project-panel .field:has(> #periodEndInput) { grid-area: end; }
 
     #projectSelect {
       font-weight: 650;
@@ -2353,8 +2342,8 @@
           "hint";
       }
 
-      .project-panel .field:nth-child(3),
-      .project-panel .field:nth-child(4) {
+      .project-panel .field:has(> #periodStartInput),
+      .project-panel .field:has(> #periodEndInput) {
         display: grid;
       }
 
@@ -2534,10 +2523,11 @@
     }
 
     .project-panel {
-      grid-template-columns: minmax(210px, 1fr) minmax(210px, 1fr) minmax(136px, 0.6fr) minmax(136px, 0.6fr);
+      grid-template-columns: minmax(210px, 1.2fr) minmax(200px, auto) minmax(150px, 0.9fr) minmax(150px, 0.9fr);
       grid-template-areas:
-        "project newlabel start end"
-        "save newbutton deletebutton deletebutton"
+        "project newbutton newlabel newlabel"
+        "save save start end"
+        "deletebutton deletebutton deletebutton deletebutton"
         "hint hint hint hint";
       align-items: end;
     }
@@ -4978,6 +4968,8 @@
     }
 
     .new-project-shell {
+      max-height: min(84vh, 720px);
+      overflow: auto;
       background: var(--glass-bg-strong);
     }
 
@@ -5053,12 +5045,15 @@
     }
 
     .new-project-actions {
+      position: sticky;
+      bottom: 0;
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
       margin-top: 4px;
-      padding-top: 16px;
+      padding: 16px 0 0;
       border-top: 1px solid var(--glass-line);
+      background: var(--glass-bg-strong);
     }
 
     .new-project-actions .button {
@@ -6491,6 +6486,13 @@
           <option value="">Cargando proyectos</option>
         </select>
       </div>
+      <button class="button secondary" id="createProjectBtn" type="button" data-ripple-light="true">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M21 21H3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <span id="createProjectBtnText">Nuevo</span>
+      </button>
       <div class="field">
         <label for="projectNameInput">Nombre del proyecto</label>
         <input id="projectNameInput" type="text" placeholder="Ej. QUERETARO - JULIO" maxlength="80">
@@ -6517,12 +6519,6 @@
           <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
         </svg>
         Guardar
-      </button>
-      <button class="button secondary" id="createProjectBtn" type="button" data-ripple-light="true">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-        </svg>
-        <span id="createProjectBtnText">Nuevo proyecto</span>
       </button>
       <button class="button danger" id="deleteProjectBtn" type="button" data-ripple-light="true">
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
