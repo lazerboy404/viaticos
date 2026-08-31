@@ -379,6 +379,32 @@
       gap: 8px;
     }
 
+    .period-days-quick {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .period-days-quick button {
+      min-height: 30px;
+      padding: 5px 11px;
+      border: 1px solid var(--glass-line);
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--glass-input) 60%, transparent);
+      color: var(--glass-muted);
+      font: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+    }
+
+    .period-days-quick button:hover {
+      border-color: var(--glass-primary);
+      color: var(--glass-primary);
+      background: color-mix(in srgb, var(--glass-primary) 10%, transparent);
+    }
+
     .period-days-picker:empty {
       display: none;
     }
@@ -6510,6 +6536,12 @@
           <label for="periodDaysPicker">Días permitidos para registrar gastos</label>
           <span class="project-days-count" id="periodDaysCount">Selecciona un periodo</span>
         </div>
+        <div class="period-days-quick" data-picker="periodDaysPicker">
+          <button type="button" data-quick="all">Marcar todo</button>
+          <button type="button" data-quick="weekdays">Lunes a viernes</button>
+          <button type="button" data-quick="weekend">Solo fines</button>
+          <button type="button" data-quick="clear">Limpiar</button>
+        </div>
         <div class="period-days-picker" id="periodDaysPicker" aria-live="polite"></div>
         <p class="field-hint" id="periodDaysHint">Define primero el periodo para elegir días específicos.</p>
       </div>
@@ -6559,6 +6591,12 @@
             <div class="project-days-heading">
               <label for="newPeriodDaysPicker">Días permitidos para registrar gastos</label>
               <span class="project-days-count" id="newPeriodDaysCount">Selecciona un periodo</span>
+            </div>
+            <div class="period-days-quick" data-picker="newPeriodDaysPicker">
+              <button type="button" data-quick="all">Marcar todo</button>
+              <button type="button" data-quick="weekdays">Lunes a viernes</button>
+              <button type="button" data-quick="weekend">Solo fines</button>
+              <button type="button" data-quick="clear">Limpiar</button>
             </div>
             <div class="period-days-picker" id="newPeriodDaysPicker" aria-live="polite"></div>
             <p class="field-hint" id="newPeriodDaysHint">Define primero el periodo para elegir días específicos.</p>
@@ -10236,6 +10274,39 @@ pause
         : "Solo las fechas marcadas estar\u00e1n permitidas al registrar gastos.";
     }
 
+    function applyQuickSelection(action, pickerEl) {
+      if (!pickerEl) return;
+      const inputs = [...pickerEl.querySelectorAll("input[type=checkbox]")];
+      if (!inputs.length) return;
+      inputs.forEach((input) => {
+        if (action === "all") {
+          input.checked = true;
+        } else if (action === "clear") {
+          input.checked = false;
+        } else {
+          const day = new Date(`${input.value}T00:00:00`).getDay();
+          const isWeekday = day >= 1 && day <= 5;
+          const isWeekend = day === 0 || day === 6;
+          if (action === "weekdays") input.checked = isWeekday;
+          else if (action === "weekend") input.checked = isWeekend;
+          else input.checked = false;
+        }
+      });
+      inputs.forEach((input) => input.dispatchEvent(new Event("change", { bubbles: true })));
+    }
+
+    function setupQuickSelectors() {
+      document.querySelectorAll(".period-days-quick").forEach((bar) => {
+        bar.querySelectorAll("button").forEach((button) => {
+          button.addEventListener("click", () => {
+            const pickerId = button.closest(".period-days-quick").dataset.picker;
+            const pickerEl = document.getElementById(pickerId);
+            applyQuickSelection(button.dataset.quick, pickerEl);
+          });
+        });
+      });
+    }
+
     async function deleteActiveProject() {
       if (!state.isFirebaseReady || state.isCreatingProject) return;
       const project = getActiveProject();
@@ -11002,6 +11073,7 @@ pause
       clearMessage();
     });
 
+    setupQuickSelectors();
     initFirebase();
   </script>
   <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/ripple.js"></script>
