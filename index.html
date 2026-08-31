@@ -377,6 +377,22 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
       gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .period-days-picker::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .period-days-picker::-webkit-scrollbar-thumb {
+      background: color-mix(in srgb, var(--glass-line) 80%, transparent);
+      border-radius: 999px;
+    }
+
+    .period-days-picker::-webkit-scrollbar-track {
+      background: transparent;
     }
 
     .period-days-quick {
@@ -10217,6 +10233,12 @@ pause
       elements.newPeriodEndInput.value = "";
       elements.newBudgetInput.value = "";
       renderNewPeriodDays();
+      const lastProject = state.projects.length
+        ? [...state.projects].sort((a, b) => parseMoney(b.createdAt) - parseMoney(a.createdAt))[0]
+        : null;
+      elements.newProjectNameInput.placeholder = lastProject?.name
+        ? `Ej. ${lastProject.name}`
+        : "Ej. QUERETARO - JULIO";
       if (typeof elements.newProjectDialog.showModal === "function") {
         elements.newProjectDialog.showModal();
       }
