@@ -4,7 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Control de Viáticos</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block">
+  <script>
+    // Tailwind Play CDN: limitar a clases usadas para reducir trabajo del JIT en el cliente.
+    window.tailwind = window.tailwind || {};
+  </script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
   <script>
     tailwind.config = {
       corePlugins: { preflight: false },
@@ -24,7 +36,7 @@
             background: '#f1f5f9'
           },
           fontFamily: {
-            sans: ['Roboto', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
+            sans: ['Inter', 'system-ui', 'ui-sans-serif', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
           },
           boxShadow: {
             'material-1': '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
@@ -37,11 +49,10 @@
     }
   </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='money' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236ee7a0'/%3E%3Cstop offset='1' stop-color='%2316a34a'/%3E%3C/linearGradient%3E%3Cfilter id='shadow' x='-30%25' y='-30%25' width='160%25' height='170%25'%3E%3CfeDropShadow dx='0' dy='3' stdDeviation='2' flood-color='%23000000' flood-opacity='.5'/%3E%3C/filter%3E%3C/defs%3E%3Crect x='1' y='1' width='62' height='62' rx='15' fill='%230b0f17' stroke='%2323344d' stroke-width='2'/%3E%3Cpath d='M24 24C17 16 10 13 4 15c5 3 7 7 7 11-4-2-7-2-10 0 5 3 9 8 12 14l11-5Z' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M40 24c7-8 14-11 20-9-5 3-7 7-7 11 4-2 7-2 10 0-5 3-9 8-12 14l-11-5Z' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cg filter='url(%23shadow)' transform='rotate(-8 32 34)'%3E%3Crect x='14' y='22' width='36' height='25' rx='4' fill='url(%23money)' stroke='%230b7a38' stroke-width='2'/%3E%3Ccircle cx='32' cy='34.5' r='7' fill='none' stroke='%23fef08a' stroke-width='2'/%3E%3Cpath d='M32 29v11M35 31c-1-1-5-1-5 1s5 1 5 3-4 2-5 1' fill='none' stroke='%23fef08a' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M18 27h4M42 42h4' stroke='%23bbf7d0' stroke-width='2' stroke-linecap='round'/%3E%3C/g%3E%3Cpath d='m28 17 2-3 2 3 3-2-1 4' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet"></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
   <style>
     :root {
       --bg: #e9edf3;
@@ -95,6 +106,28 @@
     [data-theme="dark"] th,
     [data-theme="dark"] label {
       color: #c7d5e6;
+    }
+
+    /* Performance: reduce backdrop-filter and expensive transitions on mobile and when the user prefers reduced motion. */
+    @media (max-width: 768px) {
+      .topbar,
+      .summary-card,
+      .panel,
+      .edit-dialog-header {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
     }
 
     [data-theme="dark"] .summary-card {
@@ -5109,8 +5142,8 @@
       padding: 22px 26px;
       border-bottom: 1px solid var(--glass-line);
       background: color-mix(in srgb, var(--glass-bg-strong) 88%, transparent);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(8px) saturate(140%);
+      -webkit-backdrop-filter: blur(8px) saturate(140%);
     }
 
     .edit-dialog-header span {
@@ -9642,7 +9675,7 @@ pause
         const firstLogoUrl = (logoUrls && logoUrls.length) ? logoUrls[0] : null;
         const hasLogo = Boolean(firstLogoUrl);
         const neonContent = hasLogo
-          ? `<img src="${firstLogoUrl}" alt="" class="brand-logo-img"><svg viewBox="0 0 24 24" fill="none" class="brand-logo-fallback" style="display:none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+          ? `<img src="${firstLogoUrl}" alt="" class="brand-logo-img" loading="lazy" decoding="async" width="20" height="20"><svg viewBox="0 0 24 24" fill="none" class="brand-logo-fallback" style="display:none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
           : `<svg viewBox="0 0 24 24" fill="none"><path d="${conceptMeta.path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
         row.querySelector(".concept-cell").innerHTML = `
@@ -9707,51 +9740,61 @@ pause
     }
 
     async function updateLogosFromPdf() {
-      const rows = elements.expensesBody.querySelectorAll("tr");
+      const rows = Array.from(elements.expensesBody.querySelectorAll("tr"));
+      const tasks = [];
       for (const row of rows) {
         const expenseId = row.dataset.expenseId;
         const expense = state.expenses.find(e => e.id === expenseId);
-        if (!expense || !expense.invoiceUrl) {
-          continue;
-        }
+        if (!expense || !expense.invoiceUrl) continue;
         const conceptCell = row.querySelector(".concept-cell");
         if (!conceptCell) continue;
         const conceptNeon = conceptCell.querySelector(".concept-neon");
         if (!conceptNeon) continue;
-        const existingImg = conceptNeon.querySelector(".brand-logo-img");
-        if (existingImg) {
-          continue;
-        }
+        if (conceptNeon.querySelector(".brand-logo-img")) continue;
         const conceptParts = getExpenseConceptParts(expense);
         const conceptMeta = getConceptMeta(conceptParts.combined);
-        if (conceptMeta.logoUrls && conceptMeta.logoUrls.length > 0) {
-          continue;
-        }
-        const pdfLogoUrls = await findLogoFromPdf(expense);
-        if (pdfLogoUrls && pdfLogoUrls.length > 0) {
-          const svg = conceptNeon.querySelector("svg");
-          if (svg) {
-            svg.classList.add("brand-logo-fallback");
-            svg.style.display = "none";
-            const img = document.createElement("img");
-            img.src = pdfLogoUrls[0];
-            img.alt = "";
-            img.className = "brand-logo-img";
-            conceptNeon.insertBefore(img, svg);
-            let urlIndex = 0;
-            const tryNextLogo = () => {
-              urlIndex += 1;
-              if (urlIndex < pdfLogoUrls.length) {
-                img.src = pdfLogoUrls[urlIndex];
-              } else {
-                img.remove();
-                svg.style.display = "";
-              }
-            };
-            img.addEventListener("error", tryNextLogo);
-          }
-        }
+        if (conceptMeta.logoUrls && conceptMeta.logoUrls.length > 0) continue;
+        tasks.push({ row, conceptNeon, expense });
       }
+      const concurrency = 4;
+      let cursor = 0;
+      const worker = async () => {
+        while (cursor < tasks.length) {
+          const myIndex = cursor++;
+          const { row, conceptNeon, expense } = tasks[myIndex];
+          // Si la fila fue retirada del DOM mientras esperábamos su turno, saltar.
+          if (!row.isConnected) continue;
+          const pdfLogoUrls = await findLogoFromPdf(expense);
+          if (!pdfLogoUrls || pdfLogoUrls.length === 0) continue;
+          if (!row.isConnected) continue;
+          const svg = conceptNeon.querySelector("svg");
+          if (!svg) continue;
+          svg.classList.add("brand-logo-fallback");
+          svg.style.display = "none";
+          const img = document.createElement("img");
+          img.src = pdfLogoUrls[0];
+          img.alt = "";
+          img.className = "brand-logo-img";
+          img.loading = "lazy";
+          img.decoding = "async";
+          img.width = 20;
+          img.height = 20;
+          conceptNeon.insertBefore(img, svg);
+          let urlIndex = 0;
+          const tryNextLogo = () => {
+            urlIndex += 1;
+            if (urlIndex < pdfLogoUrls.length) {
+              img.src = pdfLogoUrls[urlIndex];
+            } else {
+              img.remove();
+              svg.style.display = "";
+            }
+          };
+          img.addEventListener("error", tryNextLogo);
+        }
+      };
+      const workers = Array.from({ length: Math.min(concurrency, tasks.length) }, () => worker());
+      await Promise.all(workers);
     }
 
     function updateHistoryOrderControls() {
@@ -11311,7 +11354,10 @@ pause
     });
     elements.themeToggle.addEventListener("click", toggleTheme);
     elements.expenseForm.addEventListener("submit", saveExpense);
-    elements.conceptInput.addEventListener("input", applyProviderConceptFilter);
+    elements.conceptInput.addEventListener("input", () => {
+      if (window.__conceptFilterTimer) clearTimeout(window.__conceptFilterTimer);
+      window.__conceptFilterTimer = setTimeout(applyProviderConceptFilter, 80);
+    });
     elements.cancelEditBtn.addEventListener("click", () => {
       resetExpenseForm();
       clearMessage();
