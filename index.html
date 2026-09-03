@@ -227,36 +227,45 @@
     }
 
     .topbar {
-      position: relative;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), rgba(255,255,255,0.55));
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+    [data-theme="dark"] .topbar {
+      background: linear-gradient(180deg, rgba(11,16,32,0.72), rgba(11,16,32,0.48));
+    }
+    .topbar::after { display: none; }
+
+    .topbar-inner {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 14px 24px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 24px;
-      min-height: 170px;
-      margin-bottom: 18px;
-      padding: 26px;
-      overflow: hidden;
-      border: 1px solid rgba(13, 43, 69, 0.12);
-      border-radius: var(--radius);
-      background: linear-gradient(135deg, rgba(13, 43, 69, 0.98) 0%, rgba(0, 121, 107, 0.92) 100%);
-      box-shadow: var(--shadow);
+      gap: 18px;
     }
-
-    .topbar::after {
-      content: "";
-      position: absolute;
-      right: 26px;
-      bottom: 22px;
-      width: min(36vw, 420px);
-      height: 84px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: var(--radius);
-      background:
-        linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px) 0 0 / 48px 100%,
-        linear-gradient(180deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px) 0 0 / 100% 28px;
-      opacity: 0.62;
-      pointer-events: none;
+    .topbar-brand {
+      display: flex; align-items: center; gap: 12px;
+      font-family: var(--font-display);
+      font-weight: 800; font-size: 1.05rem;
+      letter-spacing: -0.02em;
+      color: var(--heading);
     }
+    .topbar-brand-icon {
+      width: 36px; height: 36px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: grid; place-items: center;
+      color: white;
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.40), inset 0 1px 0 rgba(255,255,255,0.30);
+      flex-shrink: 0;
+    }
+    .topbar-brand-icon .icon { width: 19px; height: 19px; }
 
     .title-group,
     .status-pill,
@@ -271,23 +280,27 @@
       display: flex;
       flex-wrap: wrap;
       justify-content: flex-end;
+      align-items: center;
       gap: 10px;
+      margin-left: auto;
     }
 
     .title-group h1 {
       margin: 0;
-      font-size: clamp(2rem, 5vw, 3.25rem);
-      line-height: 1.08;
-      font-weight: 820;
-      color: #ffffff;
+      font-size: clamp(1.5rem, 3.6vw, 2.25rem);
+      line-height: 1.1;
+      font-weight: 800;
+      color: var(--heading);
+      font-family: var(--font-display);
+      letter-spacing: -0.025em;
     }
 
     .title-group p {
       max-width: 620px;
-      margin: 12px 0 0;
-      color: rgba(255, 255, 255, 0.78);
-      font-size: 1rem;
-      line-height: 1.6;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
     }
 
     .status-pill {
@@ -295,15 +308,21 @@
       align-items: center;
       gap: 8px;
       min-height: 34px;
-      padding: 9px 13px;
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      padding: 7px 13px;
+      border: 1px solid rgba(16, 185, 129, 0.25);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
-      font-size: 0.86rem;
-      font-weight: 760;
+      background: rgba(16, 185, 129, 0.10);
+      color: var(--green);
+      font-size: 0.8rem;
+      font-weight: 700;
       white-space: nowrap;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(8px);
+      transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+    }
+    .status-pill.connecting {
+      background: rgba(245, 158, 11, 0.10);
+      color: var(--warning);
+      border-color: rgba(245, 158, 11, 0.30);
     }
 
     .theme-toggle {
@@ -311,36 +330,45 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 34px;
-      padding: 9px 13px;
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.12);
-      color: #ffffff;
+      min-height: 40px;
+      width: 40px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
       font-size: 0.86rem;
-      font-weight: 760;
+      font-weight: 700;
       cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: background 160ms ease, border-color 160ms ease, transform 160ms ease;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
     }
 
     .theme-toggle:hover {
-      background: rgba(255, 255, 255, 0.18);
+      border-color: var(--primary);
+      color: var(--primary);
       transform: translateY(-1px);
+      box-shadow: var(--shadow);
     }
 
     .theme-toggle .icon {
-      width: 16px;
-      height: 16px;
-      flex-basis: 16px;
+      width: 18px;
+      height: 18px;
+      flex-basis: 18px;
     }
 
     .status-dot {
-      width: 9px;
-      height: 9px;
+      width: 8px;
+      height: 8px;
       border-radius: 999px;
-      background: var(--orange);
-      box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.12);
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+      animation: pulse 2s infinite;
+    }
+    .status-pill.connecting .status-dot {
+      background: var(--warning);
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.18);
+      animation: none;
     }
 
     .status-pill.ready .status-dot {
@@ -6816,6 +6844,7 @@
   <div class="dashboard-shell">
     <main class="app" id="dashboardTop">
       <header class="topbar transition-all duration-300" aria-label="Estado de la aplicacion">
+      <div class="topbar-inner">
         <div class="topbar-title">
           <span class="brand-icon transition-transform duration-300 hover:scale-110" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
@@ -6850,6 +6879,7 @@
             <span id="themeToggleText">Modo oscuro</span>
           </button>
         </div>
+      </div>
       </header>
 
     <p class="notice" id="configNotice">
