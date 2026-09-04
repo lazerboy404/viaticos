@@ -565,23 +565,6 @@
 
     .project-days-field { gap: var(--space-3); }
 
-    .project-days-heading {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-    }
-
-    .project-days-count {
-      font-size: var(--text-xs);
-      font-weight: 600;
-      color: var(--brand);
-      background: var(--brand-soft);
-      padding: 2px var(--space-2);
-      border-radius: var(--radius-full);
-    }
-
     .period-days-quick {
       display: flex;
       flex-wrap: wrap;
@@ -601,59 +584,136 @@
     }
     .period-days-quick button:hover { background: var(--surface-hover); border-color: var(--line-strong); }
 
-    /* grid (no flex) para que los dias llenen el ancho disponible de forma
-       pareja en vez de amontonarse a la izquierda cuando hay pocos. */
-    .period-days-picker {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
-      gap: var(--space-2);
-      max-height: 220px;
-      overflow-y: auto;
-    }
+    /* Boton compacto (icono de calendario + resumen) que abre el
+       calendario como popover flotante, en vez de dejarlo siempre
+       expandido ocupando toda la altura del panel. */
+    .day-picker { position: relative; }
 
-    .period-day-option {
-      position: relative;
+    .day-picker-trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--ink-soft);
+      font-size: var(--text-sm);
+      font-weight: 600;
       cursor: pointer;
+      text-align: left;
+      transition: border-color 150ms ease, background 150ms ease;
     }
+    .day-picker-trigger:hover { border-color: var(--brand); background: var(--brand-soft); }
+    .day-picker-trigger .icon { color: var(--brand); flex: none; }
 
-    .period-day-option input {
+    .day-picker-popover {
       position: absolute;
-      opacity: 0;
-      width: 1px; height: 1px;
+      z-index: 40;
+      top: calc(100% + var(--space-2));
+      left: 0;
+      width: min(320px, 90vw);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      box-shadow: var(--shadow-lg);
+      flex-direction: column;
+      gap: var(--space-3);
     }
+    .day-picker-popover[hidden] { display: none; }
+    .day-picker-popover:not([hidden]) { display: flex; }
 
-    .period-day-label {
+    /* Calendario de dias sueltos (arrastrar = rango completo, tocar = un
+       dia suelto) que reemplaza al viejo picker de checkboxes. */
+    .day-calendar {
       display: flex;
       flex-direction: column;
+      gap: var(--space-2);
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .day-calendar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .day-calendar-nav-btn {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      height: 100%;
-      line-height: 1.15;
-      padding: var(--space-2) var(--space-1);
+      width: 30px;
+      height: 30px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--ink);
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 150ms ease, border-color 150ms ease;
+    }
+    .day-calendar-nav-btn:hover { background: var(--surface-hover); border-color: var(--line-strong); }
+
+    .day-calendar-month {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .day-calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--space-1);
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      text-align: center;
+    }
+
+    .day-calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: var(--space-1);
+    }
+
+    .day-calendar-cell {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       border-radius: var(--radius-sm);
       border: 1px solid var(--line);
       background: var(--surface);
+      color: var(--ink-soft);
       font-size: var(--text-xs);
       font-weight: 700;
-      color: var(--ink-soft);
-      text-align: center;
-      transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+    .day-calendar-cell:hover { border-color: var(--line-strong); background: var(--surface-hover); }
+    .day-calendar-cell:focus-visible { box-shadow: var(--focus-ring); }
+
+    .day-calendar-cell--empty { visibility: hidden; cursor: default; border: none; background: none; }
+
+    .day-calendar-cell.is-today { border-color: var(--brand); color: var(--brand); }
+
+    .day-calendar-cell.is-drag-preview {
+      background: var(--brand-soft);
+      border-color: var(--brand);
+      color: var(--brand);
     }
 
-    .period-day-label small {
-      font-weight: 500;
-      color: var(--ink-mute);
-      font-size: 10px;
-      text-transform: uppercase;
-    }
-
-    .period-day-option input:checked ~ .period-day-label {
+    .day-calendar-cell.is-selected {
       background: var(--brand);
       border-color: var(--brand);
       color: #fff;
     }
-    .period-day-option input:checked ~ .period-day-label small { color: rgba(255, 255, 255, 0.75); }
-    .period-day-option input:focus-visible ~ .period-day-label { box-shadow: var(--focus-ring); }
+    .day-calendar-cell.is-selected.is-today { box-shadow: 0 0 0 2px var(--brand-soft-strong); }
 
     .budget-limits-row {
       display: grid;
@@ -1570,27 +1630,23 @@
         <label for="projectNameInput">Nombre del proyecto</label>
         <input id="projectNameInput" type="text" placeholder="Ej. QUERETARO - JULIO" maxlength="80">
       </div>
-      <div class="field">
-        <label for="periodStartInput">Periodo inicio</label>
-        <input id="periodStartInput" type="date">
-      </div>
-      <div class="field">
-        <label for="periodEndInput">Periodo fin</label>
-        <input id="periodEndInput" type="date">
-      </div>
       <div class="field project-days-field">
-        <div class="project-days-heading">
-          <label for="periodDaysPicker">Días permitidos para registrar gastos</label>
-          <span class="project-days-count" id="periodDaysCount">Selecciona un periodo</span>
+        <label>Días del periodo</label>
+        <div class="day-picker">
+          <button type="button" class="day-picker-trigger" id="periodDaysTrigger" aria-haspopup="true" aria-expanded="false">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M8 3v3M16 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span id="periodDaysCount">Sin días seleccionados</span>
+          </button>
+          <div class="day-picker-popover" id="periodDaysPopover" hidden>
+            <div class="day-calendar" id="periodCalendar" aria-live="polite"></div>
+            <div class="period-days-quick">
+              <button type="button" id="periodDaysClearBtn">Limpiar selección</button>
+            </div>
+            <p class="field-hint">Toca un día para agregarlo o quitarlo. Arrastra para marcar varios días seguidos.</p>
+          </div>
         </div>
-        <div class="period-days-quick" data-picker="periodDaysPicker">
-          <button type="button" data-quick="all">Marcar todo</button>
-          <button type="button" data-quick="weekdays">Lunes a viernes</button>
-          <button type="button" data-quick="weekend">Solo fines</button>
-          <button type="button" data-quick="clear">Limpiar</button>
-        </div>
-        <div class="period-days-picker" id="periodDaysPicker" aria-live="polite"></div>
-        <p class="field-hint" id="periodDaysHint">Define primero el periodo para elegir días específicos.</p>
       </div>
       <button class="button" id="saveProjectBtn" type="button" data-ripple-light="true">
         <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -1624,29 +1680,23 @@
             <label for="newProjectNameInput">Nombre del proyecto</label>
             <input id="newProjectNameInput" type="text" placeholder="Ej. QUERETARO - JULIO" maxlength="80">
           </div>
-          <div class="dialog-row">
-            <div class="field">
-              <label for="newPeriodStartInput">Periodo inicio</label>
-              <input id="newPeriodStartInput" type="date">
-            </div>
-            <div class="field">
-              <label for="newPeriodEndInput">Periodo fin</label>
-              <input id="newPeriodEndInput" type="date">
-            </div>
-          </div>
           <div class="field project-days-field">
-            <div class="project-days-heading">
-              <label for="newPeriodDaysPicker">Días permitidos para registrar gastos</label>
-              <span class="project-days-count" id="newPeriodDaysCount">Selecciona un periodo</span>
+            <label>Días del periodo</label>
+            <div class="day-picker">
+              <button type="button" class="day-picker-trigger" id="newPeriodDaysTrigger" aria-haspopup="true" aria-expanded="false">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M8 3v3M16 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span id="newPeriodDaysCount">Sin días seleccionados</span>
+              </button>
+              <div class="day-picker-popover" id="newPeriodDaysPopover" hidden>
+                <div class="day-calendar" id="newPeriodCalendar" aria-live="polite"></div>
+                <div class="period-days-quick">
+                  <button type="button" id="newPeriodDaysClearBtn">Limpiar selección</button>
+                </div>
+                <p class="field-hint">Toca un día para agregarlo o quitarlo. Arrastra para marcar varios días seguidos.</p>
+              </div>
             </div>
-            <div class="period-days-quick" data-picker="newPeriodDaysPicker">
-              <button type="button" data-quick="all">Marcar todo</button>
-              <button type="button" data-quick="weekdays">Lunes a viernes</button>
-              <button type="button" data-quick="weekend">Solo fines</button>
-              <button type="button" data-quick="clear">Limpiar</button>
-            </div>
-            <div class="period-days-picker" id="newPeriodDaysPicker" aria-live="polite"></div>
-            <p class="field-hint" id="newPeriodDaysHint">Define primero el periodo para elegir días específicos.</p>
           </div>
           <div class="field">
             <label for="newBudgetInput">Monto Total Depositado</label>
@@ -2171,11 +2221,11 @@
       projectSelect: document.querySelector("#projectSelect"),
       activeProjectTitle: document.querySelector("#activeProjectTitle"),
       projectNameInput: document.querySelector("#projectNameInput"),
-      periodStartInput: document.querySelector("#periodStartInput"),
-      periodEndInput: document.querySelector("#periodEndInput"),
-      periodDaysPicker: document.querySelector("#periodDaysPicker"),
+      periodCalendar: document.querySelector("#periodCalendar"),
       periodDaysCount: document.querySelector("#periodDaysCount"),
-      periodDaysHint: document.querySelector("#periodDaysHint"),
+      periodDaysClearBtn: document.querySelector("#periodDaysClearBtn"),
+      periodDaysTrigger: document.querySelector("#periodDaysTrigger"),
+      periodDaysPopover: document.querySelector("#periodDaysPopover"),
       saveProjectBtn: document.querySelector("#saveProjectBtn"),
       createProjectBtn: document.querySelector("#createProjectBtn"),
       createProjectBtnText: document.querySelector("#createProjectBtnText"),
@@ -2269,11 +2319,11 @@
       newProjectDialog: document.querySelector("#newProjectDialog"),
       closeNewProjectDialog: document.querySelector("#closeNewProjectDialog"),
       newProjectNameInput: document.querySelector("#newProjectNameInput"),
-      newPeriodStartInput: document.querySelector("#newPeriodStartInput"),
-      newPeriodEndInput: document.querySelector("#newPeriodEndInput"),
+      newPeriodCalendar: document.querySelector("#newPeriodCalendar"),
       newPeriodDaysCount: document.querySelector("#newPeriodDaysCount"),
-      newPeriodDaysHint: document.querySelector("#newPeriodDaysHint"),
-      newPeriodDaysPicker: document.querySelector("#newPeriodDaysPicker"),
+      newPeriodDaysClearBtn: document.querySelector("#newPeriodDaysClearBtn"),
+      newPeriodDaysTrigger: document.querySelector("#newPeriodDaysTrigger"),
+      newPeriodDaysPopover: document.querySelector("#newPeriodDaysPopover"),
       newBudgetInput: document.querySelector("#newBudgetInput"),
       cancelNewProjectBtn: document.querySelector("#cancelNewProjectBtn"),
       confirmNewProjectBtn: document.querySelector("#confirmNewProjectBtn")
@@ -2412,6 +2462,17 @@
       return [...new Set(values.map((item) => validateDateString(item)).filter(Boolean))].sort();
     }
 
+    // Proyectos guardados antes de que existiera el calendario de dias
+    // sueltos (o que nunca tocaron ese picker) solo tienen periodStart/
+    // periodEnd, sin periodDays explicito; para esos el criterio de
+    // siempre fue "todo el rango cuenta". Reconstruye esa lista completa
+    // para que el calendario los muestre marcados en vez de vacios.
+    function resolveProjectPeriodDays(project) {
+      const explicit = normalizePeriodDays(project?.periodDays);
+      if (explicit.length) return explicit;
+      return getDatesBetween(project?.periodStart, project?.periodEnd);
+    }
+
     function getDatesBetween(start, end) {
       if (!start || !end || start > end) return [];
       const dates = [];
@@ -2427,55 +2488,239 @@
       return dates;
     }
 
-    function getSelectedPeriodDays() {
-      return [...elements.periodDaysPicker.querySelectorAll("input:checked")]
-        .map((input) => input.value)
-        .sort();
+    /* Calendario de dias sueltos: reemplaza el viejo esquema de "periodo
+       inicio/fin + tachar los dias que no aplican". Arrastrar selecciona un
+       rango completo (para la semana normal), tocar un dia lo prende/apaga
+       (para los viajes de 1-3 dias sueltos). periodStart/periodEnd se siguen
+       derivando (primer/ultimo dia elegido) para no tocar el resto del
+       codigo que ya depende de esos dos campos. */
+    function formatPeriodDaysSummary(days) {
+      if (!days.length) return "Sin días seleccionados";
+      if (days.length === 1) return `1 día · ${formatDate(days[0]).split(" ")[0]} ${formatDate(days[0]).replace(/^\S+\s/, "")}`;
+      const first = formatDate(days[0]).replace(/^\S+\s/, "");
+      const last = formatDate(days[days.length - 1]).replace(/^\S+\s/, "");
+      return `${days.length} días · ${first} – ${last}`;
     }
 
-    function renderPeriodDays(days = null) {
-      const start = elements.periodStartInput.value;
-      const end = elements.periodEndInput.value;
-      const dates = getDatesBetween(start, end);
-      const currentSelection = getSelectedPeriodDays();
-      const providedSelection = days === null ? currentSelection : normalizePeriodDays(days);
-      const selected = new Set(providedSelection.length ? providedSelection.filter((date) => dates.includes(date)) : dates);
+    function createDayCalendar(container) {
+      const today = new Date();
+      const view = {
+        selected: new Set(),
+        year: today.getFullYear(),
+        month: today.getMonth(),
+        dragActive: false,
+        dragMoved: false,
+        dragAnchor: null,
+        dragCurrent: null,
+        onChange: null
+      };
 
-      elements.periodDaysPicker.innerHTML = "";
-      if (!dates.length) {
-        elements.periodDaysCount.textContent = "Selecciona un periodo";
-        elements.periodDaysHint.textContent = "Define primero el periodo para elegir días específicos.";
-        return;
+      const nav = document.createElement("div");
+      nav.className = "day-calendar-nav";
+      const prevBtn = document.createElement("button");
+      prevBtn.type = "button";
+      prevBtn.className = "day-calendar-nav-btn";
+      prevBtn.setAttribute("aria-label", "Mes anterior");
+      prevBtn.textContent = "‹";
+      const monthLabel = document.createElement("span");
+      monthLabel.className = "day-calendar-month";
+      const nextBtn = document.createElement("button");
+      nextBtn.type = "button";
+      nextBtn.className = "day-calendar-nav-btn";
+      nextBtn.setAttribute("aria-label", "Mes siguiente");
+      nextBtn.textContent = "›";
+      nav.append(prevBtn, monthLabel, nextBtn);
+
+      const weekdaysRow = document.createElement("div");
+      weekdaysRow.className = "day-calendar-weekdays";
+      ["L", "M", "M", "J", "V", "S", "D"].forEach((label) => {
+        const cell = document.createElement("span");
+        cell.textContent = label;
+        weekdaysRow.appendChild(cell);
+      });
+
+      const grid = document.createElement("div");
+      grid.className = "day-calendar-grid";
+
+      container.innerHTML = "";
+      container.append(nav, weekdaysRow, grid);
+
+      function dragRangeDates() {
+        if (!view.dragAnchor || !view.dragCurrent) return [];
+        const [from, to] = [view.dragAnchor, view.dragCurrent].sort();
+        return getDatesBetween(from, to);
       }
 
-      dates.forEach((date) => {
-        const inputId = `periodDay-${date}`;
-        const option = document.createElement("label");
-        option.className = "period-day-option";
-        option.htmlFor = inputId;
-        const input = document.createElement("input");
-        input.type = "checkbox";
-        input.id = inputId;
-        input.value = date;
-        input.checked = selected.has(date);
-        input.addEventListener("change", updatePeriodDaysSummary);
-        const label = document.createElement("span");
-        label.className = "period-day-label";
-        label.innerHTML = `${formatDate(date).split(" ")[0]} <small>${formatDate(date).replace(/^\S+\s/, "")}</small>`;
-        option.append(input, label);
-        elements.periodDaysPicker.appendChild(option);
+      function notifyChange() {
+        if (typeof view.onChange === "function") view.onChange([...view.selected].sort());
+      }
+
+      function render() {
+        const monthText = new Intl.DateTimeFormat("es-MX", { month: "long", year: "numeric" })
+          .format(new Date(view.year, view.month, 1));
+        monthLabel.textContent = monthText.charAt(0).toUpperCase() + monthText.slice(1);
+        grid.innerHTML = "";
+
+        const firstOfMonth = new Date(view.year, view.month, 1);
+        const leadingBlanks = (firstOfMonth.getDay() + 6) % 7; // semana inicia en lunes
+        const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
+        const todayStr = getTodayLocalString();
+        const previewDates = new Set(view.dragActive && view.dragMoved ? dragRangeDates() : []);
+
+        for (let i = 0; i < leadingBlanks; i++) {
+          const blank = document.createElement("span");
+          blank.className = "day-calendar-cell day-calendar-cell--empty";
+          grid.appendChild(blank);
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = `${view.year}-${String(view.month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+          const cell = document.createElement("button");
+          cell.type = "button";
+          cell.className = "day-calendar-cell";
+          cell.textContent = String(day);
+          cell.dataset.date = dateStr;
+          if (dateStr === todayStr) cell.classList.add("is-today");
+          if (previewDates.has(dateStr)) cell.classList.add("is-drag-preview");
+          if (view.selected.has(dateStr)) cell.classList.add("is-selected");
+          grid.appendChild(cell);
+        }
+
+        notifyChange();
+      }
+
+      function cellDateAt(clientX, clientY) {
+        const el = document.elementFromPoint(clientX, clientY);
+        const cell = el?.closest(".day-calendar-cell[data-date]");
+        return cell?.dataset.date || null;
+      }
+
+      function endDrag(commit) {
+        if (commit && view.dragActive && view.dragMoved) {
+          dragRangeDates().forEach((date) => view.selected.add(date));
+        }
+        view.dragActive = false;
+        view.dragMoved = false;
+        view.dragAnchor = null;
+        view.dragCurrent = null;
+        render();
+      }
+
+      grid.addEventListener("mousedown", (event) => {
+        const cell = event.target.closest(".day-calendar-cell[data-date]");
+        if (!cell) return;
+        view.dragActive = true;
+        view.dragMoved = false;
+        view.dragAnchor = cell.dataset.date;
+        view.dragCurrent = cell.dataset.date;
       });
-      updatePeriodDaysSummary();
+      grid.addEventListener("mouseover", (event) => {
+        if (!view.dragActive) return;
+        const cell = event.target.closest(".day-calendar-cell[data-date]");
+        if (!cell || cell.dataset.date === view.dragCurrent) return;
+        view.dragCurrent = cell.dataset.date;
+        view.dragMoved = true;
+        render();
+      });
+      window.addEventListener("mouseup", () => {
+        if (view.dragActive) endDrag(true);
+      });
+      grid.addEventListener("click", (event) => {
+        const cell = event.target.closest(".day-calendar-cell[data-date]");
+        if (!cell) return;
+        const date = cell.dataset.date;
+        if (view.selected.has(date)) view.selected.delete(date);
+        else view.selected.add(date);
+        render();
+      });
+
+      grid.addEventListener("touchstart", (event) => {
+        const cell = event.target.closest(".day-calendar-cell[data-date]");
+        if (!cell) return;
+        view.dragActive = true;
+        view.dragMoved = false;
+        view.dragAnchor = cell.dataset.date;
+        view.dragCurrent = cell.dataset.date;
+      }, { passive: true });
+      grid.addEventListener("touchmove", (event) => {
+        if (!view.dragActive) return;
+        const touch = event.touches[0];
+        const date = cellDateAt(touch.clientX, touch.clientY);
+        if (date && date !== view.dragCurrent) {
+          event.preventDefault();
+          view.dragCurrent = date;
+          view.dragMoved = true;
+          render();
+        } else if (view.dragMoved) {
+          event.preventDefault();
+        }
+      }, { passive: false });
+      grid.addEventListener("touchend", (event) => {
+        if (!view.dragActive) return;
+        if (view.dragMoved) event.preventDefault();
+        endDrag(true);
+      });
+
+      prevBtn.addEventListener("click", () => {
+        view.month -= 1;
+        if (view.month < 0) { view.month = 11; view.year -= 1; }
+        render();
+      });
+      nextBtn.addEventListener("click", () => {
+        view.month += 1;
+        if (view.month > 11) { view.month = 0; view.year += 1; }
+        render();
+      });
+
+      render();
+
+      return {
+        setSelection(days) {
+          view.selected = new Set(normalizePeriodDays(days));
+          const first = [...view.selected].sort()[0];
+          const anchor = first ? new Date(`${first}T00:00:00`) : new Date();
+          view.year = anchor.getFullYear();
+          view.month = anchor.getMonth();
+          render();
+        },
+        getSelection() {
+          return [...view.selected].sort();
+        },
+        clear() {
+          view.selected.clear();
+          render();
+        },
+        onChange(fn) {
+          view.onChange = fn;
+          notifyChange();
+        }
+      };
     }
 
-    function updatePeriodDaysSummary() {
-      const selected = getSelectedPeriodDays();
-      const total = elements.periodDaysPicker.querySelectorAll("input").length;
-      elements.periodDaysCount.textContent = total ? `${selected.length} de ${total} días seleccionados` : "Selecciona un periodo";
-      elements.periodDaysHint.textContent = selected.length === total
-        ? "Todos los días del periodo están habilitados para registrar gastos."
-        : "Solo las fechas marcadas estarán permitidas al registrar gastos.";
-      syncExpenseDateConstraints();
+    // Abre/cierra el calendario como popover flotante (icono compacto en
+    // vez de dejarlo siempre expandido en la pagina). Clic fuera o Escape
+    // lo cierra; clics dentro del popover (dias, "Limpiar") no burbujean
+    // hasta el listener global para no cerrarlo con su propia interaccion.
+    function wireDayPickerPopover(trigger, popover) {
+      function close() {
+        popover.hidden = true;
+        trigger.setAttribute("aria-expanded", "false");
+      }
+      function open() {
+        popover.hidden = false;
+        trigger.setAttribute("aria-expanded", "true");
+      }
+      trigger.addEventListener("click", (event) => {
+        event.stopPropagation();
+        if (popover.hidden) open(); else close();
+      });
+      popover.addEventListener("click", (event) => event.stopPropagation());
+      document.addEventListener("click", () => {
+        if (!popover.hidden) close();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !popover.hidden) close();
+      });
     }
 
     function getActivePeriodDays() {
@@ -2623,9 +2868,7 @@
 
       elements.activeProjectTitle.textContent = (activeProject.name || "Proyecto sin nombre").toUpperCase();
       elements.projectNameInput.value = (activeProject.name || "").toUpperCase();
-      elements.periodStartInput.value = activeProject.periodStart || "";
-      elements.periodEndInput.value = activeProject.periodEnd || "";
-      renderPeriodDays(activeProject.periodDays);
+      periodCalendar.setSelection(resolveProjectPeriodDays(activeProject));
       syncExpenseDateConstraints();
       elements.saveProjectBtn.disabled = !state.isFirebaseReady;
       elements.deleteProjectBtn.disabled = !state.isFirebaseReady || activeProject.isLegacy;
@@ -4946,11 +5189,7 @@ pause
       state.dailyLimits = { ...DEFAULT_DAILY_LIMITS };
       state.expenses = [];
       elements.projectNameInput.value = "";
-      elements.periodStartInput.value = "";
-      elements.periodEndInput.value = "";
-      elements.periodDaysPicker.innerHTML = "";
-      elements.periodDaysCount.textContent = "Selecciona un periodo";
-      elements.periodDaysHint.textContent = "Define primero el periodo para elegir días específicos.";
+      periodCalendar.clear();
       elements.budgetInput.value = "";
       elements.foodLimitInput.value = DEFAULT_DAILY_LIMITS.food;
       elements.transportLimitInput.value = DEFAULT_DAILY_LIMITS.transport;
@@ -4998,17 +5237,9 @@ pause
         return;
       }
 
-      const periodStart = elements.periodStartInput.value;
-      const periodEnd = elements.periodEndInput.value;
-      const periodDays = getSelectedPeriodDays();
-      if (periodStart && periodEnd && periodStart > periodEnd) {
-        setMessage("error", "La fecha inicial del periodo no puede ser posterior a la fecha final.");
-        return;
-      }
-      if (periodStart && periodEnd && !periodDays.length) {
-        setMessage("error", "Selecciona al menos un día permitido para el periodo.");
-        return;
-      }
+      const periodDays = periodCalendar.getSelection();
+      const periodStart = periodDays[0] || "";
+      const periodEnd = periodDays[periodDays.length - 1] || "";
 
       elements.saveProjectBtn.disabled = true;
       try {
@@ -5046,22 +5277,13 @@ pause
       if (!state.isFirebaseReady) return;
 
       const name = elements.newProjectNameInput.value.trim().toUpperCase();
-      const periodStart = elements.newPeriodStartInput.value;
-      const periodEnd = elements.newPeriodEndInput.value;
-      const periodDays = getSelectedNewPeriodDays();
+      const periodDays = newPeriodCalendar.getSelection();
+      const periodStart = periodDays[0] || "";
+      const periodEnd = periodDays[periodDays.length - 1] || "";
       const budget = parseMoney(elements.newBudgetInput.value);
 
       if (!name) {
         setMessage("error", "Escribe un nombre para el nuevo proyecto.");
-        return;
-      }
-
-      if (periodStart && periodEnd && periodStart > periodEnd) {
-        setMessage("error", "La fecha inicial del periodo no puede ser posterior a la fecha final.");
-        return;
-      }
-      if (periodStart && periodEnd && !periodDays.length) {
-        setMessage("error", "Selecciona al menos un día permitido para el periodo.");
         return;
       }
 
@@ -5100,10 +5322,10 @@ pause
 
     function openNewProjectDialog() {
       elements.newProjectNameInput.value = "";
-      elements.newPeriodStartInput.value = "";
-      elements.newPeriodEndInput.value = "";
       elements.newBudgetInput.value = "";
-      renderNewPeriodDays();
+      newPeriodCalendar.clear();
+      elements.newPeriodDaysPopover.hidden = true;
+      elements.newPeriodDaysTrigger.setAttribute("aria-expanded", "false");
       const lastProject = state.projects.length
         ? [...state.projects].sort((a, b) => parseMoney(b.createdAt) - parseMoney(a.createdAt))[0]
         : null;
@@ -5118,86 +5340,6 @@ pause
 
     function closeNewProjectDialog() {
       if (typeof elements.newProjectDialog.close === "function") elements.newProjectDialog.close();
-    }
-
-    function getSelectedNewPeriodDays() {
-      return [...elements.newPeriodDaysPicker.querySelectorAll("input:checked")]
-        .map((input) => input.value)
-        .sort();
-    }
-
-    function renderNewPeriodDays() {
-      const start = elements.newPeriodStartInput.value;
-      const end = elements.newPeriodEndInput.value;
-      const dates = getDatesBetween(start, end);
-      const selected = new Set(getSelectedNewPeriodDays());
-      const validSelection = [...selected].filter((date) => dates.includes(date));
-      elements.newPeriodDaysPicker.innerHTML = "";
-      if (!dates.length) {
-        elements.newPeriodDaysCount.textContent = "Selecciona un periodo";
-        elements.newPeriodDaysHint.textContent = "Define primero el periodo para elegir d\u00edas espec\u00edficos.";
-        return;
-      }
-      dates.forEach((date) => {
-        const inputId = `newPeriodDay-${date}`;
-        const option = document.createElement("label");
-        option.className = "period-day-option";
-        option.htmlFor = inputId;
-        const input = document.createElement("input");
-        input.type = "checkbox";
-        input.id = inputId;
-        input.value = date;
-        input.checked = validSelection.includes(date);
-        input.addEventListener("change", updateNewPeriodDaysSummary);
-        const label = document.createElement("span");
-        label.className = "period-day-label";
-        label.innerHTML = `${formatDate(date).split(" ")[0]} <small>${formatDate(date).replace(/^\S+\s/, "")}</small>`;
-        option.append(input, label);
-        elements.newPeriodDaysPicker.appendChild(option);
-      });
-      updateNewPeriodDaysSummary();
-    }
-
-    function updateNewPeriodDaysSummary() {
-      const selected = getSelectedNewPeriodDays();
-      const total = elements.newPeriodDaysPicker.querySelectorAll("input").length;
-      elements.newPeriodDaysCount.textContent = total ? `${selected.length} de ${total} d\u00edas seleccionados` : "Selecciona un periodo";
-      elements.newPeriodDaysHint.textContent = selected.length === total
-        ? "Todos los d\u00edas del periodo est\u00e1n habilitados para registrar gastos."
-        : "Solo las fechas marcadas estar\u00e1n permitidas al registrar gastos.";
-    }
-
-    function applyQuickSelection(action, pickerEl) {
-      if (!pickerEl) return;
-      const inputs = [...pickerEl.querySelectorAll("input[type=checkbox]")];
-      if (!inputs.length) return;
-      inputs.forEach((input) => {
-        if (action === "all") {
-          input.checked = true;
-        } else if (action === "clear") {
-          input.checked = false;
-        } else {
-          const day = new Date(`${input.value}T00:00:00`).getDay();
-          const isWeekday = day >= 1 && day <= 5;
-          const isWeekend = day === 0 || day === 6;
-          if (action === "weekdays") input.checked = isWeekday;
-          else if (action === "weekend") input.checked = isWeekend;
-          else input.checked = false;
-        }
-      });
-      inputs.forEach((input) => input.dispatchEvent(new Event("change", { bubbles: true })));
-    }
-
-    function setupQuickSelectors() {
-      document.querySelectorAll(".period-days-quick").forEach((bar) => {
-        bar.querySelectorAll("button").forEach((button) => {
-          button.addEventListener("click", () => {
-            const pickerId = button.closest(".period-days-quick").dataset.picker;
-            const pickerEl = document.getElementById(pickerId);
-            applyQuickSelection(button.dataset.quick, pickerEl);
-          });
-        });
-      });
     }
 
     async function deleteActiveProject() {
@@ -6128,11 +6270,21 @@ pause
       event.preventDefault();
       closeNewProjectDialog();
     });
-    elements.newPeriodStartInput.addEventListener("change", renderNewPeriodDays);
-    elements.newPeriodEndInput.addEventListener("change", renderNewPeriodDays);
     elements.deleteProjectBtn.addEventListener("click", deleteActiveProject);
-    elements.periodStartInput.addEventListener("change", () => renderPeriodDays());
-    elements.periodEndInput.addEventListener("change", () => renderPeriodDays());
+    let periodCalendar = createDayCalendar(elements.periodCalendar);
+    periodCalendar.onChange((days) => {
+      elements.periodDaysCount.textContent = formatPeriodDaysSummary(days);
+      syncExpenseDateConstraints();
+    });
+    elements.periodDaysClearBtn.addEventListener("click", () => periodCalendar.clear());
+    wireDayPickerPopover(elements.periodDaysTrigger, elements.periodDaysPopover);
+
+    let newPeriodCalendar = createDayCalendar(elements.newPeriodCalendar);
+    newPeriodCalendar.onChange((days) => {
+      elements.newPeriodDaysCount.textContent = formatPeriodDaysSummary(days);
+    });
+    elements.newPeriodDaysClearBtn.addEventListener("click", () => newPeriodCalendar.clear());
+    wireDayPickerPopover(elements.newPeriodDaysTrigger, elements.newPeriodDaysPopover);
     elements.dateInput.addEventListener("change", syncExpenseDateConstraints);
     elements.projectSelect.addEventListener("change", () => {
       state.isCreatingProject = false;
@@ -6183,8 +6335,6 @@ pause
       resetExpenseForm();
       clearMessage();
     });
-
-    setupQuickSelectors();
 
     /* El encabezado de la tabla (thead) es sticky y debe apilarse justo
        debajo del topbar (tambien sticky), no debajo de un valor fijo: la
