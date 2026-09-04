@@ -998,7 +998,20 @@
       color: var(--ink-soft);
     }
     .blue-voucher-option:hover { border-color: var(--brand); }
-    .blue-voucher-option input { width: 18px; height: 18px; accent-color: var(--brand); }
+    /* !important: el forms-plugin de Tailwind deja este checkbox con
+       border:0 y fondo blanco fijo -- invisible sobre el fondo casi blanco
+       del tema claro. Se le regresa un borde y fondo propios del tema. */
+    .blue-voucher-option input {
+      width: 18px !important;
+      height: 18px !important;
+      border: 1px solid var(--line-strong) !important;
+      background-color: var(--surface) !important;
+      accent-color: var(--brand);
+    }
+    .blue-voucher-option input:checked {
+      background-color: var(--brand) !important;
+      border-color: var(--brand) !important;
+    }
 
     .file-picker {
       display: flex;
@@ -1877,7 +1890,7 @@
           </span>
         </div>
         <div class="global-money-line primary">
-          <span>Presupuesto global</span>
+          <span>Total Depositado</span>
           <strong id="globalBudgetValue">$0.00</strong>
         </div>
         <div class="global-money-line spent">
