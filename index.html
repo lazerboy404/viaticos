@@ -1888,6 +1888,14 @@
           <span>Restante global</span>
           <strong id="globalBalanceValue">$0.00</strong>
         </div>
+        <div class="gauge-wrap" aria-hidden="true">
+          <div class="gauge-shell"></div>
+          <div class="gauge-needle"></div>
+          <div class="gauge-center">
+            <span>Disponible</span>
+            <strong id="globalGaugeText">0%</strong>
+          </div>
+        </div>
         <p class="summary-note" id="globalNote">Suma de todos los proyectos.</p>
         <div class="summary-meter">
           <span>Disponible global</span>
@@ -2294,6 +2302,7 @@
       globalBalanceValue: document.querySelector("#globalBalanceValue"),
       globalNote: document.querySelector("#globalNote"),
       globalMeter: document.querySelector("#globalMeter"),
+      globalGaugeText: document.querySelector("#globalGaugeText"),
       budgetMeter: document.querySelector("#budgetMeter"),
       spentMeter: document.querySelector("#spentMeter"),
       balanceMeter: document.querySelector("#balanceMeter"),
@@ -4712,6 +4721,7 @@ pause
       elements.globalSpentValue.textContent = formatter.format(globalSpent);
       elements.globalBalanceValue.textContent = formatter.format(globalBalance);
       elements.globalMeter.textContent = globalBudget > 0 ? `${Math.round(globalRatio * 100)}%` : "0%";
+      elements.globalGaugeText.textContent = globalBudget > 0 ? `${Math.round(globalRatio * 100)}%` : "0%";
       elements.globalNote.textContent = `${globalProjectCount} ${globalProjectCount === 1 ? "proyecto considerado" : "proyectos considerados"}.`;
       elements.expenseCount.textContent = `${state.expenses.length} ${state.expenses.length === 1 ? "gasto registrado" : "gastos registrados"}.`;
       elements.budgetMeter.textContent = budgetExists ? "100%" : "0%";
