@@ -1153,11 +1153,11 @@
     .concept-neon {
       display: grid;
       place-items: center;
-      width: 34px; height: 34px;
+      width: 40px; height: 40px;
       flex: none;
       color: var(--concept-color);
     }
-    .concept-neon svg, .brand-logo-img, .brand-logo-fallback { width: 21px; height: 21px; border-radius: 3px; }
+    .concept-neon svg, .brand-logo-img, .brand-logo-fallback { width: 26px; height: 26px; border-radius: 3px; }
 
     .concept-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
     .concept-text strong { font-size: var(--text-sm); color: var(--ink); overflow-wrap: anywhere; }
@@ -2820,29 +2820,20 @@
       const text = concept.toLowerCase();
       const logoUrls = findBrandLogoDomains(text);
 
-      if (/\buber\b/.test(text) && !text.includes("uber eats")) {
-        return {
-          color: "#ffffff",
-          isUber: true,
-          path: "M7 5v8a5 5 0 0 0 10 0V5M7 19h10",
-          logoUrls: brandLogoDomains["uber"]?.map((d) => makeLogoUrl(d)) || null
-        };
-      }
-
       const catalog = [
-        { keys: ["comida", "restaurante", "desayuno", "cena", "alimento", "cafe"], color: "#f472ff", path: "M6 3v8M9 3v8M6 7h3M7.5 11v10M17 3v18M14 3v7a3 3 0 0 0 6 0V3" },
-        { keys: ["hotel", "hospedaje", "hostal", "airbnb"], color: "#22d3ee", path: "M4 21V5M20 21V11a3 3 0 0 0-3-3H9a3 3 0 0 0-3 3v10M6 14h14M9 8V5h6v3M9 17h2M15 17h2" },
-        { keys: ["oxxo", "tienda", "super", "compra", "farmacia"], color: "#facc15", path: "M4 10h16l-1.2-5H5.2L4 10ZM5 10v10h14V10M8 14h8M8 18h5M7 5v5M12 5v5M17 5v5" },
-        { keys: ["autobus", "autobús", "bus", "camion", "camión"], color: "#60a5fa", path: "M6 4h12a2 2 0 0 1 2 2v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3V6a2 2 0 0 1 2-2ZM7 8h10M7 13h10M8 19v2M16 19v2M8 16h.01M16 16h.01" },
-        { keys: ["taxi", "uber", "didi", "transporte", "gasolina", "caseta"], color: "#fb923c", path: "M5 17h14M7 17v2M17 17v2M6 14l2-6h8l2 6M9 8l1-3h4l1 3M8 14h8M8 11h8" },
-        { keys: ["vuelo", "avion", "avión", "aeropuerto"], color: "#38bdf8", path: "M2 16l20-8-8 20-3-9-9-3ZM11 19l3-3" },
-        { keys: ["pdf", "factura", "oficina", "papeleria"], color: "#34d399", path: "M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6ZM14 2v6h6M8 13h8M8 17h5" }
+        { keys: ["comida", "restaurante", "desayuno", "cena", "alimento", "cafe"], color: "#f472ff", path: "M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" },
+        { keys: ["hotel", "hospedaje", "hostal", "airbnb"], color: "#22d3ee", path: "M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" },
+        { keys: ["oxxo", "tienda", "super", "compra", "farmacia"], color: "#facc15", path: "M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" },
+        { keys: ["autobus", "autobús", "bus", "camion", "camión"], color: "#60a5fa", path: "M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" },
+        { keys: ["taxi", "uber", "didi", "transporte", "gasolina", "caseta"], color: "#fb923c", path: "M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" },
+        { keys: ["vuelo", "avion", "avión", "aeropuerto"], color: "#38bdf8", path: "M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" },
+        { keys: ["pdf", "factura", "oficina", "papeleria"], color: "#34d399", path: "M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" }
       ];
 
       const match = catalog.find((item) => item.keys.some((key) => text.includes(key)));
       return {
         color: match?.color || "#2dd4bf",
-        path: match?.path || "M5 6h14v14H5zM8 10h8M8 14h8M8 18h4M9 3h6l2 3H7l2-3Z",
+        path: match?.path || "M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z",
         logoUrls
       };
     }
@@ -4456,8 +4447,6 @@ pause
 
         const conceptParts = getExpenseConceptParts(expense);
         const conceptMeta = getConceptMeta(conceptParts.combined);
-        row.classList.toggle("uber-concept", Boolean(conceptMeta.isUber));
-
         const logoUrls = conceptMeta.logoUrls;
         const firstLogoUrl = (logoUrls && logoUrls.length) ? logoUrls[0] : null;
         const hasLogo = Boolean(firstLogoUrl);
