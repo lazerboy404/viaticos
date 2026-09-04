@@ -125,6 +125,10 @@
       --metric-fill: 0%;
       --report-width: 0%;
       --concept-color: var(--brand);
+
+      /* Textura de fondo: hatch diagonal fino via SVG inline (data URI), sin
+         peticiones de red ni imagenes — es puro CSS, costo casi nulo. */
+      --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 20 20 0' stroke='%230f172a' stroke-width='1' opacity='0.05'/%3E%3C/svg%3E");
     }
 
     :root[data-theme="dark"] {
@@ -155,6 +159,8 @@
       --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.36);
       --shadow-lg: 0 24px 56px rgba(0, 0, 0, 0.48);
       --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.45);
+
+      --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Cpath d='M0 20 20 0' stroke='%23e2e8f0' stroke-width='1' opacity='0.06'/%3E%3C/svg%3E");
     }
 
     /* ============================================================
@@ -214,7 +220,8 @@
 
     .dashboard-shell {
       min-height: 100vh;
-      background: var(--bg);
+      background-color: var(--bg);
+      background-image: var(--bg-pattern);
     }
 
     .app {
