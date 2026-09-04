@@ -2615,7 +2615,13 @@
       }
 
       function endDrag(commit) {
-        if (commit && view.dragActive && view.dragMoved) {
+        // Un click simple (mousedown+mouseup sin moverse a otra celda) no
+        // debe volver a pintar la grilla aqui: si se recrean las celdas del
+        // DOM en el mouseup, el navegador ya no dispara el "click" nativo
+        // sobre la celda original (quedo desconectada), y el toggle de un
+        // dia individual (que depende de ese "click") deja de funcionar.
+        const wasMoved = view.dragMoved;
+        if (commit && view.dragActive && wasMoved) {
           if (view.dragMode === "remove") dragRangeDates().forEach((date) => view.selected.delete(date));
           else dragRangeDates().forEach((date) => view.selected.add(date));
         }
@@ -2623,7 +2629,7 @@
         view.dragMoved = false;
         view.dragAnchor = null;
         view.dragCurrent = null;
-        render();
+        if (wasMoved) render();
       }
 
       grid.addEventListener("mousedown", (event) => {
