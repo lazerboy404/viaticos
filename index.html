@@ -921,21 +921,6 @@
     }
     .summary-meter span:last-child { color: var(--ink-soft); }
 
-    .progress-track {
-      height: 8px;
-      border-radius: var(--radius-full);
-      background: var(--surface-2);
-      overflow: hidden;
-    }
-    .progress-bar {
-      width: 0%;
-      height: 100%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--ok), color-mix(in srgb, var(--ok), #fff 25%));
-      transition: width 260ms ease;
-    }
-    .progress-bar.warning { background: linear-gradient(90deg, var(--warn), #fbbf24); }
-
     .global-money-line,
     .global-balance-line {
       display: flex;
@@ -1759,9 +1744,6 @@
           <span>Disponible</span>
           <span id="balanceMeter">0%</span>
         </div>
-        <div class="progress-track" aria-hidden="true">
-          <div class="progress-bar" id="spentProgress"></div>
-        </div>
       </article>
       <article class="summary-card global transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl" id="globalCard">
         <div class="summary-top">
@@ -2330,7 +2312,6 @@
       spentGaugeText: document.querySelector("#spentGaugeText"),
       balanceGaugeText: document.querySelector("#balanceGaugeText"),
       expenseCount: document.querySelector("#expenseCount"),
-      spentProgress: document.querySelector("#spentProgress"),
       formPanel: document.querySelector(".form-panel"),
       expenseFormTitle: document.querySelector("#expenseFormTitle"),
       expenseForm: document.querySelector("#expenseForm"),
@@ -4757,8 +4738,6 @@ pause
       spentCard?.style.setProperty("--metric-fill", `${spentRatio}%`);
       elements.balanceCard.style.setProperty("--metric-fill", `${balanceFill}%`);
       elements.globalCard.style.setProperty("--metric-fill", `${globalRatio * 100}%`);
-      elements.spentProgress.style.width = `${spentRatio}%`;
-      elements.spentProgress.classList.toggle("warning", isLowBalance);
 
       elements.balanceCard.classList.toggle("low", isLowBalance && balance >= 0);
       elements.balanceCard.classList.toggle("negative", balance < 0);
