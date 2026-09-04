@@ -554,10 +554,11 @@
     .project-panel > .field { flex: 1 1 200px; }
     .project-panel > .field:first-child { flex: 2 1 300px; }
     .project-panel > .button { flex: none; height: 46px; }
-    .project-panel > .project-days-field,
-    .project-panel > .project-hint {
-      flex: 1 1 100%;
-    }
+    .project-panel > .project-days-field { flex: 1 1 100%; }
+    /* la ayuda va en la misma linea que los botones Guardar/Eliminar en vez
+       de forzar su propia fila completa (dejaba un vacio enorme al lado
+       de los botones en pantallas anchas) */
+    .project-panel > .project-hint { flex: 1 1 220px; align-self: center; }
 
     .project-hint { font-size: var(--text-sm); color: var(--ink-mute); }
 
@@ -1428,8 +1429,15 @@
       .topbar-title > div:not(.project-title-block) p { display: none; }
       .project-panel, .budget-panel, .daily-limits-panel, .form-panel, .history-panel { padding: var(--space-4); }
       .budget-panel, .daily-limits-panel { flex-direction: column; align-items: stretch; }
+      /* flex-basis:200px en .budget-panel > .field se interpreta como ancho
+         en fila (desktop) pero como ALTO al cambiar a columna aqui; sin
+         resetear, el campo queda estirado a 200px de alto en movil. */
+      .budget-panel > .field { flex-basis: auto; }
       .budget-panel > .button, .daily-limits-panel .button { width: 100%; }
       .daily-limit-fields { flex-direction: column; align-items: stretch; }
+      /* mismo problema que .budget-panel > .field: flex-basis:120px era
+         ancho en fila y se vuelve alto al pasar a columna aqui */
+      .daily-limit-fields label { flex-basis: auto; }
       .project-panel > .button { width: 100%; }
       .summary-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
       .summary-card { padding: var(--space-4); }
