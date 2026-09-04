@@ -2637,6 +2637,62 @@
       return /\.(png|jpg|jpeg|svg|ico|webp|gif)$/i.test(path);
     }
 
+    function isIconHorseLogoUrl(url) {
+      return typeof url === "string" && url.startsWith("https://icon.horse/");
+    }
+
+    // icon.horse nunca responde con error cuando no encuentra un icono real
+    // para el dominio: en vez de eso entrega su propio placeholder generico
+    // (un circulo con la primera letra del dominio) con codigo 200, asi que
+    // el <img> nunca dispara "error" y ese placeholder se queda puesto como
+    // si fuera el logo real de la marca. La señal confiable para
+    // distinguirlo: ese placeholder se cachea (cache-control: s-maxage) solo
+    // 300s (5 min), mientras que un icono real encontrado se cachea 30 dias
+    // — icon.horse reintenta encontrar el icono real seguido cuando fallo,
+    // por eso el cache corto.
+    async function looksLikeMissingIconHorseLogo(url) {
+      if (!isIconHorseLogoUrl(url)) return false;
+      try {
+        const response = await fetch(url, { cache: "force-cache" });
+        if (!response.ok) return false;
+        const cacheControl = response.headers.get("cache-control") || "";
+        const sMaxAgeMatch = cacheControl.match(/s-maxage=(\d+)/);
+        return Boolean(sMaxAgeMatch && Number(sMaxAgeMatch[1]) < 3600);
+      } catch {
+        return false;
+      }
+    }
+
+    // Conecta un <img> de logo de marca con su cadena de respaldo (mismo
+    // patron usado tanto al pintar la fila como al resolver el logo desde el
+    // PDF): si la imagen falla de verdad (error) o resulta ser el
+    // placeholder generico de icon.horse (load, pero es un "falso exito"),
+    // prueba la siguiente URL candidata; si se acaban, muestra el icono de
+    // respaldo (SVG de color por categoria).
+    function wireLogoFallbackChain(img, fallbackEl, logoUrls) {
+      let urlIndex = 0;
+      const tryNextLogo = () => {
+        urlIndex += 1;
+        if (urlIndex < logoUrls.length) {
+          img.src = logoUrls[urlIndex];
+        } else {
+          img.remove();
+          fallbackEl.style.display = "";
+        }
+      };
+      const checkForPlaceholder = async () => {
+        if (!img.isConnected) return;
+        const isPlaceholder = await looksLikeMissingIconHorseLogo(img.src);
+        if (isPlaceholder && img.isConnected) tryNextLogo();
+      };
+      img.addEventListener("error", tryNextLogo);
+      img.addEventListener("load", checkForPlaceholder);
+      // Si la imagen viene de la cache HTTP del navegador, "load" puede
+      // disparar antes de que este listener quede conectado; si ya cargo
+      // (con contenido real, no rota) al llegar aqui, se revisa de una vez.
+      if (img.complete && img.naturalWidth > 0) checkForPlaceholder();
+    }
+
     function makeLogoUrl(domain) {
       if (isLocalFile(domain)) return domain;
       return makeIconHorseUrl(domain);
@@ -4427,20 +4483,8 @@ pause
         if (hasLogo) {
           const img = row.querySelector(".brand-logo-img");
           const fallback = row.querySelector(".brand-logo-fallback");
-          let urlIndex = 0;
-
-          const tryNextLogo = () => {
-            urlIndex += 1;
-            if (urlIndex < logoUrls.length) {
-              img.src = logoUrls[urlIndex];
-            } else {
-              img.remove();
-              fallback.style.display = "";
-            }
-          };
-
           if (img && fallback) {
-            img.addEventListener("error", tryNextLogo);
+            wireLogoFallbackChain(img, fallback, logoUrls);
           }
         }
         row.querySelector(".concept-text strong").textContent = conceptParts.concept;
@@ -4514,17 +4558,7 @@ pause
           img.width = 20;
           img.height = 20;
           conceptNeon.insertBefore(img, svg);
-          let urlIndex = 0;
-          const tryNextLogo = () => {
-            urlIndex += 1;
-            if (urlIndex < pdfLogoUrls.length) {
-              img.src = pdfLogoUrls[urlIndex];
-            } else {
-              img.remove();
-              svg.style.display = "";
-            }
-          };
-          img.addEventListener("error", tryNextLogo);
+          wireLogoFallbackChain(img, svg, pdfLogoUrls);
         }
       };
       const workers = Array.from({ length: Math.min(concurrency, tasks.length) }, () => worker());
