@@ -1279,7 +1279,18 @@
     .report-group h4 { font-size: var(--text-sm); font-weight: 700; color: var(--ink); margin-bottom: var(--space-3); }
 
     .report-list { display: flex; flex-direction: column; gap: var(--space-3); }
-    .report-empty { font-size: var(--text-sm); color: var(--ink-mute); font-style: italic; }
+    .report-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-5) 0;
+      font-size: var(--text-sm);
+      color: var(--ink-mute);
+      font-style: italic;
+      text-align: center;
+    }
+    .report-empty svg { width: 28px; height: 28px; opacity: 0.6; }
 
     .report-row { display: flex; flex-direction: column; gap: 4px; }
     .report-row-label { display: flex; justify-content: space-between; font-size: var(--text-sm); }
