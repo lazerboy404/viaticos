@@ -1096,27 +1096,26 @@
       white-space: nowrap;
     }
 
+    /* --day-accent lo fija el JS por fila (mismo color para todos los gastos
+       de un mismo dia, ciclando entre varios colores dia a dia) — con
+       fallback neutro por si alguna fila no lo trae. */
+    tbody { --day-accent: var(--line); }
+
     tbody td {
       padding: var(--space-3);
       background: var(--surface);
-      border-top: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
+      border-top: 1.5px solid var(--day-accent);
+      border-bottom: 1.5px solid var(--day-accent);
       vertical-align: middle;
       color: var(--ink-soft);
       transition: background-color 150ms ease;
     }
     /* solo las celdas de las puntas cierran los bordes/esquinas de la
        "tarjeta"-fila; asi toda la fila se ve como un solo bloque redondeado */
-    tbody td:first-child { border-left: 1px solid var(--line); border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); }
-    tbody td:last-child { border-right: 1px solid var(--line); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
+    tbody td:first-child { border-left: 1.5px solid var(--day-accent); border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); }
+    tbody td:last-child { border-right: 1.5px solid var(--day-accent); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
 
     tbody tr:hover td { background: var(--surface-hover); }
-
-    /* separacion entre gastos de distintos dias: borde superior de color en
-       el primer gasto de cada dia (.day-start, ya lo pone el JS) */
-    tbody tr.day-start td { border-top: 2px solid var(--brand); }
-    tbody tr.day-start td:first-child { border-top-left-radius: var(--radius-md); }
-    tbody tr.day-start td:last-child { border-top-right-radius: var(--radius-md); }
 
     .date-cell { white-space: nowrap; font-weight: 600; color: var(--ink); }
 
@@ -4317,6 +4316,8 @@ pause
       }
     }
 
+    const DAY_ACCENT_COLORS = ["#2563eb", "#7c3aed", "#0d9488", "#ea580c", "#db2777", "#65a30d"];
+
     function renderExpenses() {
       elements.expensesBody.innerHTML = "";
 
@@ -4334,11 +4335,18 @@ pause
         : state.expenses;
 
       let previousExpenseDate = "";
+      let dayAccentIndex = -1;
+      let currentDayAccent = DAY_ACCENT_COLORS[0];
       displayedExpenses.forEach((expense) => {
         const row = document.createElement("tr");
         row.dataset.expenseId = expense.id;
         const isNewDay = expense.fecha !== previousExpenseDate;
         row.classList.add(isNewDay ? "day-start" : "same-day");
+        if (isNewDay) {
+          dayAccentIndex = (dayAccentIndex + 1) % DAY_ACCENT_COLORS.length;
+          currentDayAccent = DAY_ACCENT_COLORS[dayAccentIndex];
+        }
+        row.style.setProperty("--day-accent", currentDayAccent);
         previousExpenseDate = expense.fecha;
 
         row.innerHTML = `
