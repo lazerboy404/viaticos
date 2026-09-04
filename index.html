@@ -1069,13 +1069,21 @@
        distintas y no convencieron; se vuelve al formato de tabla con
        encabezado visible y fijo (sticky) al hacer scroll). */
 
+    /* position:sticky dentro de un ancestro con overflow-x:auto no funciona
+       en absoluto (limitacion real del motor, no un tema de offset): un
+       overflow != visible en CUALQUIER eje de un ancestro rompe el sticky
+       de sus descendientes, incluso si ese eje nunca llega a necesitar
+       scroll. Por eso el scroll horizontal solo se activa por debajo de
+       1400px (donde la tabla si puede necesitarlo); arriba de eso no se
+       pone overflow y el encabezado sticky (mas abajo) si funciona. */
     .table-wrap {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
       background: var(--surface-2);
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
       padding: var(--space-2);
+    }
+    @media (max-width: 1399px) {
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
     }
 
     /* separate + border-spacing en vez de collapse: cada fila queda como su
@@ -1085,7 +1093,8 @@
 
     thead th {
       position: sticky;
-      top: 0;
+      top: var(--topbar-stack-offset, 0px);
+      z-index: 10;
       background: var(--surface-2);
       color: var(--ink-mute);
       font-size: var(--text-xs);
@@ -6098,6 +6107,32 @@ pause
     });
 
     setupQuickSelectors();
+
+    /* El encabezado de la tabla (thead) es sticky y debe apilarse justo
+       debajo del topbar (tambien sticky), no debajo de un valor fijo: la
+       altura del topbar cambia segun el ancho (se apila en movil, se hace
+       mas alto en anchos intermedios cuando el titulo y las acciones no
+       caben en una sola linea). Se mide en tiempo real y se expone como
+       variable CSS; en movil el topbar deja de ser sticky (position:static)
+       y el offset vuelve a 0. */
+    function syncTopbarStackOffset() {
+      const topbar = document.querySelector(".topbar");
+      if (!topbar) return;
+      const isSticky = getComputedStyle(topbar).position === "sticky";
+      if (!isSticky) {
+        document.documentElement.style.setProperty("--topbar-stack-offset", "0px");
+        return;
+      }
+      const stickyTop = parseFloat(getComputedStyle(topbar).top) || 0;
+      const height = topbar.getBoundingClientRect().height;
+      document.documentElement.style.setProperty("--topbar-stack-offset", `${Math.round(stickyTop + height + 8)}px`);
+    }
+    syncTopbarStackOffset();
+    window.addEventListener("resize", syncTopbarStackOffset);
+    if (typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(syncTopbarStackOffset).observe(document.querySelector(".topbar"));
+    }
+
     initFirebase();
   </script>
   <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/ripple.js"></script>
