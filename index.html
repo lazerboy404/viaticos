@@ -538,6 +538,7 @@
     .message.show { display: block; }
     .message.success { background: var(--ok-soft); color: var(--ok); }
     .message.error { background: var(--danger-soft); color: var(--danger); }
+    .message.warning { background: var(--warn-soft); color: var(--warn); }
 
     /* ============================================================
        PROYECTO / PRESUPUESTO / LIMITES
@@ -5245,6 +5246,29 @@ pause
 
       setBusy(true);
 
+      const invoiceSourceForAmountCheck = invoiceFile
+        || (!valeAzul && existingExpense?.invoiceUrl ? existingExpense.invoiceUrl : null);
+      if (invoiceSourceForAmountCheck) {
+        try {
+          const invoiceText = await getInvoicePdfText(invoiceSourceForAmountCheck);
+          const invoiceTotal = findInvoiceTotal(invoiceText);
+          if (invoiceTotal > 0 && Math.abs(monto - invoiceTotal) > 0.01) {
+            const proceed = window.confirm(
+              `El monto capturado (${formatter.format(monto)}) no coincide con el total de la factura (${formatter.format(invoiceTotal)}). ¿Guardar de todas formas?`
+            );
+            if (!proceed) {
+              state.isSaving = false;
+              elements.saveExpenseBtn.disabled = false;
+              setBusy(false);
+              setMessage("warning", `Revisa el monto: la factura indica ${formatter.format(invoiceTotal)}.`);
+              return;
+            }
+          }
+        } catch (error) {
+          console.error("No se pudo leer la factura para comparar el monto:", error);
+        }
+      }
+
       try {
         const payload = {
           concepto,
@@ -5376,6 +5400,25 @@ pause
     }
 
     let pdfModulePromise = null;
+
+    async function getInvoicePdfText(source) {
+      if (!pdfModulePromise) {
+        pdfModulePromise = import("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs");
+      }
+      const pdfjs = await pdfModulePromise;
+      pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+      const arrayBuffer = source instanceof File
+        ? await source.arrayBuffer()
+        : await (await fetch(source)).arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
+      const pageTexts = [];
+      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+        const page = await pdf.getPage(pageNumber);
+        const content = await page.getTextContent();
+        pageTexts.push(content.items.map((item) => item.str).join(" "));
+      }
+      return pageTexts.join("\n").replace(/[ \t]+/g, " ");
+    }
 
     function detectInvoiceOrigin(text, projectName = "") {
       const normalizeLocationText = (value) => String(value || "")
