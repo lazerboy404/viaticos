@@ -247,10 +247,19 @@
       font-weight: 700;
       white-space: nowrap;
       box-shadow: var(--shadow-lg);
-      transition: background 150ms ease, transform 150ms ease;
+      transform: translateY(0);
+      transition: background 150ms ease, transform 200ms ease;
     }
-    .fab-new-project:hover { background: var(--brand-dark); transform: translateY(-2px); }
-    .fab-new-project:active { transform: translateY(0); }
+    .fab-new-project:not(.is-hidden):hover { background: var(--brand-dark); transform: translateY(-2px); }
+    .fab-new-project:not(.is-hidden):active { transform: translateY(0); }
+    /* Se esconde deslizandose hacia abajo mientras se hace scroll hacia
+       abajo (para no tapar los botones de las tarjetas al pasar por
+       encima); reaparece al subir o al volver al inicio de la pagina
+       (logica completa mas abajo, junto a "createProjectBtn"). */
+    .fab-new-project.is-hidden {
+      transform: translateY(calc(100% + var(--space-5)));
+      pointer-events: none;
+    }
     .fab-new-project .icon { width: 22px; height: 22px; flex: none; }
 
     @media (min-width: 1024px) {
@@ -6415,6 +6424,31 @@ pause
     if (typeof ResizeObserver !== "undefined") {
       new ResizeObserver(syncTopbarStackOffset).observe(document.querySelector(".topbar"));
     }
+
+    /* El boton flotante de "Nuevo proyecto" se esconde mientras se hace
+       scroll hacia abajo (para no quedar encima de los botones Guardar de
+       cada tarjeta) y se queda escondido hasta que se sube de nuevo o se
+       vuelve al inicio de la pagina -- a proposito NO reaparece solo tras
+       una pausa, porque justo al pausar es cuando el usuario suele querer
+       tocar el boton que estaba tapando. */
+    (() => {
+      const fab = document.getElementById("createProjectBtn");
+      if (!fab) return;
+      let lastScrollY = window.scrollY;
+      window.addEventListener("scroll", () => {
+        const currentScrollY = window.scrollY;
+        const scrollingDown = currentScrollY > lastScrollY + 4;
+        const scrollingUp = currentScrollY < lastScrollY - 4;
+        if (currentScrollY < 80) {
+          fab.classList.remove("is-hidden");
+        } else if (scrollingDown) {
+          fab.classList.add("is-hidden");
+        } else if (scrollingUp) {
+          fab.classList.remove("is-hidden");
+        }
+        lastScrollY = currentScrollY;
+      }, { passive: true });
+    })();
 
     initFirebase();
   </script>
