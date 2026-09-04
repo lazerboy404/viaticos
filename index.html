@@ -5930,6 +5930,78 @@ pause
       renderSummary();
     }
 
+    /* Cache local (localStorage) de los datos de Firebase para pintar algo
+       util de inmediato al recargar, en vez de placeholders vacios mientras
+       se espera la respuesta real de la red. Los listeners de Firebase
+       siguen siendo la unica fuente de verdad: en cuanto responden,
+       sobreescriben el estado hidratado desde cache y vuelven a renderizar
+       (mismo rerenderActiveProject de siempre) — la cache es solo para la
+       primera pintura, nunca para decidir nada. Se recortan los campos
+       pesados (fotos/PDFs en base64: tickets, facturas, hojas firmadas) para
+       no acercarse al limite de localStorage ni bloquear el hilo principal
+       serializando varios MB en cada gasto guardado. */
+    const CACHE_VERSION = 1;
+
+    function readCache(key) {
+      try {
+        const raw = localStorage.getItem(`viaticos-cache-${key}`);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || parsed.v !== CACHE_VERSION) return null;
+        return parsed.data;
+      } catch {
+        return null;
+      }
+    }
+
+    function writeCache(key, data) {
+      try {
+        localStorage.setItem(`viaticos-cache-${key}`, JSON.stringify({ v: CACHE_VERSION, data }));
+      } catch {
+        // localStorage lleno o no disponible (modo privado, etc.): la cache
+        // es solo una optimizacion, seguir sin ella no rompe nada.
+      }
+    }
+
+    function trimExpenseForCache(expense) {
+      const { tickets, ticketUrl, invoiceUrl, ...rest } = expense;
+      return rest;
+    }
+
+    function trimProjectForCache(project) {
+      const { signedSheet, ...rest } = project;
+      return rest;
+    }
+
+    function hydrateFromCache() {
+      let hydrated = false;
+
+      const cachedBudget = readCache("budget");
+      if (cachedBudget) {
+        state.legacyBudget = cachedBudget.legacyBudget;
+        state.legacyProjectName = cachedBudget.legacyProjectName;
+        state.legacyPeriodStart = cachedBudget.legacyPeriodStart;
+        state.legacyPeriodEnd = cachedBudget.legacyPeriodEnd;
+        state.legacyPeriodDays = cachedBudget.legacyPeriodDays;
+        state.legacyDailyLimits = cachedBudget.legacyDailyLimits;
+        hydrated = true;
+      }
+
+      const cachedProjects = readCache("projects");
+      if (cachedProjects) {
+        state.projects = cachedProjects;
+        hydrated = true;
+      }
+
+      const cachedExpenses = readCache("expenses");
+      if (cachedExpenses) {
+        state.allExpenses = cachedExpenses;
+        hydrated = true;
+      }
+
+      if (hydrated) rerenderActiveProject();
+    }
+
     function listenBudget() {
       const budgetRef = dbRef(state.db, BUDGET_PATH);
 
@@ -5946,6 +6018,14 @@ pause
           state.activeProjectId = data.selectedProjectId;
           localStorage.setItem("viaticos-active-project", state.activeProjectId);
         }
+        writeCache("budget", {
+          legacyBudget: state.legacyBudget,
+          legacyProjectName: state.legacyProjectName,
+          legacyPeriodStart: state.legacyPeriodStart,
+          legacyPeriodEnd: state.legacyPeriodEnd,
+          legacyPeriodDays: state.legacyPeriodDays,
+          legacyDailyLimits: state.legacyDailyLimits
+        });
         rerenderActiveProject();
       }, (error) => {
         console.error(error);
@@ -5977,6 +6057,7 @@ pause
         state.projects = Object.entries(data)
           .map(([id, project]) => ({ id, ...project }))
           .sort(compareProjectsByPeriod);
+        writeCache("projects", state.projects.map(trimProjectForCache));
         rerenderActiveProject();
       }, (error) => {
         console.error(error);
@@ -5996,6 +6077,7 @@ pause
             if (dateComparison) return dateComparison;
             return parseMoney(a.createdAt) - parseMoney(b.createdAt);
           });
+        writeCache("expenses", state.allExpenses.map(trimExpenseForCache));
         elements.historyLoader.style.display = "none";
         updateStorageMeter();
         updateProviderSuggestions();
@@ -6021,6 +6103,7 @@ pause
         return;
       }
 
+      hydrateFromCache();
       setFirebaseStatus("connecting");
 
       const app = initializeApp(firebaseConfig);
