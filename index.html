@@ -1181,14 +1181,14 @@
        la fila completa). */
     .limit-badge {
       display: inline-flex;
-      padding: 2px var(--space-2);
+      padding: 1px var(--space-1);
       border-radius: var(--radius-full);
       background: var(--danger-soft);
       color: var(--danger);
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
-      white-space: normal;
+      white-space: nowrap;
     }
 
     .voucher-badge {
@@ -4486,7 +4486,7 @@ pause
           const amountCell = row.querySelector(".amount-cell");
           const badge = document.createElement("span");
           badge.className = "limit-badge";
-          badge.textContent = `Exceso del d\u00eda: ${formatter.format(dailyLimit.excess)}`;
+          badge.textContent = `Exceso: ${formatter.format(dailyLimit.excess)}`;
           amountCell.appendChild(badge);
         }
 
