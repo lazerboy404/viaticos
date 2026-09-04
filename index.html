@@ -4228,7 +4228,7 @@ pause
       container.appendChild(frame);
     }
 
-    function openPdfDialog(invoice, title = "Factura PDF", downloadName = "") {
+    function openPdfDialog(invoice, title = "Factura PDF", downloadName = "", onDelete = null) {
       if (!invoice?.dataUrl) return;
       elements.mediaDialogTitle.textContent = title;
       elements.mediaDialogBody.innerHTML = "";
@@ -4238,13 +4238,32 @@ pause
       wrapper.className = "dialog-pdf";
       renderPdfFrame(wrapper, invoice, title);
 
+      const actions = document.createElement("div");
+      actions.className = "file-actions";
+
       const downloadLink = document.createElement("a");
       downloadLink.className = "button secondary";
       downloadLink.href = invoice.dataUrl;
       downloadLink.download = downloadName || invoice.name || "factura.pdf";
       downloadLink.textContent = `Descargar ${downloadName || invoice.name || "factura.pdf"}`;
+      actions.appendChild(downloadLink);
 
-      wrapper.appendChild(downloadLink);
+      if (onDelete) {
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "button danger";
+        deleteButton.type = "button";
+        deleteButton.setAttribute("data-ripple-light", "true");
+        deleteButton.innerHTML = `
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 6h18M8 6V4h8v2M10 11v6M14 11v6M6 6l1 15h10l1-15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Eliminar factura
+        `;
+        deleteButton.addEventListener("click", onDelete);
+        actions.appendChild(deleteButton);
+      }
+
+      wrapper.appendChild(actions);
       elements.mediaDialogBody.appendChild(wrapper);
 
       if (typeof elements.mediaDialog.showModal === "function") {
@@ -4783,7 +4802,8 @@ pause
       viewButton.addEventListener("click", () => openPdfDialog(
         invoice,
         `Factura de ${getExpenseConceptParts(expense).combined || "gasto"}`,
-        buildDownloadFileName(expense, "factura", 0, invoice.name || "factura.pdf")
+        buildDownloadFileName(expense, "factura", 0, invoice.name || "factura.pdf"),
+        () => deleteExpenseInvoice(expense.id)
       ));
 
       const downloadLink = document.createElement("a");
@@ -5747,6 +5767,30 @@ pause
       } catch (error) {
         console.error(error);
         setMessage("error", "No se pudo eliminar el gasto. Revisa permisos de Realtime Database.");
+      }
+    }
+
+    async function deleteExpenseInvoice(expenseId) {
+      const expense = state.expenses.find((item) => item.id === expenseId);
+      if (!expense) return;
+
+      const confirmed = window.confirm("¿Eliminar esta factura del gasto? Podrás subir otra despues.");
+      if (!confirmed) return;
+
+      clearMessage();
+      try {
+        await update(dbRef(state.db, `${EXPENSES_PATH}/${expenseId}`), {
+          invoiceUrl: null,
+          invoiceName: null,
+          invoiceType: null,
+          invoiceSize: null,
+          updatedAt: Date.now()
+        });
+        elements.mediaDialog.close();
+        setMessage("success", "Factura eliminada.");
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudo eliminar la factura. Revisa permisos de Realtime Database.");
       }
     }
 
