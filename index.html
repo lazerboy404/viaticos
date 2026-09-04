@@ -1108,26 +1108,38 @@
       white-space: nowrap;
     }
 
-    /* --day-accent lo fija el JS por fila (mismo color para todos los gastos
-       de un mismo dia, ciclando entre varios colores dia a dia) — con
-       fallback neutro por si alguna fila no lo trae. */
-    tbody { --day-accent: var(--line); }
-
     tbody td {
       padding: var(--space-3);
       background: var(--surface);
-      border-top: 1.5px solid var(--day-accent);
-      border-bottom: 1.5px solid var(--day-accent);
+      border-top: 1.5px solid var(--line);
+      border-bottom: 1.5px solid var(--line);
       vertical-align: middle;
       color: var(--ink-soft);
       transition: background-color 150ms ease;
     }
     /* solo las celdas de las puntas cierran los bordes/esquinas de la
        "tarjeta"-fila; asi toda la fila se ve como un solo bloque redondeado */
-    tbody td:first-child { border-left: 1.5px solid var(--day-accent); border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); }
-    tbody td:last-child { border-right: 1.5px solid var(--day-accent); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
+    tbody td:first-child { border-left: 1.5px solid var(--line); border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); }
+    tbody td:last-child { border-right: 1.5px solid var(--line); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
 
     tbody tr:hover td { background: var(--surface-hover); }
+
+    /* fila divisoria con la fecha entre grupos de dia (reemplaza el
+       contorno de color por dia); una sola <td colspan> sin fondo/borde
+       de tarjeta, solo texto de seccion. */
+    tbody tr.day-divider td {
+      background: none;
+      border: none;
+      border-radius: 0;
+      padding: var(--space-5) var(--space-2) var(--space-1);
+      color: var(--ink-mute);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    tbody tr.day-divider:first-child td { padding-top: 0; }
+    tbody tr.day-divider:hover td { background: none; }
 
     .date-cell { white-space: nowrap; font-weight: 600; color: var(--ink); }
 
@@ -1141,14 +1153,14 @@
     .concept-neon {
       display: grid;
       place-items: center;
-      width: 26px; height: 26px;
+      width: 30px; height: 30px;
       flex: none;
       border-radius: var(--radius-sm);
       border: 1px solid color-mix(in srgb, var(--concept-color), transparent 65%);
       background: color-mix(in srgb, var(--concept-color), transparent 88%);
       color: var(--concept-color);
     }
-    .concept-neon svg, .brand-logo-img, .brand-logo-fallback { width: 15px; height: 15px; border-radius: 3px; }
+    .concept-neon svg, .brand-logo-img, .brand-logo-fallback { width: 18px; height: 18px; border-radius: 3px; }
 
     .concept-text { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
     .concept-text strong { font-size: var(--text-sm); color: var(--ink); overflow-wrap: anywhere; }
@@ -4346,8 +4358,6 @@ pause
       }
     }
 
-    const DAY_ACCENT_COLORS = ["#2563eb", "#7c3aed", "#0d9488", "#ea580c", "#db2777", "#65a30d"];
-
     function renderExpenses() {
       elements.expensesBody.innerHTML = "";
 
@@ -4364,19 +4374,21 @@ pause
         : state.expenses;
 
       let previousExpenseDate = "";
-      let dayAccentIndex = -1;
-      let currentDayAccent = DAY_ACCENT_COLORS[0];
       displayedExpenses.forEach((expense) => {
+        const isNewDay = expense.fecha !== previousExpenseDate;
+        if (isNewDay) {
+          const divider = document.createElement("tr");
+          divider.className = "day-divider";
+          const dividerCell = document.createElement("td");
+          dividerCell.colSpan = 8;
+          dividerCell.textContent = formatDate(expense.fecha);
+          divider.appendChild(dividerCell);
+          fragment.appendChild(divider);
+        }
+        previousExpenseDate = expense.fecha;
+
         const row = document.createElement("tr");
         row.dataset.expenseId = expense.id;
-        const isNewDay = expense.fecha !== previousExpenseDate;
-        row.classList.add(isNewDay ? "day-start" : "same-day");
-        if (isNewDay) {
-          dayAccentIndex = (dayAccentIndex + 1) % DAY_ACCENT_COLORS.length;
-          currentDayAccent = DAY_ACCENT_COLORS[dayAccentIndex];
-        }
-        row.style.setProperty("--day-accent", currentDayAccent);
-        previousExpenseDate = expense.fecha;
 
         row.innerHTML = `
           <td class="date-cell">${formatDate(expense.fecha)}</td>
