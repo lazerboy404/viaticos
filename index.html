@@ -7036,6 +7036,226 @@
     [data-theme="dark"] .history-panel tbody tr.day-start td {
       background: color-mix(in srgb, var(--glass-primary) 6%, transparent);
     }
+    /* ===== Fixes de desbordamiento y layout (P0/P1) ===== */
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) !important;
+      gap: 18px;
+      max-width: 100%;
+      overflow: hidden;
+    }
+    .workspace > * {
+      min-width: 0;
+      max-width: 100%;
+    }
+    .form-panel,
+    .history-panel,
+    .project-panel,
+    .project-tools-panel,
+    .expense-report-panel,
+    .budget-panel,
+    .daily-limits-panel {
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .form-panel {
+      overflow: hidden;
+    }
+    /* El grid de 4 columnas con tamaños fijos del expense-form se desborda;
+       cambiar a grid responsive que cabe en el workspace. */
+    .expense-form {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+      gap: 12px;
+    }
+    /* En el bloque del refactor hay reglas con minmax(230px...) que ganan;
+       anular con un selector más específico usando .expense-form directo. */
+    .workspace .expense-form,
+    .form-panel .expense-form,
+    aside.form-panel .expense-form {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+      max-width: 100%;
+    }
+    /* El form-actions y file-grid también tienen grid-template-columns con
+       valores fijos del refactor; asegurar que sean responsive. */
+    .form-panel .form-actions,
+    aside.form-panel .form-actions {
+      grid-template-columns: 1fr 1fr !important;
+    }
+    .form-panel .file-grid,
+    aside.form-panel .file-grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    }
+    /* El project-panel del refactor tiene grid-template de 4 columnas con tamaños fijos;
+       asegurar que quepa en pantallas chicas. */
+    .project-panel,
+    .workspace > .project-panel {
+      grid-template-columns: minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr) minmax(0, 1fr) !important;
+      max-width: 100%;
+    }
+    /* El .budget-limits-row del refactor tiene grid-template-columns fijo;
+       responsive. */
+    .budget-limits-row {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    }
+    /* El .summary-grid con 4 columnas puede apretarse; ajustar para que
+       respire y no se desborde. */
+    .summary-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+    }
+    /* Los inputs del form se desbordan si el grid los fuerza;
+       permitir shrink. */
+    .expense-form .field,
+    .form-panel .field,
+    aside.form-panel .field {
+      min-width: 0;
+      max-width: 100%;
+    }
+    /* El .notice puede ser ancho y desbordar; contenerlo. */
+    .notice {
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+    /* En pantallas chicas el grid del workspace ya está bien en 1fr;
+       pero el form-panel debe envolver y no salirse. */
+    @media (max-width: 1100px) {
+      .workspace {
+        grid-template-columns: minmax(0, 1fr) !important;
+      }
+      .expense-form,
+      .workspace .expense-form,
+      aside.form-panel .expense-form {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+      }
+    }
+    @media (max-width: 720px) {
+      .expense-form,
+      .workspace .expense-form,
+      aside.form-panel .expense-form {
+        grid-template-columns: 1fr !important;
+      }
+      /* Topbar en móvil: apilar verticalmente y ajustar el botón de reporte. */
+      .topbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .topbar-title {
+        flex-wrap: wrap;
+        flex: 1 1 auto;
+      }
+      .topbar-actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        flex: 1 1 auto;
+      }
+      .report-excel-button {
+        max-width: 100%;
+        flex: 1 1 auto;
+        padding: 6px 10px !important;
+        font-size: 0.78rem !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .theme-toggle {
+        flex: 0 0 auto;
+      }
+      .brand-icon {
+        flex: 0 0 auto;
+      }
+      /* Contener todo el viewport y evitar desborde por paddings sumados */
+      html, body {
+        max-width: 100vw;
+        overflow-x: hidden;
+      }
+      body {
+        box-sizing: border-box;
+      }
+      .dashboard-shell,
+      .app,
+      .workspace,
+      .notice,
+      .project-panel,
+      .budget-limits-row,
+      .budget-panel,
+      .daily-limits-panel,
+      .summary-grid,
+      .history-panel,
+      .expense-report-panel,
+      .form-panel,
+      .project-tools-panel,
+      .expense-form,
+      .file-grid,
+      .attachment-preview,
+      .table-wrap,
+      .report-empty,
+      .period-days-picker,
+      .period-days-quick,
+      .daily-limit-fields {
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      /* Anular los width: calc(100% - 20px) que restan margen extra
+         cuando ya hay padding en el body. */
+      .notice,
+      .project-panel,
+      .budget-panel,
+      .summary-grid,
+      .workspace {
+        width: 100% !important;
+      }
+      /* Forzar que ningún contenedor exceda el viewport en móvil. */
+      html, body, .dashboard-shell, .app {
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+      }
+      .app {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        border: 0 !important;
+        margin: 0 !important;
+      }
+      /* Box-sizing border-box en todos los hijos para que width: 100%
+         incluya padding y no desborde. */
+      @media (max-width: 720px) {
+        *, *::before, *::after {
+          box-sizing: border-box !important;
+        }
+        .topbar, .project-panel, .budget-limits-row, .budget-panel,
+        .daily-limits-panel, .summary-grid, .history-panel,
+        .expense-report-panel, .form-panel, .project-tools-panel,
+        .expense-form, .file-grid, .attachment-preview, .table-wrap,
+        .period-days-picker, .period-days-quick, .daily-limit-fields,
+        .topbar-title, .topbar-actions, .topbar-inner,
+        .notice, .report-excel-button, .brand-lockup {
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          min-width: 0 !important;
+        }
+        .topbar {
+          width: calc(100vw - 32px) !important;
+        }
+        .app {
+          width: calc(100vw - 16px) !important;
+          max-width: calc(100vw - 16px) !important;
+        }
+        .project-panel,
+        .budget-limits-row,
+        .summary-grid,
+        .workspace,
+        .history-panel,
+        .form-panel,
+        .expense-report-panel,
+        .project-tools-panel {
+          width: calc(100vw - 32px) !important;
+          max-width: calc(100vw - 32px) !important;
+        }
+      }
+    }
   </style>
 </head>
 <body>
