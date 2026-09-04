@@ -233,22 +233,25 @@
       right: var(--space-5);
       bottom: var(--space-5);
       z-index: 45;
-      width: 56px;
-      height: 56px;
+      height: 52px;
+      padding: 0 var(--space-5) 0 var(--space-4);
       border-radius: var(--radius-full);
       border: none;
       background: var(--brand);
       color: #fff;
       display: inline-flex;
       align-items: center;
-      justify-content: center;
+      gap: var(--space-2);
       cursor: pointer;
+      font-size: var(--text-sm);
+      font-weight: 700;
+      white-space: nowrap;
       box-shadow: var(--shadow-lg);
       transition: background 150ms ease, transform 150ms ease;
     }
     .fab-new-project:hover { background: var(--brand-dark); transform: translateY(-2px); }
     .fab-new-project:active { transform: translateY(0); }
-    .fab-new-project .icon { width: 26px; height: 26px; }
+    .fab-new-project .icon { width: 22px; height: 22px; flex: none; }
 
     @media (min-width: 1024px) {
       .app { gap: var(--space-6); padding-top: var(--space-5); }
@@ -1604,10 +1607,11 @@
   </style>
 </head>
 <body>
-  <button class="fab-new-project" id="createProjectBtn" type="button" aria-label="Nuevo proyecto" title="Nuevo proyecto" data-ripple-light="true">
+  <button class="fab-new-project" id="createProjectBtn" type="button" title="Nuevo proyecto" data-ripple-light="true">
     <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
+    <span>Nuevo proyecto</span>
   </button>
   <div class="dashboard-shell">
     <main class="app" id="dashboardTop">
