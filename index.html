@@ -226,6 +226,30 @@
       gap: var(--space-5);
     }
 
+    /* Boton flotante para crear proyecto: visible en toda la pagina sin
+       importar el scroll, en vez de vivir dentro de la tarjeta de proyecto. */
+    .fab-new-project {
+      position: fixed;
+      right: var(--space-5);
+      bottom: var(--space-5);
+      z-index: 45;
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-full);
+      border: none;
+      background: var(--brand);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-lg);
+      transition: background 150ms ease, transform 150ms ease;
+    }
+    .fab-new-project:hover { background: var(--brand-dark); transform: translateY(-2px); }
+    .fab-new-project:active { transform: translateY(0); }
+    .fab-new-project .icon { width: 26px; height: 26px; }
+
     @media (min-width: 1024px) {
       .app { gap: var(--space-6); padding-top: var(--space-5); }
     }
@@ -1580,6 +1604,11 @@
   </style>
 </head>
 <body>
+  <button class="fab-new-project" id="createProjectBtn" type="button" aria-label="Nuevo proyecto" title="Nuevo proyecto" data-ripple-light="true">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+  </button>
   <div class="dashboard-shell">
     <main class="app" id="dashboardTop">
       <header class="topbar transition-all duration-300" aria-label="Estado de la aplicacion">
@@ -1632,13 +1661,6 @@
           <option value="">Cargando proyectos</option>
         </select>
       </div>
-      <button class="button secondary" id="createProjectBtn" type="button" data-ripple-light="true">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M21 21H3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
-        </svg>
-        <span id="createProjectBtnText">Nuevo</span>
-      </button>
       <div class="field">
         <label for="projectNameInput">Nombre del proyecto</label>
         <input id="projectNameInput" type="text" placeholder="Ej. QUERETARO - JULIO" maxlength="80">
@@ -2244,7 +2266,6 @@
       periodDaysPopover: document.querySelector("#periodDaysPopover"),
       saveProjectBtn: document.querySelector("#saveProjectBtn"),
       createProjectBtn: document.querySelector("#createProjectBtn"),
-      createProjectBtnText: document.querySelector("#createProjectBtnText"),
       deleteProjectBtn: document.querySelector("#deleteProjectBtn"),
       projectHint: document.querySelector("#projectHint"),
       budgetInput: document.querySelector("#budgetInput"),
@@ -2893,7 +2914,6 @@
 
       const activeProject = getActiveProject();
       elements.projectSelect.value = activeProject.id;
-      elements.createProjectBtnText.textContent = "Nuevo proyecto";
 
       elements.activeProjectTitle.textContent = (activeProject.name || "Proyecto sin nombre").toUpperCase();
       elements.projectNameInput.value = (activeProject.name || "").toUpperCase();
