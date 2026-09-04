@@ -401,12 +401,14 @@
     .report-excel-button .icon { color: var(--ok); }
 
     .notice {
+      display: none;
       padding: var(--space-3) var(--space-4);
       font-size: var(--text-sm);
       color: var(--warn);
       background: var(--warn-soft);
       border-color: color-mix(in srgb, var(--warn), transparent 65%);
     }
+    .notice.show { display: block; }
 
     /* ============================================================
        BOTONES
