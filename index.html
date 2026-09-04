@@ -1071,11 +1071,16 @@
     .table-wrap {
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
+      background: var(--surface-2);
       border: 1px solid var(--line);
       border-radius: var(--radius-md);
+      padding: var(--space-2);
     }
 
-    table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: var(--text-sm); }
+    /* separate + border-spacing en vez de collapse: cada fila queda como su
+       propia "tarjeta" con espacio real entre ellas, en vez de una tabla
+       continua. Las columnas siguen siendo columnas reales (mismo <table>). */
+    table { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 0 var(--space-2); font-size: var(--text-sm); }
 
     thead th {
       position: sticky;
@@ -1087,24 +1092,31 @@
       text-transform: uppercase;
       letter-spacing: 0.03em;
       text-align: left;
-      padding: var(--space-3) var(--space-3);
-      border-bottom: 1px solid var(--line);
+      padding: var(--space-2) var(--space-3);
       white-space: nowrap;
     }
 
     tbody td {
       padding: var(--space-3);
+      background: var(--surface);
+      border-top: 1px solid var(--line);
       border-bottom: 1px solid var(--line);
       vertical-align: middle;
       color: var(--ink-soft);
+      transition: background-color 150ms ease;
     }
+    /* solo las celdas de las puntas cierran los bordes/esquinas de la
+       "tarjeta"-fila; asi toda la fila se ve como un solo bloque redondeado */
+    tbody td:first-child { border-left: 1px solid var(--line); border-top-left-radius: var(--radius-md); border-bottom-left-radius: var(--radius-md); }
+    tbody td:last-child { border-right: 1px solid var(--line); border-top-right-radius: var(--radius-md); border-bottom-right-radius: var(--radius-md); }
 
-    tbody tr:last-child td { border-bottom: none; }
-    tbody tr:hover td { background: var(--surface-2); }
+    tbody tr:hover td { background: var(--surface-hover); }
 
-    /* separacion entre gastos de distintos dias: linea superior mas marcada
-       en el primer gasto de cada dia (.day-start, ya lo pone el JS) */
-    tbody tr.day-start td { border-top: 2px solid var(--line-strong); }
+    /* separacion entre gastos de distintos dias: borde superior de color en
+       el primer gasto de cada dia (.day-start, ya lo pone el JS) */
+    tbody tr.day-start td { border-top: 2px solid var(--brand); }
+    tbody tr.day-start td:first-child { border-top-left-radius: var(--radius-md); }
+    tbody tr.day-start td:last-child { border-top-right-radius: var(--radius-md); }
 
     .date-cell { white-space: nowrap; font-weight: 600; color: var(--ink); }
 
