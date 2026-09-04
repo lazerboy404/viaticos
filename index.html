@@ -1301,6 +1301,9 @@
       color: var(--ink);
     }
 
+    /* excedentes del limite diario, movidos aqui desde historial de gastos */
+    .report-row-badges { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+
     /* ============================================================
        DIALOGS
        ============================================================ */
@@ -2893,26 +2896,7 @@
       return { byKey, alerts };
     }
 
-    function renderLimitAlerts(alerts) {
-      elements.limitAlerts.innerHTML = "";
-      elements.limitAlerts.classList.toggle("show", alerts.length > 0);
-      if (!alerts.length) return;
-
-      const fragment = document.createDocumentFragment();
-      alerts.forEach((alert) => {
-        const item = document.createElement("article");
-        item.className = "limit-alert";
-        item.innerHTML = `
-          <strong>${formatDate(alert.fecha)}</strong>
-          <span>${getDailyLimitLabel(alert.category)}: ${formatter.format(alert.total)} / ${formatter.format(alert.limit)}</span>
-          <b>Exceso ${formatter.format(alert.excess)}</b>
-        `;
-        fragment.appendChild(item);
-      });
-      elements.limitAlerts.appendChild(fragment);
-    }
-
-    function renderExpenseReports() {
+    function renderExpenseReports(limitAnalysis) {
       const categoryTotals = new Map();
       const dayTotals = new Map();
 
@@ -2935,6 +2919,7 @@
         [...categoryTotals.entries()].sort((a, b) => b[1].total - a[1].total),
         (label) => label
       );
+      const alerts = limitAnalysis?.alerts || [];
       renderReportList(
         elements.dayReport,
         [...dayTotals.entries()].sort((a, b) => {
@@ -2942,11 +2927,19 @@
           if (b[0] === "sin-fecha") return -1;
           return String(a[0]).localeCompare(String(b[0]));
         }),
-        (label) => label === "sin-fecha" ? "Sin fecha" : formatDate(label)
+        (label) => label === "sin-fecha" ? "Sin fecha" : formatDate(label),
+        (rawDay) => alerts
+          .filter((alert) => alert.fecha === rawDay)
+          .map((alert) => {
+            const badge = document.createElement("span");
+            badge.className = "limit-badge";
+            badge.textContent = `Exceso ${getDailyLimitLabel(alert.category)}: ${formatter.format(alert.excess)}`;
+            return badge;
+          })
       );
     }
 
-    function renderReportList(container, entries, formatLabel) {
+    function renderReportList(container, entries, formatLabel, getBadges) {
       container.innerHTML = "";
       if (!entries.length) {
         const empty = document.createElement("div");
@@ -2982,6 +2975,13 @@
         barFill.style.setProperty("--report-width", `${Math.max((summary.total / maximum) * 100, 2)}%`);
         bar.appendChild(barFill);
         row.append(name, value, bar);
+        const badges = typeof getBadges === "function" ? getBadges(label) : null;
+        if (badges && badges.length) {
+          const badgeRow = document.createElement("div");
+          badgeRow.className = "report-row-badges";
+          badgeRow.append(...badges);
+          row.appendChild(badgeRow);
+        }
         fragment.appendChild(row);
       });
       const totalRow = document.createElement("div");
@@ -4325,8 +4325,7 @@ pause
       elements.emptyState.classList.toggle("show", !hasExpenses);
       elements.tableWrap.style.display = hasExpenses ? "block" : "none";
       const limitAnalysis = analyzeDailyLimits();
-      renderLimitAlerts(hasExpenses ? limitAnalysis.alerts : []);
-      renderExpenseReports();
+      renderExpenseReports(hasExpenses ? limitAnalysis : { byKey: new Map(), alerts: [] });
       updateHistoryOrderControls();
 
       const fragment = document.createDocumentFragment();
