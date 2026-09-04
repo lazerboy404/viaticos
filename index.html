@@ -583,6 +583,13 @@
       transition: background 150ms ease, border-color 150ms ease;
     }
     .period-days-quick button:hover { background: var(--surface-hover); border-color: var(--line-strong); }
+    .period-days-quick button.primary {
+      margin-left: auto;
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+    .period-days-quick button.primary:hover { background: var(--brand-dark); }
 
     /* Boton compacto (icono de calendario + resumen) que abre el
        calendario como popover flotante, en vez de dejarlo siempre
@@ -706,6 +713,12 @@
       background: var(--brand-soft);
       border-color: var(--brand);
       color: var(--brand);
+    }
+
+    .day-calendar-cell.is-drag-remove-preview {
+      background: var(--danger-soft);
+      border-color: var(--danger);
+      color: var(--danger);
     }
 
     .day-calendar-cell.is-selected {
@@ -1643,8 +1656,9 @@
             <div class="day-calendar" id="periodCalendar" aria-live="polite"></div>
             <div class="period-days-quick">
               <button type="button" id="periodDaysClearBtn">Limpiar selección</button>
+              <button type="button" class="primary" id="periodDaysSaveBtn">Guardar selección</button>
             </div>
-            <p class="field-hint">Toca un día para agregarlo o quitarlo. Arrastra para marcar varios días seguidos.</p>
+            <p class="field-hint">Toca un día para agregarlo o quitarlo. Arrastra para marcar o quitar varios días seguidos.</p>
           </div>
         </div>
       </div>
@@ -1693,8 +1707,9 @@
                 <div class="day-calendar" id="newPeriodCalendar" aria-live="polite"></div>
                 <div class="period-days-quick">
                   <button type="button" id="newPeriodDaysClearBtn">Limpiar selección</button>
+                  <button type="button" class="primary" id="newPeriodDaysSaveBtn">Guardar selección</button>
                 </div>
-                <p class="field-hint">Toca un día para agregarlo o quitarlo. Arrastra para marcar varios días seguidos.</p>
+                <p class="field-hint">Toca un día para agregarlo o quitarlo. Arrastra para marcar o quitar varios días seguidos.</p>
               </div>
             </div>
           </div>
@@ -2224,6 +2239,7 @@
       periodCalendar: document.querySelector("#periodCalendar"),
       periodDaysCount: document.querySelector("#periodDaysCount"),
       periodDaysClearBtn: document.querySelector("#periodDaysClearBtn"),
+      periodDaysSaveBtn: document.querySelector("#periodDaysSaveBtn"),
       periodDaysTrigger: document.querySelector("#periodDaysTrigger"),
       periodDaysPopover: document.querySelector("#periodDaysPopover"),
       saveProjectBtn: document.querySelector("#saveProjectBtn"),
@@ -2322,6 +2338,7 @@
       newPeriodCalendar: document.querySelector("#newPeriodCalendar"),
       newPeriodDaysCount: document.querySelector("#newPeriodDaysCount"),
       newPeriodDaysClearBtn: document.querySelector("#newPeriodDaysClearBtn"),
+      newPeriodDaysSaveBtn: document.querySelector("#newPeriodDaysSaveBtn"),
       newPeriodDaysTrigger: document.querySelector("#newPeriodDaysTrigger"),
       newPeriodDaysPopover: document.querySelector("#newPeriodDaysPopover"),
       newBudgetInput: document.querySelector("#newBudgetInput"),
@@ -2512,6 +2529,7 @@
         dragMoved: false,
         dragAnchor: null,
         dragCurrent: null,
+        dragMode: "add",
         onChange: null
       };
 
@@ -2566,6 +2584,7 @@
         const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
         const todayStr = getTodayLocalString();
         const previewDates = new Set(view.dragActive && view.dragMoved ? dragRangeDates() : []);
+        const previewIsRemove = view.dragMode === "remove";
 
         for (let i = 0; i < leadingBlanks; i++) {
           const blank = document.createElement("span");
@@ -2581,8 +2600,8 @@
           cell.textContent = String(day);
           cell.dataset.date = dateStr;
           if (dateStr === todayStr) cell.classList.add("is-today");
-          if (previewDates.has(dateStr)) cell.classList.add("is-drag-preview");
           if (view.selected.has(dateStr)) cell.classList.add("is-selected");
+          if (previewDates.has(dateStr)) cell.classList.add(previewIsRemove ? "is-drag-remove-preview" : "is-drag-preview");
           grid.appendChild(cell);
         }
 
@@ -2597,7 +2616,8 @@
 
       function endDrag(commit) {
         if (commit && view.dragActive && view.dragMoved) {
-          dragRangeDates().forEach((date) => view.selected.add(date));
+          if (view.dragMode === "remove") dragRangeDates().forEach((date) => view.selected.delete(date));
+          else dragRangeDates().forEach((date) => view.selected.add(date));
         }
         view.dragActive = false;
         view.dragMoved = false;
@@ -2613,6 +2633,7 @@
         view.dragMoved = false;
         view.dragAnchor = cell.dataset.date;
         view.dragCurrent = cell.dataset.date;
+        view.dragMode = view.selected.has(cell.dataset.date) ? "remove" : "add";
       });
       grid.addEventListener("mouseover", (event) => {
         if (!view.dragActive) return;
@@ -2641,6 +2662,7 @@
         view.dragMoved = false;
         view.dragAnchor = cell.dataset.date;
         view.dragCurrent = cell.dataset.date;
+        view.dragMode = view.selected.has(cell.dataset.date) ? "remove" : "add";
       }, { passive: true });
       grid.addEventListener("touchmove", (event) => {
         if (!view.dragActive) return;
@@ -2721,6 +2743,7 @@
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && !popover.hidden) close();
       });
+      return { close, open };
     }
 
     function getActivePeriodDays() {
@@ -6277,14 +6300,16 @@ pause
       syncExpenseDateConstraints();
     });
     elements.periodDaysClearBtn.addEventListener("click", () => periodCalendar.clear());
-    wireDayPickerPopover(elements.periodDaysTrigger, elements.periodDaysPopover);
+    const periodDaysPopoverCtrl = wireDayPickerPopover(elements.periodDaysTrigger, elements.periodDaysPopover);
+    elements.periodDaysSaveBtn.addEventListener("click", () => periodDaysPopoverCtrl.close());
 
     let newPeriodCalendar = createDayCalendar(elements.newPeriodCalendar);
     newPeriodCalendar.onChange((days) => {
       elements.newPeriodDaysCount.textContent = formatPeriodDaysSummary(days);
     });
     elements.newPeriodDaysClearBtn.addEventListener("click", () => newPeriodCalendar.clear());
-    wireDayPickerPopover(elements.newPeriodDaysTrigger, elements.newPeriodDaysPopover);
+    const newPeriodDaysPopoverCtrl = wireDayPickerPopover(elements.newPeriodDaysTrigger, elements.newPeriodDaysPopover);
+    elements.newPeriodDaysSaveBtn.addEventListener("click", () => newPeriodDaysPopoverCtrl.close());
     elements.dateInput.addEventListener("change", syncExpenseDateConstraints);
     elements.projectSelect.addEventListener("change", () => {
       state.isCreatingProject = false;
