@@ -1687,6 +1687,119 @@
       Pega tus credenciales en el objeto <strong>firebaseConfig</strong> dentro del script para activar Realtime Database.
     </p>
 
+    <section class="summary-grid" aria-label="Resumen de viáticos">
+      <article class="summary-card transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+        <div class="summary-top">
+          <p class="summary-label">Presupuesto Total</p>
+          <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 7h16v12H4zM7 7V5h10v2M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+        <p class="summary-value" id="budgetValue">$0.00</p>
+        <div class="gauge-wrap" aria-hidden="true">
+          <div class="gauge-shell"></div>
+          <div class="gauge-needle"></div>
+          <div class="gauge-center">
+            <span>Asignado</span>
+            <strong id="budgetGaugeText">0%</strong>
+          </div>
+        </div>
+        <p class="summary-note">Monto depositado disponible para comprobar.</p>
+        <div class="summary-meter">
+          <span>Asignado</span>
+          <span id="budgetMeter">100%</span>
+        </div>
+      </article>
+      <article class="summary-card spent transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+        <div class="summary-top">
+          <p class="summary-label">Total Gastado</p>
+          <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 19V5M4 19h16M8 16l3-4 3 2 5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+        <p class="summary-value" id="spentValue">$0.00</p>
+        <div class="gauge-wrap" aria-hidden="true">
+          <div class="gauge-shell"></div>
+          <div class="gauge-needle"></div>
+          <div class="gauge-center">
+            <span>Uso</span>
+            <strong id="spentGaugeText">0%</strong>
+          </div>
+        </div>
+        <p class="summary-note" id="expenseCount">0 gastos registrados.</p>
+        <div class="summary-meter">
+          <span>Uso del presupuesto</span>
+          <span id="spentMeter">0%</span>
+        </div>
+      </article>
+      <article class="summary-card balance transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl" id="balanceCard">
+        <div class="summary-top">
+          <p class="summary-label">Saldo Restante</p>
+          <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 3v18M17 7.5c-.7-1.1-2-1.8-4-1.8-2.4 0-4 1.1-4 2.8 0 4.3 8 1.6 8 6 0 1.8-1.7 3-4.2 3-2.1 0-3.8-.8-4.8-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </div>
+        <p class="summary-value" id="balanceValue">$0.00</p>
+        <div class="gauge-wrap" aria-hidden="true">
+          <div class="gauge-shell"></div>
+          <div class="gauge-needle"></div>
+          <div class="gauge-center">
+            <span>Saldo</span>
+            <strong id="balanceGaugeText">0%</strong>
+          </div>
+        </div>
+        <p class="summary-note" id="balanceNote">Sin presupuesto registrado.</p>
+        <div class="summary-meter">
+          <span>Disponible</span>
+          <span id="balanceMeter">0%</span>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-bar" id="spentProgress"></div>
+        </div>
+      </article>
+      <article class="summary-card global transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl" id="globalCard">
+        <div class="summary-top">
+          <p class="summary-label">Total Global</p>
+          <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16M4 12h16M4 18h16M7 4v16M17 4v16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+        </div>
+        <div class="global-money-line primary">
+          <span>Total Depositado</span>
+          <strong id="globalBudgetValue">$0.00</strong>
+        </div>
+        <div class="global-money-line spent">
+          <span>Gasto global</span>
+          <strong id="globalSpentValue">$0.00</strong>
+        </div>
+        <div class="global-balance-line">
+          <span>Restante global</span>
+          <strong id="globalBalanceValue">$0.00</strong>
+        </div>
+        <div class="gauge-wrap" aria-hidden="true">
+          <div class="gauge-shell"></div>
+          <div class="gauge-needle"></div>
+          <div class="gauge-center">
+            <span>Disponible</span>
+            <strong id="globalGaugeText">0%</strong>
+          </div>
+        </div>
+        <p class="summary-note" id="globalNote">Suma de todos los proyectos.</p>
+        <div class="summary-meter">
+          <span>Disponible global</span>
+          <span id="globalMeter">0%</span>
+        </div>
+      </article>
+    </section>
+
     <section class="project-panel" aria-labelledby="projectTitle">
       <div class="field">
         <label id="projectTitle" for="projectSelect">Proyecto</label>
@@ -1810,119 +1923,6 @@
       </div>
     </section>
     </div>
-
-    <section class="summary-grid" aria-label="Resumen de viáticos">
-      <article class="summary-card transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
-        <div class="summary-top">
-          <p class="summary-label">Presupuesto Total</p>
-          <span class="summary-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 7h16v12H4zM7 7V5h10v2M8 12h8M8 16h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </div>
-        <p class="summary-value" id="budgetValue">$0.00</p>
-        <div class="gauge-wrap" aria-hidden="true">
-          <div class="gauge-shell"></div>
-          <div class="gauge-needle"></div>
-          <div class="gauge-center">
-            <span>Asignado</span>
-            <strong id="budgetGaugeText">0%</strong>
-          </div>
-        </div>
-        <p class="summary-note">Monto depositado disponible para comprobar.</p>
-        <div class="summary-meter">
-          <span>Asignado</span>
-          <span id="budgetMeter">100%</span>
-        </div>
-      </article>
-      <article class="summary-card spent transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
-        <div class="summary-top">
-          <p class="summary-label">Total Gastado</p>
-          <span class="summary-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 19V5M4 19h16M8 16l3-4 3 2 5-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </div>
-        <p class="summary-value" id="spentValue">$0.00</p>
-        <div class="gauge-wrap" aria-hidden="true">
-          <div class="gauge-shell"></div>
-          <div class="gauge-needle"></div>
-          <div class="gauge-center">
-            <span>Uso</span>
-            <strong id="spentGaugeText">0%</strong>
-          </div>
-        </div>
-        <p class="summary-note" id="expenseCount">0 gastos registrados.</p>
-        <div class="summary-meter">
-          <span>Uso del presupuesto</span>
-          <span id="spentMeter">0%</span>
-        </div>
-      </article>
-      <article class="summary-card balance transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl" id="balanceCard">
-        <div class="summary-top">
-          <p class="summary-label">Saldo Restante</p>
-          <span class="summary-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 3v18M17 7.5c-.7-1.1-2-1.8-4-1.8-2.4 0-4 1.1-4 2.8 0 4.3 8 1.6 8 6 0 1.8-1.7 3-4.2 3-2.1 0-3.8-.8-4.8-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-        </div>
-        <p class="summary-value" id="balanceValue">$0.00</p>
-        <div class="gauge-wrap" aria-hidden="true">
-          <div class="gauge-shell"></div>
-          <div class="gauge-needle"></div>
-          <div class="gauge-center">
-            <span>Saldo</span>
-            <strong id="balanceGaugeText">0%</strong>
-          </div>
-        </div>
-        <p class="summary-note" id="balanceNote">Sin presupuesto registrado.</p>
-        <div class="summary-meter">
-          <span>Disponible</span>
-          <span id="balanceMeter">0%</span>
-        </div>
-        <div class="progress-track" aria-hidden="true">
-          <div class="progress-bar" id="spentProgress"></div>
-        </div>
-      </article>
-      <article class="summary-card global transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl" id="globalCard">
-        <div class="summary-top">
-          <p class="summary-label">Total Global</p>
-          <span class="summary-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M4 6h16M4 12h16M4 18h16M7 4v16M17 4v16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </span>
-        </div>
-        <div class="global-money-line primary">
-          <span>Total Depositado</span>
-          <strong id="globalBudgetValue">$0.00</strong>
-        </div>
-        <div class="global-money-line spent">
-          <span>Gasto global</span>
-          <strong id="globalSpentValue">$0.00</strong>
-        </div>
-        <div class="global-balance-line">
-          <span>Restante global</span>
-          <strong id="globalBalanceValue">$0.00</strong>
-        </div>
-        <div class="gauge-wrap" aria-hidden="true">
-          <div class="gauge-shell"></div>
-          <div class="gauge-needle"></div>
-          <div class="gauge-center">
-            <span>Disponible</span>
-            <strong id="globalGaugeText">0%</strong>
-          </div>
-        </div>
-        <p class="summary-note" id="globalNote">Suma de todos los proyectos.</p>
-        <div class="summary-meter">
-          <span>Disponible global</span>
-          <span id="globalMeter">0%</span>
-        </div>
-      </article>
-    </section>
 
     <section class="workspace">
       <aside class="form-panel transition-all duration-300" aria-labelledby="expenseFormTitle">
