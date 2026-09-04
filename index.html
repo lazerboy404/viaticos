@@ -1192,6 +1192,21 @@
       white-space: nowrap;
     }
 
+    /* Aviso de que el monto capturado no coincide con el total leido de la
+       factura PDF adjunta (se calcula junto con la columna "Total factura"). */
+    .amount-mismatch-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      margin-left: var(--space-1);
+      color: var(--warn);
+      cursor: help;
+      vertical-align: -3px;
+    }
+    .amount-mismatch-badge .icon { width: 16px; height: 16px; }
+
     .voucher-badge {
       display: inline-flex;
       padding: 2px var(--space-2);
@@ -4516,7 +4531,7 @@ pause
         });
         renderTicketsCell(cells[3], expense);
         renderInvoiceCell(cells[4], expense);
-        renderFiscalPreviewCells(cells[5], cells[6], expense);
+        renderFiscalPreviewCells(cells[5], cells[6], expense, cells[2]);
         renderActionCell(cells[7], expense.id);
 
         fragment.appendChild(row);
@@ -4673,7 +4688,26 @@ pause
       state.invoiceFiscalCache.delete(id);
     }
 
-    function renderFiscalPreviewCells(fiscalCell, documentCell, expense) {
+    function applyAmountMismatchBadge(amountCell, expense, data) {
+      if (!amountCell || !amountCell.isConnected) return;
+      const existing = amountCell.querySelector(".amount-mismatch-badge");
+      if (existing) existing.remove();
+      const invoiceTotal = data?.invoiceTotal || 0;
+      const monto = parseMoney(expense.monto);
+      if (!invoiceTotal || Math.abs(monto - invoiceTotal) <= 0.01) return;
+      const badge = document.createElement("span");
+      badge.className = "amount-mismatch-badge";
+      badge.title = `El monto no coincide con la factura: ${formatter.format(invoiceTotal)}`;
+      badge.setAttribute("aria-label", badge.title);
+      badge.innerHTML = `
+        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      `;
+      amountCell.appendChild(badge);
+    }
+
+    function renderFiscalPreviewCells(fiscalCell, documentCell, expense, amountCell) {
       if (expense.valeAzul) {
         fiscalCell.className = "fiscal-cell muted-cell";
         fiscalCell.textContent = "Vale azul";
@@ -4694,6 +4728,7 @@ pause
       if (cached?.signature === signature && cached.data) {
         renderFiscalBreakdown(fiscalCell, cached.data);
         renderFiscalDocument(documentCell, cached.data.document, cached.data.documentCrop);
+        applyAmountMismatchBadge(amountCell, expense, cached.data);
         return;
       }
       fiscalCell.innerHTML = '<span class="fiscal-loading">Leyendo factura...</span>';
@@ -4703,6 +4738,7 @@ pause
           if (!fiscalCell.isConnected) return;
           renderFiscalBreakdown(fiscalCell, data);
           renderFiscalDocument(documentCell, data.document, data.documentCrop);
+          applyAmountMismatchBadge(amountCell, expense, data);
         }).catch(() => {
           if (!fiscalCell.isConnected) return;
           fiscalCell.textContent = "No legible";
@@ -4718,6 +4754,7 @@ pause
         if (!fiscalCell.isConnected) return;
         renderFiscalBreakdown(fiscalCell, data);
         renderFiscalDocument(documentCell, data.document, data.documentCrop);
+        applyAmountMismatchBadge(amountCell, expense, data);
       }).catch((error) => {
         console.error(error);
         fiscalCacheDelete(expense.id);
@@ -5741,6 +5778,7 @@ pause
         tip,
         iva,
         total: expenseTotal || invoiceTotal,
+        invoiceTotal,
         ...evidenceCrops
       };
     }
