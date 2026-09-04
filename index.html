@@ -221,9 +221,29 @@
     }
 
     .app {
-      width: min(1240px, calc(100% - 32px));
+      width: min(1320px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 28px 0 44px;
+      padding: 22px 0 60px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 22px;
+      align-items: start;
+    }
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+    }
+    /* Column 1: everything except workspace. Column 2: workspace (which contains the aside/form). */
+    .app > .topbar { grid-column: 1 / -1; grid-row: 1; }
+    .app > .notice { grid-column: 1 / -1; grid-row: 2; }
+    .app > .project-panel { grid-column: 1; grid-row: 3; }
+    .app > .budget-limits-row { grid-column: 1; grid-row: 4; }
+    .app > .summary-grid { grid-column: 1; grid-row: 5; }
+    .app > .history-panel { grid-column: 1; grid-row: 6; }
+    .app > .project-tools-panel { grid-column: 1; grid-row: 7; }
+    .app > .expense-report-panel { grid-column: 1; grid-row: 8; }
+    .app > .workspace { grid-column: 2; grid-row: 3 / span 6; }
+    @media (max-width: 1100px) {
+      .app > * { grid-column: 1 !important; grid-row: auto !important; }
     }
 
     .topbar {
@@ -6882,6 +6902,140 @@
     select {
       border-color: var(--input-border) !important;
     }
+
+    /* ===== Fixes P0: layout desktop/mobile ===== */
+    /* P0 #2: workspace debe contener a form-panel y evitar desborde */
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .workspace > * {
+      min-width: 0;
+    }
+
+    /* P0 #1: panel de proyecto más compacto y sin huecos */
+    .project-panel {
+      gap: 12px !important;
+      padding: 14px 16px !important;
+    }
+    .project-panel .field {
+      gap: 4px !important;
+    }
+    .project-panel .project-days-field {
+      padding: 10px !important;
+      margin-top: 2px;
+    }
+    #saveProjectBtn,
+    #createProjectBtn,
+    #deleteProjectBtn {
+      min-height: 36px !important;
+      padding: 6px 10px !important;
+    }
+    /* botones en una sola fila en lugar de apilarse */
+    .project-panel > #saveProjectBtn,
+    .project-panel > #createProjectBtn,
+    .project-panel > #deleteProjectBtn {
+      display: inline-flex;
+      width: auto;
+      flex: 1 1 auto;
+    }
+
+    /* P0 #3: header/topbar en móvil */
+    .topbar {
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .topbar-title {
+      flex: 1 1 220px;
+      min-width: 0;
+      gap: 10px;
+    }
+    .topbar-title > div {
+      min-width: 0;
+    }
+    .topbar-title h1,
+    .topbar-title strong,
+    .topbar-title p {
+      white-space: normal;
+    }
+    .topbar-title > span.brand-icon,
+    .topbar-title .brand-icon {
+      flex: 0 0 auto;
+    }
+    .project-title-block {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+    @media (max-width: 640px) {
+      .topbar-title p { font-size: 0.78rem; }
+      .topbar-title strong { font-size: 0.9rem; }
+    }
+
+    /* P1 #4: gauss / barra de 0% no domina visualmente */
+    .gauge-center,
+    .summary-meter {
+      min-height: 18px;
+    }
+    .summary-meter {
+      margin-top: 8px !important;
+    }
+    /* Cuando el gasto/uso es 0%, mostrar un placeholder discreto en vez de una barra gigante negra */
+    .summary-card .summary-meter:empty { display: none; }
+    .summary-card .summary-meter { opacity: 0.85; }
+
+    /* P2 #8: reportes no tan anchos, mejor proporción */
+    .expense-report-panel .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .report-group {
+      padding: 14px;
+      border-radius: 12px;
+    }
+
+    /* Estrategia visual: separación clara por día en el historial */
+    .history-panel tbody tr.day-start td {
+      border-top: 2px solid var(--glass-line);
+    }
+    /* Cabecera de día (separador visual fuerte) */
+    .history-panel tbody tr.day-start td:first-child {
+      position: relative;
+    }
+    .history-panel tbody tr.day-start td:first-child::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--glass-line);
+    }
+    /* Separación adicional entre días */
+    .history-panel tbody tr.day-start td {
+      padding-top: 18px !important;
+    }
+    .history-panel tbody tr.day-start + tr.same-day td {
+      border-top: 0;
+    }
+    /* Celdas del mismo día: sin borde superior duplicado */
+    .history-panel tbody tr.same-day td:first-child {
+      color: color-mix(in srgb, var(--glass-muted) 70%, transparent);
+    }
+    /* Indicador sutil de día nuevo en la primera celda */
+    .history-panel tbody tr.day-start td:first-child {
+      font-weight: 700;
+    }
+    /* Fondo alternado muy sutil para distinguir días visualmente */
+    .history-panel tbody tr.day-start td {
+      background: color-mix(in srgb, var(--glass-primary) 4%, transparent);
+    }
+    [data-theme="dark"] .history-panel tbody tr.day-start td {
+      background: color-mix(in srgb, var(--glass-primary) 6%, transparent);
+    }
   </style>
 </head>
 <body>
@@ -7266,8 +7420,9 @@
           <p class="message" id="formMessage" role="status"></p>
         </form>
       </aside>
+    </section>
 
-      <section class="history-panel transition-all duration-300" aria-labelledby="historyTitle">
+    <section class="history-panel transition-all duration-300" aria-labelledby="historyTitle">
         <div class="panel-heading">
           <div>
             <h2 id="historyTitle">Historial de gastos</h2>
@@ -7421,7 +7576,6 @@
             </section>
           </div>
         </section>
-      </section>
     </section>
   </main>
   </div>
