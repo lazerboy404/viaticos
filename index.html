@@ -5791,10 +5791,20 @@ pause
       const folioPatterns = [
         /\bFACTURA\s*(?:N(?:O|[U\u00da]M(?:ERO)?)?\.?\s*)?[:#-]?\s*([A-Z0-9]{1,12}(?:\s*-\s*[A-Z0-9]{1,12})+)/i,
         /\bFACTURA\s*(?:N(?:O|[U\u00da]M(?:ERO)?)?\.?\s*)?[:#-]?\s*([A-Z0-9]{1,12}\s+\d{2,})\b/i,
+        // "FACTURA 42037": la palabra sola seguida de un numero/codigo simple,
+        // sin separador ni "No."/guion de por medio (formato muy comun en
+        // tickets/facturas simplificadas). Exige al menos un digito en el
+        // valor capturado para no atrapar una palabra como "ELECTRONICA" si
+        // "FACTURA" es parte de un encabezado en vez de ir seguido del folio.
+        /\bFACTURA\s*(?:N(?:O|[U\u00da]M(?:ERO)?)?\.?\s*)?[:#-]?\s*([A-Z]{0,4}\d[A-Z0-9-]{0,24})\b/i,
         /\b([A-Z]{2,12}\s+\d{2,})(?=\s+USO\s+CFDI\b)/i,
         /SERIE\s*(?:Y\s*)?FOLIO\s*[:#-]?\s*([A-Z0-9]{1,12}(?:\s*-\s*[A-Z0-9]{1,12})*)/i,
         /FOLIO\s+([A-Z]{1,5})\s*-\s*(\d{2,})/i,
         /\bFOLIO(?!\s+(?:FISCAL|SAT))\s*[:#-]\s*([A-Z0-9-]{2,})/i,
+        // mismo caso que arriba pero para "FOLIO 42037" (solo espacio, sin
+        // ":"/"-"/"#" de por medio) \u2014 antes quedaba sin cubrir y caia hasta
+        // el UUID de mas abajo.
+        /\bFOLIO(?!\s+(?:FISCAL|SAT))\s+([A-Z]{0,4}\d[A-Z0-9-]{0,24})\b/i,
         /(?:UUID|FOLIO\s+FISCAL)\s*[:#-]?\s*([A-F0-9-]{20,})/i,
         /\b([A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})\b/i
       ];
@@ -5817,10 +5827,27 @@ pause
         ? Math.round((expenseTotal - invoiceTotal) * 100) / 100
         : 0;
       const tip = explicitTip || derivedTip;
-      const documentValue = folioPatterns.map((pattern) => {
+      // Los ultimos 2 patrones de folioPatterns buscan UUID a proposito (es
+      // el unico dato disponible cuando la factura no trae un folio simple).
+      // Los patrones anteriores a veces atrapan por accidente un pedazo del
+      // UUID real de la factura (pasa cuando el PDF acomoda el "Folio
+      // Fiscal" justo despues de una etiqueta de folio que no es la suya, un
+      // artefacto comun al extraer texto de layouts en columnas). Por eso se
+      // descarta cualquier captura de esos patrones que resulte ser un
+      // fragmento del UUID real de la factura, dejando que la busqueda siga
+      // con el siguiente patron en vez de quedarse con un pedazo de UUID.
+      const uuidPatternStart = folioPatterns.length - 2;
+      const rawUuidMatch = text.match(/\b([A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})\b/i);
+      const knownUuidCompact = rawUuidMatch ? rawUuidMatch[1].replace(/-/g, "").toUpperCase() : "";
+      const documentValue = folioPatterns.map((pattern, index) => {
         const match = text.match(pattern);
         const value = match?.[2] ? `${match[1]}-${match[2]}` : match?.[1] || "";
-        return value.replace(/\s*-\s*/g, "-").replace(/\s+/g, " ").trim();
+        const cleaned = value.replace(/\s*-\s*/g, "-").replace(/\s+/g, " ").trim();
+        if (index < uuidPatternStart && cleaned) {
+          const compact = cleaned.replace(/[\s-]/g, "").toUpperCase();
+          if (compact.length >= 6 && knownUuidCompact.startsWith(compact)) return "";
+        }
+        return cleaned;
       }).find(Boolean) || "";
       const evidenceCrops = includeEvidence
         ? await renderInvoiceEvidenceCrops(pdfjs, pageDetails, documentValue)
