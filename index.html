@@ -1924,6 +1924,25 @@
           </table>
         </div>
 
+        <section class="expense-report-panel history-secondary" aria-labelledby="expenseReportTitle">
+          <div class="report-header">
+            <div>
+              <h3 id="expenseReportTitle">Resumen de gastos</h3>
+              <p>Totales del proyecto seleccionado por categor&iacute;a y por d&iacute;a.</p>
+            </div>
+          </div>
+          <div class="report-grid">
+            <section class="report-group" aria-labelledby="categoryReportTitle">
+              <h4 id="categoryReportTitle">Por categor&iacute;a</h4>
+              <div class="report-list" id="categoryReport"></div>
+            </section>
+            <section class="report-group" aria-labelledby="dayReportTitle">
+              <h4 id="dayReportTitle">Por d&iacute;a</h4>
+              <div class="report-list" id="dayReport"></div>
+            </section>
+          </div>
+        </section>
+
         <section class="project-tools-panel history-secondary" aria-labelledby="projectToolsTitle">
           <div class="project-tools-header">
             <div class="project-tools-headline">
@@ -2010,25 +2029,6 @@
               </div>
               <input class="visually-hidden" id="backupFileInput" type="file" accept="application/json,.json">
             </article>
-          </div>
-        </section>
-
-        <section class="expense-report-panel history-secondary" aria-labelledby="expenseReportTitle">
-          <div class="report-header">
-            <div>
-              <h3 id="expenseReportTitle">Resumen de gastos</h3>
-              <p>Totales del proyecto seleccionado por categor&iacute;a y por d&iacute;a.</p>
-            </div>
-          </div>
-          <div class="report-grid">
-            <section class="report-group" aria-labelledby="categoryReportTitle">
-              <h4 id="categoryReportTitle">Por categor&iacute;a</h4>
-              <div class="report-list" id="categoryReport"></div>
-            </section>
-            <section class="report-group" aria-labelledby="dayReportTitle">
-              <h4 id="dayReportTitle">Por d&iacute;a</h4>
-              <div class="report-list" id="dayReport"></div>
-            </section>
           </div>
         </section>
     </section>
