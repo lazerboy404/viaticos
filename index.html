@@ -5770,6 +5770,38 @@ pause
       return result;
     }
 
+    // Ultimo recurso cuando ningun patron de folioPatterns encontro nada
+    // mas que el UUID: en layouts de PDF en columnas (varias facturas asi
+    // en la practica: Subway, Rebel Wings/Soft Restaurant, etc.), pdf.js
+    // extrae todas las etiquetas primero ("Factura: Folio Fiscal: ...") y
+    // todos sus valores despues, en el mismo orden — el folio real termina
+    // quedando pegado justo antes o justo despues del UUID en el texto
+    // (no de su propia etiqueta). Se revisa el texto alrededor del UUID por
+    // un valor con forma de folio (tiene digito, no es otro UUID, no es
+    // una fecha ISO, no es un numero de serie de certificado kilometrico).
+    function findFolioNearUuid(text, uuidValue) {
+      const idx = text.indexOf(uuidValue);
+      if (idx === -1) return null;
+      const before = text.slice(Math.max(0, idx - 40), idx);
+      const after = text.slice(idx + uuidValue.length, idx + uuidValue.length + 60);
+      const beforeMatch = before.match(/([A-Z0-9]{0,6}[-/]?\d[A-Z0-9\-/]{0,14})\s*$/i);
+      const afterMatch = after.match(/^\s*([A-Z]{1,10}(?:\s+\d{2,10})?|\d[A-Z0-9-]{1,19})/i);
+      const isPlausible = (candidate) => {
+        if (!candidate) return false;
+        if (/^20\d{2}-\d{2}-\d{2}/.test(candidate)) return false;
+        const compact = candidate.replace(/[\s\-/]/g, "");
+        if (!/\d/.test(compact)) return false;
+        if (/^\d{15,}$/.test(compact)) return false;
+        if (compact.length < 2 || compact.length > 20) return false;
+        return true;
+      };
+      const beforeValue = beforeMatch?.[1]?.trim();
+      const afterValue = afterMatch?.[1]?.trim();
+      if (isPlausible(beforeValue)) return beforeValue;
+      if (isPlausible(afterValue)) return afterValue;
+      return "";
+    }
+
     async function extractInvoiceFields(invoice, expense, projectName, includeEvidence = true) {
       if (!invoice?.dataUrl) return {};
       if (!pdfModulePromise) {
@@ -5839,7 +5871,7 @@ pause
       const uuidPatternStart = folioPatterns.length - 2;
       const rawUuidMatch = text.match(/\b([A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})\b/i);
       const knownUuidCompact = rawUuidMatch ? rawUuidMatch[1].replace(/-/g, "").toUpperCase() : "";
-      const documentValue = folioPatterns.map((pattern, index) => {
+      let documentValue = folioPatterns.map((pattern, index) => {
         const match = text.match(pattern);
         const value = match?.[2] ? `${match[1]}-${match[2]}` : match?.[1] || "";
         const cleaned = value.replace(/\s*-\s*/g, "-").replace(/\s+/g, " ").trim();
@@ -5849,6 +5881,12 @@ pause
         }
         return cleaned;
       }).find(Boolean) || "";
+      const documentIsJustUuid = rawUuidMatch
+        && documentValue.replace(/[\s-]/g, "").toUpperCase() === knownUuidCompact;
+      if ((!documentValue || documentIsJustUuid) && rawUuidMatch) {
+        const nearbyFolio = findFolioNearUuid(text, rawUuidMatch[1]);
+        if (nearbyFolio) documentValue = nearbyFolio;
+      }
       const evidenceCrops = includeEvidence
         ? await renderInvoiceEvidenceCrops(pdfjs, pageDetails, documentValue)
         : {};
