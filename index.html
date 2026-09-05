@@ -1587,6 +1587,14 @@
       padding: var(--space-4) var(--space-5);
       border-bottom: 1px solid var(--line);
     }
+    .dialog-header-left {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      min-width: 0;
+    }
+    .dialog-header-actions:empty { display: none; }
     .dialog-header h3, .edit-dialog-header h3, .date-dialog-header h3, .new-project-header h3 {
       font-family: var(--font-display);
       font-size: var(--text-md);
@@ -2269,7 +2277,10 @@
 
   <dialog class="media-dialog" id="mediaDialog">
     <div class="dialog-header">
-      <h3 id="mediaDialogTitle">Tickets</h3>
+      <div class="dialog-header-left">
+        <h3 id="mediaDialogTitle">Tickets</h3>
+        <div class="dialog-header-actions" id="mediaDialogHeaderActions"></div>
+      </div>
       <button class="button secondary" id="closeMediaDialog" type="button">Cerrar</button>
     </div>
     <div class="dialog-body" id="mediaDialogBody"></div>
@@ -2479,6 +2490,7 @@
       mediaDialog: document.querySelector("#mediaDialog"),
       mediaDialogTitle: document.querySelector("#mediaDialogTitle"),
       mediaDialogBody: document.querySelector("#mediaDialogBody"),
+      mediaDialogHeaderActions: document.querySelector("#mediaDialogHeaderActions"),
       closeMediaDialog: document.querySelector("#closeMediaDialog"),
       editExpenseDialog: document.querySelector("#editExpenseDialog"),
       editExpenseDialogBody: document.querySelector("#editExpenseDialogBody"),
@@ -3736,6 +3748,7 @@
         return;
       }
       elements.mediaDialogTitle.textContent = title;
+      elements.mediaDialogHeaderActions.innerHTML = "";
       elements.mediaDialogBody.innerHTML = "";
       const image = document.createElement("img");
       image.src = sheet.dataUrl;
@@ -4654,6 +4667,7 @@ pause
       if (!tickets.length) return;
 
       elements.mediaDialogTitle.textContent = `Tickets de ${getExpenseConceptParts(expense).combined || "gasto"}`;
+      elements.mediaDialogHeaderActions.innerHTML = "";
       elements.mediaDialogBody.innerHTML = "";
       elements.mediaDialogBody.classList.remove("pdf-dialog-body");
 
@@ -4704,8 +4718,24 @@ pause
     function openPdfDialog(invoice, title = "Factura PDF", downloadName = "", onDelete = null) {
       if (!invoice?.dataUrl) return;
       elements.mediaDialogTitle.textContent = title;
+      elements.mediaDialogHeaderActions.innerHTML = "";
       elements.mediaDialogBody.innerHTML = "";
       elements.mediaDialogBody.classList.add("pdf-dialog-body");
+
+      if (onDelete) {
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "button danger";
+        deleteButton.type = "button";
+        deleteButton.setAttribute("data-ripple-light", "true");
+        deleteButton.innerHTML = `
+          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 6h18M8 6V4h8v2M10 11v6M14 11v6M6 6l1 15h10l1-15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Eliminar factura
+        `;
+        deleteButton.addEventListener("click", onDelete);
+        elements.mediaDialogHeaderActions.appendChild(deleteButton);
+      }
 
       const wrapper = document.createElement("div");
       wrapper.className = "dialog-pdf";
@@ -4720,21 +4750,6 @@ pause
       downloadLink.download = downloadName || invoice.name || "factura.pdf";
       downloadLink.textContent = `Descargar ${downloadName || invoice.name || "factura.pdf"}`;
       actions.appendChild(downloadLink);
-
-      if (onDelete) {
-        const deleteButton = document.createElement("button");
-        deleteButton.className = "button danger";
-        deleteButton.type = "button";
-        deleteButton.setAttribute("data-ripple-light", "true");
-        deleteButton.innerHTML = `
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M3 6h18M8 6V4h8v2M10 11v6M14 11v6M6 6l1 15h10l1-15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          Eliminar factura
-        `;
-        deleteButton.addEventListener("click", onDelete);
-        actions.appendChild(deleteButton);
-      }
 
       wrapper.appendChild(actions);
       elements.mediaDialogBody.appendChild(wrapper);
@@ -5069,6 +5084,7 @@ pause
     function openEvidenceCrop(dataUrl, title) {
       if (!dataUrl) return;
       elements.mediaDialogTitle.textContent = title;
+      elements.mediaDialogHeaderActions.innerHTML = "";
       elements.mediaDialogBody.innerHTML = "";
       const image = document.createElement("img");
       image.src = dataUrl;
