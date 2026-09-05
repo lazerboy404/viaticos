@@ -5855,18 +5855,46 @@ pause
       return classifyLocation(normalizedProject);
     }
 
-    function findInvoiceIssuerName(text, fallback = "") {
-      const conductorMatch = text.match(/(?:SOCIO\s+CONDUCTOR|CONDUCTOR|PRESTADOR\s+DEL\s+SERVICIO)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'-]{3,70}?)(?=\s+(?:RFC|R\.F\.C\.|DOMICILIO|FECHA|$))/i);
-      if (conductorMatch?.[1]) return conductorMatch[1].trim();
+    function cleanIssuerName(value) {
+      // Quita basura sobrante al final de la captura (un "RFC."/"R.F.C."
+      // que se alcanzo a colar en el grupo del nombre, o una "/" suelta de
+      // un codigo de sucursal) sin tocar texto real de la razon social.
+      return String(value || "").replace(/[\s\/,.-]+$/, "").trim();
+    }
 
-      const issuerRfcMatch = text.match(/(?:^|\bEMISOR(?:\s+RECEPTOR)?)\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'-]{2,100}?)\s+(?:RFC\s*:?\s*)?([A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3})\b/i);
-      if (issuerRfcMatch?.[1]) {
-        const name = issuerRfcMatch[1].replace(/^RECEPTOR\s+/i, "").trim();
-        if (!/\b(?:RECEPTOR|INT INTELLIGENCE AND TELECOM)\b/i.test(name)) return name;
+    function findInvoiceIssuerName(text, fallback = "") {
+      const conductorMatch = text.match(/(?:SOCIO\s+CONDUCTOR|CONDUCTOR|PRESTADOR\s+DEL\s+SERVICIO)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'\/-]{3,70}?)(?=\s+(?:RFC|R\.F\.C\.|DOMICILIO|FECHA|$))/i);
+      if (conductorMatch?.[1]) return cleanIssuerName(conductorMatch[1]);
+
+      // Formato de POS "Soft Restaurant" y similares: seccion "INFORMACION
+      // DEL EMISOR" con "NOMBRE: X" en su propio renglon, en vez de
+      // "EMISOR: X RFC: Y" en una sola linea (ver patron de mas abajo). Va
+      // primero porque la etiqueta es lo bastante especifica para no
+      // confundirse con otro texto de la factura.
+      const posEmisorMatch = text.match(/INFORMACI[ÓO]N\s+DEL\s+EMISOR[\s\S]{0,60}?\bNOMBRE\s*:?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'\/-]{1,80}?)\s+RFC\b/i);
+      if (posEmisorMatch?.[1]) return cleanIssuerName(posEmisorMatch[1]);
+
+      // Orden invertido: "<NOMBRE> RFC Emisor: <CODIGO>" (la palabra
+      // EMISOR va DESPUES del nombre, pegada a RFC, en vez de antes como en
+      // el patron de abajo). Tope corto (40) para no arrastrar texto de
+      // encabezado/UUID si el documento no trae este formato especifico.
+      const reversedRfcMatch = text.match(/([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'\/-]{2,40}?)\s+RFC\s+EMISOR\s*:?\s*([A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3})\b/i);
+      if (reversedRfcMatch?.[1]) {
+        const name = cleanIssuerName(reversedRfcMatch[1]);
+        if (name && !/\b(?:RECEPTOR|INT INTELLIGENCE AND TELECOM)\b/i.test(name)) return name;
       }
 
-      const socialReasonMatch = text.match(/(?:RAZ[ÓO]N\s+SOCIAL|NOMBRE\s+DEL\s+EMISOR)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'-]{3,100}?)(?=\s+(?:RFC|R\.F\.C\.|R[ÉE]GIMEN|DOMICILIO|C\.?P\.?|$))/i);
-      const socialReason = socialReasonMatch?.[1]?.trim() || "";
+      // "EMISOR:" con ":" o "." pegado a la etiqueta (antes solo se
+      // reconocia "EMISOR " con un simple espacio, y una factura real con
+      // "EMISOR: NOMBRE RFC" se iba de largo al respaldo de mas abajo).
+      const issuerRfcMatch = text.match(/(?:^|\bEMISOR(?:\s+RECEPTOR)?\s*[:.]?)\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'\/-]{2,100}?)\s+(?:RFC\s*:?\s*)?([A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3})\b/i);
+      if (issuerRfcMatch?.[1]) {
+        const name = cleanIssuerName(issuerRfcMatch[1].replace(/^RECEPTOR\s+/i, ""));
+        if (name && !/\b(?:RECEPTOR|INT INTELLIGENCE AND TELECOM)\b/i.test(name)) return name;
+      }
+
+      const socialReasonMatch = text.match(/(?:RAZ[ÓO]N\s+SOCIAL|NOMBRE\s+DEL\s+EMISOR)\s*[:#-]?\s*([A-ZÁÉÍÓÚÑ][A-ZÁÉÍÓÚÑ0-9 .,&'\/-]{3,100}?)(?=\s+(?:RFC|R\.F\.C\.|R[ÉE]GIMEN|DOMICILIO|C\.?P\.?|$))/i);
+      const socialReason = cleanIssuerName(socialReasonMatch?.[1]);
       return /\b(?:RECEPTOR|INT INTELLIGENCE AND TELECOM)\b/i.test(socialReason) ? fallback : socialReason || fallback;
     }
 
