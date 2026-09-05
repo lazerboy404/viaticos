@@ -5786,8 +5786,18 @@ pause
     function findInvoiceTotal(text) {
       const directMatches = [...text.matchAll(/\bTOTAL\s*:?[ \t]*\$?[ \t]*([\d,]+\.\d{2})(?:\s*MXN)?/ig)];
       if (directMatches.length) return parseInvoiceMoney(directMatches[directMatches.length - 1][1]);
-      const reversedMatch = text.match(/\$?\s*([\d,]+\.\d{2})\s+TOTAL\s*:/i);
-      return reversedMatch ? parseInvoiceMoney(reversedMatch[1]) : 0;
+      // Algunas facturas ponen el monto ANTES de la palabra "Total" y sin
+      // ":" despues (ej. "...M.N. $319.00 Total Moneda: MXN"), por lo que
+      // el patron directo de arriba no las detecta y esta era la unica red
+      // de seguridad -- pero antes exigia un ":" pegado a "TOTAL" y fallaba
+      // tambien en ese caso, dejando el total en 0 y disparando un falso
+      // "monto no coincide" (el codigo de respaldo termina sumando
+      // subtotal + iva, que puede duplicar el monto si la IVA detectada es
+      // en realidad el mismo numero que el subtotal). Se excluye "TOTAL
+      // IVA"/"TOTAL IMPUESTOS" para no confundir el total de un impuesto
+      // con el gran total de la factura.
+      const reversedMatches = [...text.matchAll(/\$?\s*([\d,]+\.\d{2})\s+TOTAL\b(?!\s*(?:DE\s+)?(?:I\.?\s*V\.?\s*A\.?|IMPUESTOS?))/ig)];
+      return reversedMatches.length ? parseInvoiceMoney(reversedMatches[reversedMatches.length - 1][1]) : 0;
     }
 
     let pdfModulePromise = null;
