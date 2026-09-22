@@ -233,19 +233,34 @@
       gap: var(--space-5);
     }
 
-    /* Boton flotante para crear proyecto: visible en toda la pagina sin
-       importar el scroll, en vez de vivir dentro de la tarjeta de proyecto. */
-    .fab-new-project {
+    /* Botones flotantes de proyecto (crear y editar): visibles en toda la
+       pagina sin importar el scroll, en vez de vivir dentro de una tarjeta.
+       Van apilados en un solo contenedor para poder esconderse juntos. */
+    .fab-stack {
       position: fixed;
       right: var(--space-3);
       bottom: var(--space-5);
       z-index: 45;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: var(--space-2);
+      transition: transform 200ms ease;
+    }
+    /* Se esconden deslizandose hacia abajo mientras se hace scroll hacia
+       abajo (para no tapar los botones de las tarjetas al pasar por
+       encima); reaparecen al subir o al volver al inicio de la pagina
+       (logica completa mas abajo, junto a "createProjectBtn"). */
+    .fab-stack.is-hidden {
+      transform: translateY(calc(100% + var(--space-5)));
+      pointer-events: none;
+    }
+
+    .fab-new-project,
+    .fab-edit-project {
       height: 40px;
       padding: 0 var(--space-4) 0 var(--space-3);
       border-radius: var(--radius-full);
-      border: none;
-      background: var(--brand);
-      color: #fff;
       display: inline-flex;
       align-items: center;
       gap: var(--space-1);
@@ -255,28 +270,30 @@
       white-space: nowrap;
       box-shadow: var(--shadow-lg);
       transform: translateY(0);
-      transition: background 150ms ease, transform 200ms ease;
+      transition: background 150ms ease, border-color 150ms ease, transform 200ms ease;
     }
-    .fab-new-project:not(.is-hidden):hover { background: var(--brand-dark); transform: translateY(-2px); }
-    .fab-new-project:not(.is-hidden):active { transform: translateY(0); }
-    /* Se esconde deslizandose hacia abajo mientras se hace scroll hacia
-       abajo (para no tapar los botones de las tarjetas al pasar por
-       encima); reaparece al subir o al volver al inicio de la pagina
-       (logica completa mas abajo, junto a "createProjectBtn"). */
-    .fab-new-project.is-hidden {
-      transform: translateY(calc(100% + var(--space-5)));
-      pointer-events: none;
-    }
-    .fab-new-project .icon { width: 17px; height: 17px; flex: none; }
+    .fab-new-project .icon,
+    .fab-edit-project .icon { width: 17px; height: 17px; flex: none; }
+
+    .fab-new-project { border: none; background: var(--brand); color: #fff; }
+    .fab-new-project .icon { color: #fff; }
+    .fab-new-project:hover { background: var(--brand-dark); transform: translateY(-2px); }
+
+    /* Editar va en color secundario para no competir con el de crear. */
+    .fab-edit-project { border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+    .fab-edit-project .icon { color: var(--brand); }
+    .fab-edit-project:hover { background: var(--surface-hover); border-color: var(--line-strong); transform: translateY(-2px); }
+
+    .fab-new-project:active,
+    .fab-edit-project:active { transform: translateY(0); }
+    .fab-new-project:disabled,
+    .fab-edit-project:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
     @media (min-width: 1024px) {
       .app { gap: var(--space-6); padding-top: var(--space-5); }
     }
 
     /* Tarjetas base compartidas por todas las secciones de nivel superior */
-    .project-panel,
-    .budget-panel,
-    .daily-limits-panel,
     .summary-card,
     .form-panel,
     .history-panel,
@@ -317,6 +334,9 @@
       align-items: center;
       gap: var(--space-3);
       min-width: 0;
+      /* crece para quedarse con el espacio sobrante: el selector de proyecto
+         lo necesita para no apretar el nombre contra el monto */
+      flex: 1 1 auto;
     }
 
     .brand-icon {
@@ -333,9 +353,9 @@
 
     .brand-icon svg { width: 24px; height: 24px; }
 
-    .topbar-title > div:not(.project-title-block) { min-width: 0; }
+    .topbar-title > div:not(.project-switch):not(.period-summary) { min-width: 0; }
 
-    .topbar-title > div:not(.project-title-block) p {
+    .topbar-title > div:not(.project-switch):not(.period-summary) p {
       font-family: var(--font-display);
       font-weight: 700;
       font-size: var(--text-md);
@@ -343,7 +363,7 @@
       white-space: nowrap;
     }
 
-    .topbar-title > div:not(.project-title-block) strong {
+    .topbar-title > div:not(.project-switch):not(.period-summary) strong {
       display: block;
       font-weight: 500;
       font-size: var(--text-xs);
@@ -351,34 +371,132 @@
       white-space: nowrap;
     }
 
-    .project-title-block {
-      display: none;
+    /* Proyecto activo y dias del periodo como dos bloques separados en el
+       topbar: cambiar de proyecto y consultar el periodo sin bajar a una
+       tarjeta, y sin meter todo dentro del mismo boton. */
+    .project-switch,
+    .period-summary {
+      display: flex;
       flex-direction: column;
       gap: 2px;
-      padding-left: var(--space-4);
-      margin-left: var(--space-1);
+      /* el espacio de la izquierda va como margin y no como padding: el
+         padding le resta ancho al bloque y el nombre salia recortado */
+      margin-left: var(--space-3);
       border-left: 1px solid var(--line);
       min-width: 0;
     }
 
-    .project-title-block span {
+    /* El bloque del proyecto se queda con el ancho que necesita el nombre,
+       con tope para que uno larguisimo no se lleve toda la barra. Los dias
+       son los que ceden espacio primero, repartiendo sus chips en varios
+       renglones antes que desaparecer. */
+    .project-switch { flex: 0 1 auto; max-width: 480px; }
+    /* cede mucho mas rapido que el bloque del proyecto: antes de recortar el
+       nombre, los chips se reparten en varios renglones */
+    .period-summary { flex: 0 20 auto; min-width: min-content; }
+
+    .project-switch-label,
+    .period-summary-label {
+      padding-left: var(--space-2);
       font-size: var(--text-sm);
       color: var(--ink-mute);
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
 
-    .project-title-block strong {
+    /* El boton solo cambia de proyecto: nombre + flecha, del ancho del texto
+       (antes ocupaba 460px fijos y la flecha quedaba flotando al final). */
+    .project-switch-trigger {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      /* Ancho explicito: un <button> con display:flex y width:auto se encoge a
+         su contenido en vez de estirarse al bloque, y el nombre se salia. */
+      width: 100%;
+      padding: var(--space-1) var(--space-2);
+      border: 1px solid transparent;
+      border-radius: var(--radius-md);
+      background: transparent;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+      transition: background 150ms ease, border-color 150ms ease;
+    }
+    .project-switch-trigger:hover { background: var(--surface-2); border-color: var(--line); }
+    .project-switch-trigger[aria-expanded="true"] { background: var(--surface-2); border-color: var(--brand); }
+    .project-switch-trigger .icon { flex: none; width: 18px; height: 18px; color: var(--ink-mute); transition: transform 150ms ease; }
+    .project-switch-trigger[aria-expanded="true"] .icon { transform: rotate(180deg); }
+
+    /* El nombre va en un solo renglon; solo se recorta con puntos suspensivos
+       cuando de verdad no cabe. block y no flex: text-overflow: ellipsis no se
+       dibuja en un contenedor flex. */
+    .project-switch-name {
+      display: block;
       font-size: var(--text-lg);
+      font-weight: 700;
       color: var(--ink);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 220px;
     }
 
-    @media (min-width: 640px) {
-      .project-title-block { display: flex; }
+    .project-switch-name .project-picker-option-check {
+      vertical-align: -3px;
+      margin-right: var(--space-1);
+    }
+
+    .project-switch-meta {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--ink-soft);
+      white-space: nowrap;
+    }
+
+    /* Un chip por dia marcado: el rango "8 – 10 sep" daba a entender que el
+       periodo era continuo cuando pueden ser dias sueltos. */
+    .period-summary-chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-1);
+      min-height: 24px;
+    }
+
+    .period-chip {
+      padding: 2px var(--space-3);
+      border-radius: var(--radius-full);
+      background: var(--brand-soft);
+      border: 1px solid color-mix(in srgb, var(--brand), transparent 72%);
+      color: var(--brand);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .period-chip--more {
+      background: var(--surface-2);
+      border-color: var(--line);
+      color: var(--ink-mute);
+    }
+
+    .period-summary-count {
+      font-size: var(--text-xs);
+      color: var(--ink-mute);
+    }
+
+    @media (max-width: 767px) {
+      /* En movil cada bloque baja a su propio renglon a lo ancho del topbar
+         (antes vivian en la tarjeta de proyecto, que ya no existe). */
+      .project-switch,
+      .period-summary {
+        flex: 1 0 100%;
+        margin-left: 0;
+        padding-top: var(--space-3);
+        border-left: none;
+        border-top: 1px solid var(--line);
+      }
+      /* en movil sobra ancho: el nombre usa todo el renglon */
+      .project-switch { max-width: none; }
     }
 
     .topbar-actions {
@@ -388,22 +506,21 @@
       gap: var(--space-2);
     }
 
+    /* Acciones del topbar en modo minimalista: solo el punto de estado o el
+       icono. El texto vive en el title (y para lectores de pantalla). */
     .status-pill {
       display: inline-flex;
       align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-2) var(--space-3);
+      justify-content: center;
+      width: 38px;
+      height: 38px;
       border-radius: var(--radius-full);
       background: var(--surface-2);
       border: 1px solid var(--line);
-      font-size: var(--text-xs);
-      font-weight: 600;
-      color: var(--ink-soft);
-      white-space: nowrap;
     }
 
     .status-dot {
-      width: 9px; height: 9px;
+      width: 10px; height: 10px;
       border-radius: 50%;
       background: var(--ink-mute);
       flex: none;
@@ -420,16 +537,15 @@
     .theme-toggle {
       display: inline-flex;
       align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-2) var(--space-4);
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
       border-radius: var(--radius-full);
       border: 1px solid var(--line);
       background: var(--surface-2);
       color: var(--ink-soft);
-      font-weight: 600;
-      font-size: var(--text-sm);
       cursor: pointer;
-      white-space: nowrap;
       transition: background 150ms ease, border-color 150ms ease, color 150ms ease, transform 150ms ease;
     }
 
@@ -437,8 +553,12 @@
     .theme-toggle:hover {
       background: var(--surface-hover);
       border-color: var(--line-strong);
+      color: var(--ink);
       transform: translateY(-1px);
     }
+
+    .report-excel-button:disabled,
+    .theme-toggle:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
     .report-excel-button { color: var(--ok); border-color: color-mix(in srgb, var(--ok), transparent 70%); }
     .report-excel-button .icon { color: var(--ok); }
@@ -587,23 +707,6 @@
        PROYECTO / PRESUPUESTO / LIMITES
        ============================================================ */
 
-    .project-panel {
-      padding: var(--space-5);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      gap: var(--space-4);
-    }
-
-    .project-panel > .field { flex: 1 1 200px; }
-    .project-panel > .field:first-child { flex: 2 1 300px; }
-    .project-panel > .button { flex: none; height: 46px; }
-    .project-panel > .project-days-field { flex: 1 1 100%; }
-    /* la ayuda va en la misma linea que los botones Guardar/Eliminar en vez
-       de forzar su propia fila completa (dejaba un vacio enorme al lado
-       de los botones en pantallas anchas) */
-    .project-panel > .project-hint { flex: 1 1 220px; align-self: center; }
-
     .project-hint { font-size: var(--text-sm); color: var(--ink-mute); }
 
     .project-days-field { gap: var(--space-3); }
@@ -719,7 +822,11 @@
       z-index: 40;
       top: calc(100% + var(--space-2));
       left: 0;
-      right: 0;
+      /* La lista se mide por su contenido para que quepan los nombres
+         completos, con tope para no salirse de la pantalla. */
+      width: max-content;
+      min-width: 280px;
+      max-width: min(480px, calc(100vw - 32px));
       max-height: 320px;
       overflow-y: auto;
       padding: var(--space-2);
@@ -748,11 +855,11 @@
     .project-picker-option:hover { background: var(--surface-hover); }
     .project-picker-option.is-active { background: var(--brand); color: #fff; }
 
+    /* Sin recorte: si un nombre no cabe ni en el ancho maximo de la lista, se
+       reparte en varios renglones en vez de salir con puntos suspensivos. */
     .project-picker-option-name {
       min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      overflow-wrap: anywhere;
       font-weight: 600;
     }
     .project-picker-option-budget {
@@ -867,37 +974,7 @@
     }
     .day-calendar-cell.is-selected.is-today { box-shadow: 0 0 0 2px var(--brand-soft-strong); }
 
-    .budget-limits-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: var(--space-5);
-    }
-
-    @media (min-width: 768px) {
-      .budget-limits-row { grid-template-columns: 1fr 1fr; align-items: stretch; }
-    }
-
-    .budget-panel,
-    .daily-limits-panel {
-      padding: var(--space-5);
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-    }
-
-    /* budget-panel suele tener menos contenido que daily-limits-panel; al
-       estirarse a la misma altura, se centra en vez de dejar espacio muerto. */
-    .budget-panel { flex-direction: row; flex-wrap: wrap; align-items: flex-end; align-content: center; }
-    .budget-panel > .field { flex: 1 1 200px; }
-    .budget-panel > .button { flex: none; height: 46px; }
-
-    .daily-limits-panel h3 {
-      font-family: var(--font-display);
-      font-size: var(--text-md);
-      font-weight: 700;
-    }
-    .daily-limits-panel > div > p { margin-top: var(--space-1); font-size: var(--text-sm); color: var(--ink-mute); }
-
+    /* Límites diarios del diálogo de proyecto. */
     .daily-limit-fields {
       display: flex;
       flex-wrap: wrap;
@@ -914,8 +991,6 @@
       font-weight: 600;
       color: var(--ink-soft);
     }
-
-    .daily-limit-fields > .button { flex: none; height: 46px; }
 
     /* ============================================================
        SUMMARY GRID / GAUGES
@@ -1643,9 +1718,22 @@
 
     .new-project-actions, .date-dialog-actions {
       display: flex;
+      flex-wrap: wrap;
       justify-content: flex-end;
       gap: var(--space-3);
       padding-top: var(--space-2);
+    }
+
+    /* En "Editar proyecto" el peligro va apartado a la izquierda, lejos de
+       "Guardar cambios". */
+    .new-project-actions .button.danger { margin-right: auto; }
+
+    /* El cuerpo del dialogo es scrolleable (overflow-y:auto), asi que un
+       calendario flotante ahi adentro quedaria recortado contra el borde.
+       Dentro de un dialogo se despliega en linea y empuja el contenido. */
+    .new-project-body .day-picker-popover {
+      position: static;
+      width: auto;
     }
 
     .dialog-ticket { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md); }
@@ -1687,25 +1775,20 @@
 
     @media (max-width: 1023px) {
       .app { gap: var(--space-4); }
-      .project-title-block strong { max-width: 160px; }
     }
 
     @media (max-width: 767px) {
       .topbar { position: static; }
       .topbar-inner { padding: var(--space-3) var(--space-4); }
-      .topbar-title > div:not(.project-title-block) p { display: none; }
-      .project-panel, .budget-panel, .daily-limits-panel, .form-panel, .history-panel { padding: var(--space-4); }
-      .budget-panel, .daily-limits-panel { flex-direction: column; align-items: stretch; }
-      /* flex-basis:200px en .budget-panel > .field se interpreta como ancho
-         en fila (desktop) pero como ALTO al cambiar a columna aqui; sin
-         resetear, el campo queda estirado a 200px de alto en movil. */
-      .budget-panel > .field { flex-basis: auto; }
-      .budget-panel > .button, .daily-limits-panel .button { width: 100%; }
+      /* el titulo de la marca y el selector de proyecto se acomodan en
+         renglones separados en vez de apretarse en uno solo */
+      .topbar-title { flex-wrap: wrap; }
+      .topbar-title > div:not(.project-switch):not(.period-summary) p { display: none; }
+      .form-panel, .history-panel { padding: var(--space-4); }
       .daily-limit-fields { flex-direction: column; align-items: stretch; }
-      /* mismo problema que .budget-panel > .field: flex-basis:120px era
-         ancho en fila y se vuelve alto al pasar a columna aqui */
+      /* flex-basis:120px era ancho en fila y se vuelve ALTO al pasar a
+         columna aqui; sin resetear, el campo queda estirado en movil. */
       .daily-limit-fields label { flex-basis: auto; }
-      .project-panel > .button { width: 100%; }
       .summary-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--space-3); }
       .summary-card { padding: var(--space-4); }
       .gauge-wrap { width: 84px; height: 84px; }
@@ -1727,12 +1810,21 @@
   </style>
 </head>
 <body>
-  <button class="fab-new-project" id="createProjectBtn" type="button" title="Nuevo proyecto" data-ripple-light="true">
-    <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-    </svg>
-    <span>Proyecto</span>
-  </button>
+  <div class="fab-stack" id="fabStack">
+    <button class="fab-edit-project" id="editProjectBtn" type="button" title="Editar proyecto" data-ripple-light="true">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 20h4l10-10-4-4L4 16v4Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="m14 6 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>Editar</span>
+    </button>
+    <button class="fab-new-project" id="createProjectBtn" type="button" title="Nuevo proyecto" data-ripple-light="true">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <span>Proyecto</span>
+    </button>
+  </div>
   <div class="dashboard-shell">
     <main class="app" id="dashboardTop">
       <header class="topbar transition-all duration-300" aria-label="Estado de la aplicacion">
@@ -1747,28 +1839,46 @@
             <p>Control de Vi&aacute;ticos</p>
             <strong>Dashboard de comprobaci&oacute;n</strong>
           </div>
-          <div class="project-title-block" aria-live="polite">
-            <span>Proyecto activo</span>
-            <strong id="activeProjectTitle">Proyecto general</strong>
+          <div class="project-switch">
+            <span class="project-switch-label" id="projectSwitchLabel">Proyecto activo</span>
+            <select id="projectSelect" class="visually-hidden" tabindex="-1" aria-hidden="true">
+              <option value="">Cargando proyectos</option>
+            </select>
+            <div class="project-picker">
+              <button type="button" class="project-switch-trigger" id="projectPickerTrigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="projectSwitchLabel">
+                <span class="project-picker-value" id="projectPickerValue" aria-live="polite">
+                  <span class="project-switch-name">Cargando proyectos</span>
+                </span>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <div class="project-picker-popover" id="projectPickerPopover" role="listbox" hidden></div>
+            </div>
+            <span class="project-switch-meta" id="projectSwitchMeta"></span>
+          </div>
+          <div class="period-summary">
+            <span class="period-summary-label">Días del periodo</span>
+            <div class="period-summary-chips" id="periodSummaryChips"></div>
+            <span class="period-summary-count" id="periodSummaryCount"></span>
           </div>
         </div>
         <div class="topbar-actions">
-          <div class="status-pill" id="firebaseStatus">
+          <div class="status-pill" id="firebaseStatus" role="status">
             <span class="status-dot" aria-hidden="true"></span>
-            <span id="firebaseStatusText">Configuraci&oacute;n pendiente</span>
+            <span class="visually-hidden" id="firebaseStatusText">Configuraci&oacute;n pendiente</span>
           </div>
-          <button class="report-excel-button" id="exportExcelBtn" type="button" data-ripple-light="true">
+          <button class="report-excel-button" id="exportExcelBtn" type="button" title="Reporte de vi&aacute;ticos" aria-label="Reporte de vi&aacute;ticos" data-ripple-light="true">
             <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
               <path d="M14 2v6h6M8 13l4 5M12 13l-4 5M15 13h2M15 17h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span>Reporte de vi&aacute;ticos</span>
           </button>
-          <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambiar a modo oscuro">
+          <button class="theme-toggle" id="themeToggle" type="button" title="Cambiar a modo oscuro" aria-label="Cambiar a modo oscuro" data-ripple-light="true">
             <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <span id="themeToggleText">Modo oscuro</span>
+            <span class="visually-hidden" id="themeToggleText">Modo oscuro</span>
           </button>
         </div>
       </div>
@@ -1888,62 +1998,74 @@
       </article>
     </section>
 
-    <section class="project-panel" aria-labelledby="projectTitle">
-      <div class="field">
-        <label id="projectTitle" for="projectSelect">Proyecto</label>
-        <select id="projectSelect" class="visually-hidden" tabindex="-1" aria-hidden="true">
-          <option value="">Cargando proyectos</option>
-        </select>
-        <div class="project-picker">
-          <button type="button" class="project-picker-trigger" id="projectPickerTrigger" aria-haspopup="listbox" aria-expanded="false">
-            <span class="project-picker-value" id="projectPickerValue">
-              <span class="project-picker-option-name">Cargando proyectos</span>
-            </span>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="m6 9 6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-          <div class="project-picker-popover" id="projectPickerPopover" role="listbox" hidden></div>
-        </div>
-      </div>
-      <div class="field">
-        <label for="projectNameInput">Nombre del proyecto</label>
-        <input id="projectNameInput" type="text" placeholder="Ej. QUERETARO - JULIO" maxlength="80">
-      </div>
-      <div class="field project-days-field">
-        <label>Días del periodo</label>
-        <div class="day-picker">
-          <button type="button" class="day-picker-trigger" id="periodDaysTrigger" aria-haspopup="true" aria-expanded="false">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M8 3v3M16 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span id="periodDaysCount">Sin días seleccionados</span>
-          </button>
-          <div class="day-picker-popover" id="periodDaysPopover" hidden>
-            <div class="day-calendar" id="periodCalendar" aria-live="polite"></div>
-            <div class="period-days-quick">
-              <button type="button" id="periodDaysClearBtn">Limpiar selección</button>
-              <button type="button" class="primary" id="periodDaysSaveBtn">Guardar selección</button>
-            </div>
-            <p class="field-hint">Toca un día para agregarlo o quitarlo. Arrastra para marcar o quitar varios días seguidos.</p>
+    <dialog class="new-project-dialog" id="editProjectDialog" aria-labelledby="editProjectDialogTitle">
+      <div class="new-project-shell">
+        <div class="new-project-header">
+          <div>
+            <span>Proyecto activo</span>
+            <h3 id="editProjectDialogTitle">Editar proyecto</h3>
           </div>
+          <button class="new-project-close" id="closeEditProjectDialog" type="button" aria-label="Cerrar">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="new-project-body">
+          <div class="field">
+            <label for="projectNameInput">Nombre del proyecto</label>
+            <input id="projectNameInput" type="text" placeholder="Ej. QUERETARO - JULIO" maxlength="80">
+          </div>
+          <div class="field">
+            <label for="budgetInput">Monto Total Depositado</label>
+            <input id="budgetInput" type="number" min="0" step="0.01" placeholder="Ej. 15000.00" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label>Límites diarios</label>
+            <div class="daily-limit-fields">
+              <label><span>Comida</span><input id="foodLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
+              <label><span>Uber</span><input id="transportLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
+            </div>
+            <p class="field-hint">Marca excedentes por día para comida y Uber.</p>
+          </div>
+          <div class="field project-days-field">
+            <label>Días del periodo</label>
+            <div class="day-picker">
+              <button type="button" class="day-picker-trigger" id="periodDaysTrigger" aria-haspopup="true" aria-expanded="false">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M8 3v3M16 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span id="periodDaysCount">Sin días seleccionados</span>
+              </button>
+              <div class="day-picker-popover" id="periodDaysPopover" hidden>
+                <div class="day-calendar" id="periodCalendar" aria-live="polite"></div>
+                <div class="period-days-quick">
+                  <button type="button" id="periodDaysClearBtn">Limpiar selección</button>
+                  <button type="button" class="primary" id="periodDaysSaveBtn">Guardar selección</button>
+                </div>
+                <p class="field-hint">Toca un día para agregarlo o quitarlo. Arrastra para marcar o quitar varios días seguidos.</p>
+              </div>
+            </div>
+          </div>
+          <p class="project-hint" id="projectHint"></p>
+          <div class="new-project-actions">
+            <button class="button danger" id="deleteProjectBtn" type="button" data-ripple-light="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Eliminar
+            </button>
+            <button class="button secondary" id="cancelEditProjectDialog" type="button">Cancelar</button>
+            <button class="button" id="saveProjectBtn" type="button" data-ripple-light="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+              Guardar cambios
+            </button>
+          </div>
+          <p class="message" id="projectDialogMessage" role="status"></p>
         </div>
       </div>
-      <button class="button" id="saveProjectBtn" type="button" data-ripple-light="true">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-        </svg>
-        Guardar
-      </button>
-      <button class="button danger" id="deleteProjectBtn" type="button" data-ripple-light="true">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        Eliminar proyecto
-      </button>
-      <p class="project-hint" id="projectHint">Selecciona un proyecto para cargar su presupuesto, periodo e historial.</p>
-    </section>
+    </dialog>
 
     <dialog class="new-project-dialog" id="newProjectDialog" aria-labelledby="newProjectDialogTitle">
       <div class="new-project-shell">
@@ -1991,37 +2113,6 @@
         </div>
       </div>
     </dialog>
-
-    <div class="budget-limits-row">
-    <section class="budget-panel" aria-labelledby="budgetTitle">
-      <div class="field">
-        <label id="budgetTitle" for="budgetInput">Monto Total Depositado</label>
-        <input id="budgetInput" type="number" min="0" step="0.01" placeholder="Ej. 15000.00" inputmode="decimal">
-      </div>
-      <button class="button" id="saveBudgetBtn" type="button" data-ripple-light="true">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-          <path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-        </svg>
-        Guardar presupuesto
-      </button>
-    </section>
-
-    <section class="daily-limits-panel" aria-labelledby="dailyLimitsTitle">
-      <div>
-        <h3 id="dailyLimitsTitle">L&iacute;mites diarios</h3>
-        <p>Marca excedentes por d&iacute;a para comida y Uber.</p>
-      </div>
-      <div class="daily-limit-fields">
-        <label><span>Comida</span><input id="foodLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
-        <label><span>Uber</span><input id="transportLimitInput" type="number" min="0" step="0.01" inputmode="decimal" value="350"></label>
-        <button class="button" id="saveLimitsBtn" type="button" data-ripple-light="true">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z" stroke="currentColor" stroke-width="2"/><path d="M17 21v-8H7v8M7 3v5h8" stroke="currentColor" stroke-width="2"/></svg>
-          Guardar l&iacute;mites
-        </button>
-      </div>
-    </section>
-    </div>
 
     <section class="workspace">
       <aside class="form-panel transition-all duration-300" aria-labelledby="expenseFormTitle">
@@ -2402,7 +2493,9 @@
       projectPickerTrigger: document.querySelector("#projectPickerTrigger"),
       projectPickerValue: document.querySelector("#projectPickerValue"),
       projectPickerPopover: document.querySelector("#projectPickerPopover"),
-      activeProjectTitle: document.querySelector("#activeProjectTitle"),
+      projectSwitchMeta: document.querySelector("#projectSwitchMeta"),
+      periodSummaryChips: document.querySelector("#periodSummaryChips"),
+      periodSummaryCount: document.querySelector("#periodSummaryCount"),
       projectNameInput: document.querySelector("#projectNameInput"),
       periodCalendar: document.querySelector("#periodCalendar"),
       periodDaysCount: document.querySelector("#periodDaysCount"),
@@ -2412,10 +2505,15 @@
       periodDaysPopover: document.querySelector("#periodDaysPopover"),
       saveProjectBtn: document.querySelector("#saveProjectBtn"),
       createProjectBtn: document.querySelector("#createProjectBtn"),
+      editProjectBtn: document.querySelector("#editProjectBtn"),
+      fabStack: document.querySelector("#fabStack"),
+      editProjectDialog: document.querySelector("#editProjectDialog"),
+      closeEditProjectDialog: document.querySelector("#closeEditProjectDialog"),
+      cancelEditProjectDialog: document.querySelector("#cancelEditProjectDialog"),
+      projectDialogMessage: document.querySelector("#projectDialogMessage"),
       deleteProjectBtn: document.querySelector("#deleteProjectBtn"),
       projectHint: document.querySelector("#projectHint"),
       budgetInput: document.querySelector("#budgetInput"),
-      saveBudgetBtn: document.querySelector("#saveBudgetBtn"),
       budgetValue: document.querySelector("#budgetValue"),
       spentValue: document.querySelector("#spentValue"),
       balanceValue: document.querySelector("#balanceValue"),
@@ -2464,7 +2562,6 @@
       historyLoader: document.querySelector("#historyLoader"),
       foodLimitInput: document.querySelector("#foodLimitInput"),
       transportLimitInput: document.querySelector("#transportLimitInput"),
-      saveLimitsBtn: document.querySelector("#saveLimitsBtn"),
       limitAlerts: document.querySelector("#limitAlerts"),
       downloadReceiptsBtn: document.querySelector("#downloadReceiptsBtn"),
       downloadInvoicesPdfBtn: document.querySelector("#downloadInvoicesPdfBtn"),
@@ -2537,8 +2634,10 @@
     function applyTheme(theme) {
       const isDark = theme === "dark";
       document.documentElement.dataset.theme = theme;
+      const themeLabel = isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro";
       elements.themeToggleText.textContent = isDark ? "Modo claro" : "Modo oscuro";
-      elements.themeToggle.setAttribute("aria-label", isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+      elements.themeToggle.setAttribute("aria-label", themeLabel);
+      elements.themeToggle.title = themeLabel;
       elements.themeToggle.setAttribute("aria-pressed", String(isDark));
       localStorage.setItem("viaticos-theme", theme);
     }
@@ -2588,15 +2687,16 @@
         connecting: "Conectando...",
         pending: "Configuración pendiente"
       };
-      elements.firebaseStatusText.textContent = statusTexts[status] || statusTexts.pending;
+      const statusLabel = statusTexts[status] || statusTexts.pending;
+      elements.firebaseStatusText.textContent = statusLabel;
+      elements.firebaseStatus.title = statusLabel;
       elements.configNotice.classList.toggle("show", status === "pending");
       const disableActions = !isReady;
-      elements.saveBudgetBtn.disabled = disableActions;
       elements.saveExpenseBtn.disabled = disableActions;
       elements.saveProjectBtn.disabled = disableActions;
       elements.createProjectBtn.disabled = disableActions;
+      elements.editProjectBtn.disabled = disableActions;
       elements.deleteProjectBtn.disabled = disableActions;
-      elements.saveLimitsBtn.disabled = disableActions;
       elements.downloadReceiptsBtn.disabled = disableActions;
       elements.downloadInvoicesPdfBtn.disabled = disableActions;
       elements.uploadSignedSheetBtn.disabled = disableActions;
@@ -2679,12 +2779,37 @@
        (para los viajes de 1-3 dias sueltos). periodStart/periodEnd se siguen
        derivando (primer/ultimo dia elegido) para no tocar el resto del
        codigo que ya depende de esos dos campos. */
+    function formatShortMonth(date) {
+      return new Intl.DateTimeFormat("es-MX", { month: "short" }).format(date).replace(".", "");
+    }
+
+    // El boton del periodo lista los dias uno por uno en vez de mostrar solo
+    // el rango: "31 ago 2026 – 04 sep 2026" daba a entender que el periodo es
+    // continuo, cuando pueden ser dias sueltos. Se agrupan por mes para no
+    // repetir el mes en cada dia.
     function formatPeriodDaysSummary(days) {
       if (!days.length) return "Sin días seleccionados";
-      if (days.length === 1) return `1 día · ${formatDate(days[0]).split(" ")[0]} ${formatDate(days[0]).replace(/^\S+\s/, "")}`;
-      const first = formatDate(days[0]).replace(/^\S+\s/, "");
-      const last = formatDate(days[days.length - 1]).replace(/^\S+\s/, "");
-      return `${days.length} días · ${first} – ${last}`;
+
+      const groups = [];
+      days.forEach((day) => {
+        const monthKey = day.slice(0, 7);
+        const lastGroup = groups.at(-1);
+        if (lastGroup && lastGroup.monthKey === monthKey) lastGroup.days.push(day);
+        else groups.push({ monthKey, days: [day] });
+      });
+
+      const sameYear = groups.every((group) => group.monthKey.slice(0, 4) === groups[0].monthKey.slice(0, 4));
+      const labels = groups.map((group, index) => {
+        const [year, month] = group.monthKey.split("-").map(Number);
+        const numbers = group.days.map((day) => String(Number(day.slice(8, 10))));
+        const list = numbers.length === 1
+          ? numbers[0]
+          : `${numbers.slice(0, -1).join(", ")} y ${numbers.at(-1)}`;
+        const showYear = !sameYear || index === groups.length - 1;
+        return `${list} ${formatShortMonth(new Date(year, month - 1, 1))}${showYear ? ` ${year}` : ""}`;
+      });
+
+      return `${days.length} ${days.length === 1 ? "día" : "días"} · ${labels.join(", ")}`;
     }
 
     function createDayCalendar(container) {
@@ -2872,11 +2997,19 @@
 
       return {
         setSelection(days) {
-          view.selected = new Set(normalizePeriodDays(days));
-          const first = [...view.selected].sort()[0];
-          const anchor = first ? new Date(`${first}T00:00:00`) : new Date();
-          view.year = anchor.getFullYear();
-          view.month = anchor.getMonth();
+          const next = normalizePeriodDays(days);
+          const unchanged = next.join("|") === [...view.selected].sort().join("|");
+          view.selected = new Set(next);
+          // Solo se recoloca la vista cuando la seleccion cambia de verdad:
+          // antes cada repintado del proyecto devolvia el calendario al mes
+          // del primer dia elegido, y si el usuario estaba viendo otro mes
+          // parecia que sus dias se habian perdido.
+          if (!unchanged) {
+            const first = next[0];
+            const anchor = first ? new Date(`${first}T00:00:00`) : new Date();
+            view.year = anchor.getFullYear();
+            view.month = anchor.getMonth();
+          }
           render();
         },
         getSelection() {
@@ -3016,13 +3149,13 @@
       state.expenses = state.allExpenses.filter(expenseBelongsToActiveProject);
     }
 
+    // Solo refresca el estado en memoria; los inputs de proyecto viven en el
+    // dialogo y se siembran al abrirlo (openEditProjectDialog), para que un
+    // repintado de Firebase no pise lo que se este editando.
     function syncActiveProjectBudget() {
       const activeProject = getActiveProject();
       state.budget = parseMoney(activeProject.budget);
       state.dailyLimits = normalizeDailyLimits(activeProject.dailyLimits);
-      elements.budgetInput.value = state.budget || "";
-      elements.foodLimitInput.value = state.dailyLimits.food;
-      elements.transportLimitInput.value = state.dailyLimits.transport;
     }
 
     function setActiveProject(projectId, shouldPersist = false) {
@@ -3040,6 +3173,42 @@
       renderExpenses();
       renderSummary();
       resetExpenseForm();
+    }
+
+    // Tope de chips para que un periodo larguisimo no estire el topbar; el
+    // resto se resume en un "+N".
+    const MAX_PERIOD_CHIPS = 7;
+
+    function formatPeriodDayChip(value, includeYear) {
+      const date = new Date(`${value}T00:00:00`);
+      const options = { day: "numeric", month: "short" };
+      if (includeYear) options.year = "numeric";
+      return new Intl.DateTimeFormat("es-MX", options).format(date).replace(".", "");
+    }
+
+    function renderPeriodSummary(project) {
+      const days = resolveProjectPeriodDays(project);
+      // Si el periodo cruza de año cada chip necesita el suyo.
+      const sameYear = days.every((day) => day.slice(0, 4) === days[0].slice(0, 4));
+      const shown = days.slice(0, MAX_PERIOD_CHIPS);
+
+      elements.periodSummaryChips.innerHTML = "";
+      shown.forEach((day) => {
+        const chip = document.createElement("span");
+        chip.className = "period-chip";
+        chip.textContent = formatPeriodDayChip(day, !sameYear);
+        elements.periodSummaryChips.appendChild(chip);
+      });
+      if (days.length > shown.length) {
+        const rest = document.createElement("span");
+        rest.className = "period-chip period-chip--more";
+        rest.textContent = `+${days.length - shown.length}`;
+        elements.periodSummaryChips.appendChild(rest);
+      }
+
+      elements.periodSummaryCount.textContent = days.length
+        ? `${days.length} ${days.length === 1 ? "día" : "días"}`
+        : "Sin días seleccionados";
     }
 
     function renderProjectControls() {
@@ -3086,14 +3255,15 @@
       const activeBudget = parseMoney(activeProject.budget);
       const activeName = (activeProject.name || "Proyecto sin nombre").toUpperCase();
       const activeIsComplete = Boolean(activeProject.signedSheet?.dataUrl);
+      // El SVG es fijo y el nombre va como texto: asi el nombre del proyecto
+      // nunca se interpreta como HTML.
       elements.projectPickerValue.innerHTML = `
-        ${activeIsComplete ? `<svg class="project-picker-option-check" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4.5 12.75 6 6 9-13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}
-        <span class="project-picker-option-name">${activeName}</span>
-        ${activeBudget > 0 ? `<span class="project-picker-option-budget">${formatter.format(activeBudget)}</span>` : ""}
+        <span class="project-switch-name">${activeIsComplete ? `<svg class="project-picker-option-check" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m4.5 12.75 6 6 9-13.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ""}</span>
       `;
+      elements.projectPickerValue.firstElementChild.append(activeName);
+      elements.projectSwitchMeta.textContent = activeBudget > 0 ? formatter.format(activeBudget) : "";
+      renderPeriodSummary(activeProject);
 
-      elements.activeProjectTitle.textContent = (activeProject.name || "Proyecto sin nombre").toUpperCase();
-      elements.projectNameInput.value = (activeProject.name || "").toUpperCase();
       periodCalendar.setSelection(resolveProjectPeriodDays(activeProject));
       syncExpenseDateConstraints();
       elements.saveProjectBtn.disabled = !state.isFirebaseReady;
@@ -4084,8 +4254,19 @@ pause
           <path d="M14 2H6a2 2 0 0 0-2 2v16h16V8l-6-6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
           <path d="M14 2v6h6M8 13l4 5M12 13l-4 5M15 13h2M15 17h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span>Reporte de vi&aacute;ticos</span>
       `;
+    }
+
+    // El boton de reporte es solo el icono: mientras trabaja muestra un
+    // spinner y el avance ("Leyendo facturas 3/8") pasa al tooltip y al
+    // aria-label, porque ya no hay texto visible donde ponerlo.
+    function setExcelButtonState(progressText = "") {
+      elements.exportExcelBtn.innerHTML = progressText
+        ? '<span class="spinner" aria-hidden="true"></span>'
+        : getExcelButtonContent();
+      const label = progressText || "Reporte de vi\u00e1ticos";
+      elements.exportExcelBtn.title = label;
+      elements.exportExcelBtn.setAttribute("aria-label", label);
     }
 
     let deliveryDateResolver = null;
@@ -4142,7 +4323,7 @@ pause
       }
 
       elements.exportExcelBtn.disabled = true;
-      elements.exportExcelBtn.textContent = "Generando Excel...";
+      setExcelButtonState("Generando Excel...");
       clearMessage();
       try {
         const activeProject = getActiveProject();
@@ -4151,7 +4332,7 @@ pause
         let unreadableInvoices = 0;
         for (let index = 0; index < expensesWithInvoices.length; index += 1) {
           const expense = expensesWithInvoices[index];
-          elements.exportExcelBtn.textContent = `Leyendo facturas ${index + 1}/${expensesWithInvoices.length}`;
+          setExcelButtonState(`Leyendo facturas ${index + 1}/${expensesWithInvoices.length}`);
           try {
             invoiceFieldsById.set(expense.id, await extractInvoiceFields(getInvoiceData(expense), expense, activeProject.name || "", false));
           } catch (error) {
@@ -4188,7 +4369,7 @@ pause
           };
         };
 
-        elements.exportExcelBtn.textContent = "Generando Excel...";
+        setExcelButtonState("Generando Excel...");
         const templateUrl = new URL("Comprobacion%20-%20Viaticos.xlsx", window.location.href);
         const response = await fetch(templateUrl);
         if (!response.ok) throw new Error("excel-template-not-found");
@@ -4334,7 +4515,7 @@ pause
         setMessage("error", "No se pudo generar el Excel. Verifica que la plantilla este publicada junto a la pagina.");
       } finally {
         elements.exportExcelBtn.disabled = false;
-        elements.exportExcelBtn.innerHTML = getExcelButtonContent();
+        setExcelButtonState();
       }
     }
 
@@ -4759,14 +4940,30 @@ pause
       }
     }
 
+    function renderMessage(element, type, text) {
+      element.className = `message show ${type}`;
+      element.textContent = text;
+    }
+
+    function clearMessageElement(element) {
+      element.className = "message";
+      element.textContent = "";
+    }
+
     function setMessage(type, text) {
-      elements.formMessage.className = `message show ${type}`;
-      elements.formMessage.textContent = text;
+      renderMessage(elements.formMessage, type, text);
     }
 
     function clearMessage() {
-      elements.formMessage.className = "message";
-      elements.formMessage.textContent = "";
+      clearMessageElement(elements.formMessage);
+    }
+
+    function setDialogMessage(type, text) {
+      renderMessage(elements.projectDialogMessage, type, text);
+    }
+
+    function clearDialogMessage() {
+      clearMessageElement(elements.projectDialogMessage);
     }
 
     function getFirebaseErrorMessage(error) {
@@ -4794,7 +4991,6 @@ pause
 
     function setBusy(isBusy) {
       elements.saveExpenseBtn.disabled = isBusy || !state.isFirebaseReady;
-      elements.saveBudgetBtn.disabled = isBusy || !state.isFirebaseReady;
       elements.saveExpenseBtn.innerHTML = isBusy
         ? '<span class="spinner" aria-hidden="true"></span> Guardando'
         : getSubmitButtonContent();
@@ -5367,40 +5563,6 @@ pause
       cell.appendChild(wrapper);
     }
 
-    async function saveBudget() {
-      if (!state.isFirebaseReady) return;
-
-      const totalDeposit = parseMoney(elements.budgetInput.value);
-      if (totalDeposit < 0) {
-        setMessage("error", "El presupuesto no puede ser negativo.");
-        return;
-      }
-
-      elements.saveBudgetBtn.disabled = true;
-      try {
-        if (state.activeProjectId === LEGACY_PROJECT_ID) {
-          await update(dbRef(state.db, BUDGET_PATH), {
-            totalDeposit,
-            selectedProjectId: state.activeProjectId,
-            dailyLimits: getDailyLimitsFromInputs(),
-            updatedAt: Date.now()
-          });
-        } else {
-          await update(dbRef(state.db, `${PROJECTS_PATH}/${state.activeProjectId}`), {
-            budget: totalDeposit,
-            dailyLimits: getDailyLimitsFromInputs(),
-            updatedAt: Date.now()
-          });
-        }
-        clearMessage();
-      } catch (error) {
-        console.error(error);
-        setMessage("error", "No se pudo guardar el presupuesto. Revisa las reglas de Realtime Database.");
-      } finally {
-        elements.saveBudgetBtn.disabled = false;
-      }
-    }
-
     function getDailyLimitsFromInputs() {
       return normalizeDailyLimits({
         food: elements.foodLimitInput.value,
@@ -5429,74 +5591,72 @@ pause
       elements.projectNameInput.focus();
     }
 
-    async function saveDailyLimits() {
+    // El dialogo siembra sus campos con el proyecto activo cada vez que se
+    // abre, en vez de mantenerlos sincronizados con la pagina: asi un
+    // repintado de Firebase no pisa lo que el usuario esta escribiendo.
+    function openEditProjectDialog() {
       if (!state.isFirebaseReady) return;
 
-      const dailyLimits = getDailyLimitsFromInputs();
-      elements.saveLimitsBtn.disabled = true;
-      try {
-        if (state.activeProjectId === LEGACY_PROJECT_ID) {
-          await update(dbRef(state.db, BUDGET_PATH), {
-            dailyLimits,
-            updatedAt: Date.now()
-          });
-        } else {
-          await update(dbRef(state.db, `${PROJECTS_PATH}/${state.activeProjectId}`), {
-            dailyLimits,
-            updatedAt: Date.now()
-          });
-        }
-        state.dailyLimits = dailyLimits;
-        renderExpenses();
-        setMessage("success", "L\u00edmites diarios guardados correctamente.");
-      } catch (error) {
-        console.error(error);
-        setMessage("error", "No se pudieron guardar los l\u00edmites diarios. Revisa permisos de Realtime Database.");
-      } finally {
-        elements.saveLimitsBtn.disabled = false;
-      }
+      const project = getActiveProject();
+      const limits = normalizeDailyLimits(project.dailyLimits);
+      elements.projectNameInput.value = (project.name || "").toUpperCase();
+      elements.budgetInput.value = parseMoney(project.budget) || "";
+      elements.foodLimitInput.value = limits.food;
+      elements.transportLimitInput.value = limits.transport;
+      periodCalendar.setSelection(resolveProjectPeriodDays(project));
+
+      elements.saveProjectBtn.disabled = false;
+      elements.deleteProjectBtn.disabled = project.isLegacy;
+      elements.deleteProjectBtn.title = project.isLegacy
+        ? "El proyecto general conserva los gastos originales y no se puede eliminar."
+        : `Eliminar ${project.name || "proyecto"}`;
+      elements.periodDaysPopover.hidden = true;
+      elements.periodDaysTrigger.setAttribute("aria-expanded", "false");
+      clearDialogMessage();
+
+      if (typeof elements.editProjectDialog.showModal === "function") elements.editProjectDialog.showModal();
     }
 
-    async function saveProjectDetails() {
+    function closeEditProjectDialog() {
+      if (typeof elements.editProjectDialog.close === "function") elements.editProjectDialog.close();
+    }
+
+    // Guarda de una sola vez todo lo editable del proyecto (nombre, monto,
+    // limites y dias del periodo): antes eran tres botones con tres updates
+    // separados sobre la misma rama.
+    async function saveProjectSettings() {
       if (!state.isFirebaseReady) return;
 
       const name = elements.projectNameInput.value.trim().toUpperCase();
       if (!name) {
-        setMessage("error", "Escribe el nombre del proyecto.");
+        setDialogMessage("error", "Escribe el nombre del proyecto.");
         return;
       }
 
       const periodDays = periodCalendar.getSelection();
-      const periodStart = periodDays[0] || "";
-      const periodEnd = periodDays[periodDays.length - 1] || "";
+      const editableFields = {
+        periodStart: periodDays[0] || "",
+        periodEnd: periodDays[periodDays.length - 1] || "",
+        periodDays,
+        dailyLimits: getDailyLimitsFromInputs(),
+        updatedAt: Date.now()
+      };
+      // El proyecto general guarda su nombre y su monto con otros nombres de campo.
+      const projectFields = state.activeProjectId === LEGACY_PROJECT_ID
+        ? { ...editableFields, projectName: name, totalDeposit: parseMoney(elements.budgetInput.value) }
+        : { ...editableFields, name, budget: parseMoney(elements.budgetInput.value) };
+      const targetPath = state.activeProjectId === LEGACY_PROJECT_ID
+        ? BUDGET_PATH
+        : `${PROJECTS_PATH}/${state.activeProjectId}`;
 
       elements.saveProjectBtn.disabled = true;
       try {
-        if (state.activeProjectId === LEGACY_PROJECT_ID) {
-          await update(dbRef(state.db, BUDGET_PATH), {
-            projectName: name,
-            periodStart,
-            periodEnd,
-            periodDays,
-            totalDeposit: parseMoney(elements.budgetInput.value),
-            dailyLimits: getDailyLimitsFromInputs(),
-            updatedAt: Date.now()
-          });
-        } else {
-          await update(dbRef(state.db, `${PROJECTS_PATH}/${state.activeProjectId}`), {
-            name,
-            periodStart,
-            periodEnd,
-            periodDays,
-            budget: parseMoney(elements.budgetInput.value),
-            dailyLimits: getDailyLimitsFromInputs(),
-            updatedAt: Date.now()
-          });
-        }
-        setMessage("success", "Proyecto actualizado correctamente.");
+        await update(dbRef(state.db, targetPath), projectFields);
+        syncActiveProjectBudget();
+        setDialogMessage("success", "Proyecto actualizado correctamente.");
       } catch (error) {
         console.error(error);
-        setMessage("error", "No se pudo guardar el proyecto. Revisa permisos de Realtime Database.");
+        setDialogMessage("error", "No se pudo guardar el proyecto. Revisa permisos de Realtime Database.");
       } finally {
         elements.saveProjectBtn.disabled = false;
       }
@@ -6503,7 +6663,6 @@ pause
       }
     }
 
-    elements.saveBudgetBtn.addEventListener("click", saveBudget);
     elements.downloadReceiptsBtn.addEventListener("click", downloadAllReceipts);
     elements.downloadInvoicesPdfBtn.addEventListener("click", downloadOrderedInvoicesPdf);
     elements.historyOrderOptions.forEach((button) => {
@@ -6527,15 +6686,21 @@ pause
     });
     elements.importBackupBtn.addEventListener("click", () => elements.backupFileInput.click());
     elements.backupFileInput.addEventListener("change", () => importBackup(elements.backupFileInput.files[0]));
-    elements.saveLimitsBtn.addEventListener("click", saveDailyLimits);
-    elements.saveProjectBtn.addEventListener("click", saveProjectDetails);
+    elements.saveProjectBtn.addEventListener("click", saveProjectSettings);
     elements.createProjectBtn.addEventListener("click", openNewProjectDialog);
+    elements.editProjectBtn.addEventListener("click", openEditProjectDialog);
     elements.confirmNewProjectBtn.addEventListener("click", createProject);
     elements.cancelNewProjectBtn.addEventListener("click", closeNewProjectDialog);
     elements.closeNewProjectDialog.addEventListener("click", closeNewProjectDialog);
     elements.newProjectDialog.addEventListener("cancel", (event) => {
       event.preventDefault();
       closeNewProjectDialog();
+    });
+    elements.closeEditProjectDialog.addEventListener("click", closeEditProjectDialog);
+    elements.cancelEditProjectDialog.addEventListener("click", closeEditProjectDialog);
+    elements.editProjectDialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeEditProjectDialog();
     });
     elements.deleteProjectBtn.addEventListener("click", deleteActiveProject);
     const projectPickerPopoverCtrl = wireDayPickerPopover(elements.projectPickerTrigger, elements.projectPickerPopover);
@@ -6632,14 +6797,14 @@ pause
       new ResizeObserver(syncTopbarStackOffset).observe(document.querySelector(".topbar"));
     }
 
-    /* El boton flotante de "Nuevo proyecto" se esconde mientras se hace
-       scroll hacia abajo (para no quedar encima de los botones Guardar de
-       cada tarjeta) y se queda escondido hasta que se sube de nuevo o se
-       vuelve al inicio de la pagina -- a proposito NO reaparece solo tras
-       una pausa, porque justo al pausar es cuando el usuario suele querer
-       tocar el boton que estaba tapando. */
+    /* Los botones flotantes de proyecto (crear y editar) se esconden mientras
+       se hace scroll hacia abajo (para no quedar encima de los botones
+       Guardar de cada tarjeta) y se quedan escondidos hasta que se sube de
+       nuevo o se vuelve al inicio de la pagina -- a proposito NO reaparecen
+       solos tras una pausa, porque justo al pausar es cuando el usuario suele
+       querer tocar el boton que estaban tapando. */
     (() => {
-      const fab = document.getElementById("createProjectBtn");
+      const fab = elements.fabStack;
       if (!fab) return;
       let lastScrollY = window.scrollY;
       window.addEventListener("scroll", () => {
