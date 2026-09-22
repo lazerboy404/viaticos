@@ -6824,6 +6824,9 @@ pause
 
     initFirebase();
   </script>
-  <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/ripple.js"></script>
+  <!-- Version fija: la etiqueta @latest apunta a una 3.0.0-beta que ya no
+       incluye scripts/ripple.js, y el 404 se servia como HTML, que el
+       navegador bloqueaba (ERR_BLOCKED_BY_ORB). -->
+  <script src="https://cdn.jsdelivr.net/npm/@material-tailwind/html@2.3.2/scripts/ripple.js"></script>
 </body>
 </html>
