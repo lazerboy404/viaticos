@@ -1845,7 +1845,7 @@
               <option value="">Cargando proyectos</option>
             </select>
             <div class="project-picker">
-              <button type="button" class="project-switch-trigger" id="projectPickerTrigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="projectSwitchLabel">
+              <button type="button" class="project-switch-trigger" id="projectPickerTrigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="projectSwitchLabel projectPickerValue">
                 <span class="project-picker-value" id="projectPickerValue" aria-live="polite">
                   <span class="project-switch-name">Cargando proyectos</span>
                 </span>
@@ -5758,6 +5758,10 @@ pause
       elements.deleteProjectBtn.disabled = true;
       try {
         await update(dbRef(state.db), updates);
+        // El dialogo se abrio sobre un proyecto concreto: si se queda abierto
+        // tras borrarlo, los campos siguen con los datos del proyecto
+        // eliminado mientras el calendario ya salto al proyecto siguiente.
+        closeEditProjectDialog();
         state.projects = state.projects.filter((item) => item.id !== project.id);
         state.allExpenses = state.allExpenses.filter((expense) => expense.projectId !== project.id);
         state.activeProjectId = fallbackProject.id;
