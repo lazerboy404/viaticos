@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Control de Viáticos</title>
-  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://firebasestorage.googleapis.com" crossorigin>
@@ -12,42 +11,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="preload" as="style" href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block">
-  <script>
-    // Tailwind Play CDN: limitar a clases usadas para reducir trabajo del JIT en el cliente.
-    window.tailwind = window.tailwind || {};
-  </script>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
-  <script>
-    tailwind.config = {
-      corePlugins: { preflight: false },
-      theme: {
-        extend: {
-          colors: {
-            navy: '#1e293b',
-            teal: '#00897b',
-            cyan: '#00bcd4',
-            glass: '#ffffff',
-            'glass-strong': '#fafafa',
-            ink: '#1a2027',
-            muted: '#64748b',
-            primary: '#0f6cbd',
-            'primary-light': '#42a5f5',
-            surface: '#ffffff',
-            background: '#f1f5f9'
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'ui-sans-serif', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif']
-          },
-          boxShadow: {
-            'material-1': '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
-            'material-2': '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
-            'material-3': '0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23)',
-            'material-4': '0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22)'
-          }
-        }
-      }
-    }
-  </script>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='money' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%236ee7a0'/%3E%3Cstop offset='1' stop-color='%2316a34a'/%3E%3C/linearGradient%3E%3Cfilter id='shadow' x='-30%25' y='-30%25' width='160%25' height='170%25'%3E%3CfeDropShadow dx='0' dy='3' stdDeviation='2' flood-color='%23000000' flood-opacity='.5'/%3E%3C/filter%3E%3C/defs%3E%3Crect x='1' y='1' width='62' height='62' rx='15' fill='%230b0f17' stroke='%2323344d' stroke-width='2'/%3E%3Cpath d='M24 24C17 16 10 13 4 15c5 3 7 7 7 11-4-2-7-2-10 0 5 3 9 8 12 14l11-5Z' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M40 24c7-8 14-11 20-9-5 3-7 7-7 11 4-2 7-2 10 0-5 3-9 8-12 14l-11-5Z' fill='%23ffffff' stroke='%23cbd5e1' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cg filter='url(%23shadow)' transform='rotate(-8 32 34)'%3E%3Crect x='14' y='22' width='36' height='25' rx='4' fill='url(%23money)' stroke='%230b7a38' stroke-width='2'/%3E%3Ccircle cx='32' cy='34.5' r='7' fill='none' stroke='%23fef08a' stroke-width='2'/%3E%3Cpath d='M32 29v11M35 31c-1-1-5-1-5 1s5 1 5 3-4 2-5 1' fill='none' stroke='%23fef08a' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M18 27h4M42 42h4' stroke='%23bbf7d0' stroke-width='2' stroke-linecap='round'/%3E%3C/g%3E%3Cpath d='m28 17 2-3 2 3 3-2-1 4' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/icon?family=Material+Icons&display=block" rel="stylesheet"></noscript>
@@ -694,6 +657,26 @@
 
     input::placeholder { color: var(--ink-mute); opacity: 1; }
 
+    /* Chrome mete padding interno en los campos de fecha/hora: con el reset
+       del forms-plugin de Tailwind eso desaparecia y el campo quedaba a la
+       altura exacta de los demas. Sin el CDN hay que hacerlo a mano, si no
+       el campo de fecha queda 2px mas alto que "Monto" y "Concepto". */
+    ::-webkit-datetime-edit-fields-wrapper { padding: 0; }
+    ::-webkit-date-and-time-value { min-height: 1.5em; text-align: inherit; }
+    ::-webkit-datetime-edit { display: inline-flex; }
+    ::-webkit-datetime-edit,
+    ::-webkit-datetime-edit-year-field,
+    ::-webkit-datetime-edit-month-field,
+    ::-webkit-datetime-edit-day-field,
+    ::-webkit-datetime-edit-hour-field,
+    ::-webkit-datetime-edit-minute-field,
+    ::-webkit-datetime-edit-second-field,
+    ::-webkit-datetime-edit-millisecond-field,
+    ::-webkit-datetime-edit-meridiem-field {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
     .field-hint {
       font-size: var(--text-xs);
       color: var(--ink-mute);
@@ -1178,11 +1161,21 @@
       font-weight: 600;
       color: var(--ink-soft);
     }
-    .blue-voucher-option:hover { border-color: var(--brand); }
-    /* !important: el forms-plugin de Tailwind deja este checkbox con
-       border:0 y fondo blanco fijo -- invisible sobre el fondo casi blanco
-       del tema claro. Se le regresa un borde y fondo propios del tema. */
+    /* el cyan es el hover:border-cyan-400 de Tailwind, se conserva tal cual */
+    .blue-voucher-option:hover { border-color: #22d3ee; }
+    .blue-voucher-option { transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1); }
+    /* El checkbox pierde los estilos del forms-plugin de Tailwind (ya no se
+       carga el CDN): aqui se replican -- appearance/display, el borde y fondo
+       propios del tema (si no era invisible sobre el fondo casi blanco del
+       tema claro) y la palomita del estado marcado. */
     .blue-voucher-option input {
+      appearance: none;
+      display: block;
+      /* lo que tambien daba el forms-plugin: que no se aplaste dentro de la
+         fila, que no se pueda seleccionar y que conserve color al imprimir */
+      flex: none;
+      user-select: none;
+      print-color-adjust: exact;
       width: 18px !important;
       height: 18px !important;
       border: 1px solid var(--line-strong) !important;
@@ -1192,6 +1185,11 @@
     .blue-voucher-option input:checked {
       background-color: var(--brand) !important;
       border-color: var(--brand) !important;
+      background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+      background-origin: border-box;
+      background-size: 100% 100%;
+      background-position: center;
+      background-repeat: no-repeat;
     }
 
     .file-picker {
@@ -1770,6 +1768,32 @@
     .signed-sheet-image { max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--line); }
 
     /* ============================================================
+       EFECTOS QUE ANTES VENIAN DE TAILWIND
+       El CDN de Tailwind solo se cargaba por 12 utilidades de
+       hover/transicion (y por el forms-plugin, replicado arriba).
+       Estas reglas son identicas a lo que generaba:
+       transition-all duration-300 / transition-transform duration-300
+       hover:scale-110 / hover:-translate-y-1 hover:shadow-2xl
+       ============================================================ */
+
+    .topbar,
+    .summary-card,
+    .form-panel,
+    .history-panel {
+      transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .summary-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .brand-icon {
+      transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .brand-icon:hover { transform: scale(1.1); }
+
+    /* ============================================================
        RESPONSIVE
        ============================================================ */
 
@@ -1827,10 +1851,10 @@
   </div>
   <div class="dashboard-shell">
     <main class="app" id="dashboardTop">
-      <header class="topbar transition-all duration-300" aria-label="Estado de la aplicacion">
+      <header class="topbar" aria-label="Estado de la aplicacion">
       <div class="topbar-inner">
         <div class="topbar-title">
-          <span class="brand-icon transition-transform duration-300 hover:scale-110" aria-hidden="true">
+          <span class="brand-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M4 7h16v13H4zM8 7V5h8v2M8 13h8M8 17h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -1889,7 +1913,7 @@
     </p>
 
     <section class="summary-grid" aria-label="Resumen de viáticos">
-      <article class="summary-card transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+      <article class="summary-card">
         <div class="summary-top">
           <p class="summary-label">Presupuesto Total</p>
           <span class="summary-icon" aria-hidden="true">
@@ -1913,7 +1937,7 @@
           <span id="budgetMeter">100%</span>
         </div>
       </article>
-      <article class="summary-card spent transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl">
+      <article class="summary-card spent">
         <div class="summary-top">
           <p class="summary-label">Total Gastado</p>
           <span class="summary-icon" aria-hidden="true">
@@ -1937,7 +1961,7 @@
           <span id="spentMeter">0%</span>
         </div>
       </article>
-      <article class="summary-card balance transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl" id="balanceCard">
+      <article class="summary-card balance" id="balanceCard">
         <div class="summary-top">
           <p class="summary-label">Saldo Restante</p>
           <span class="summary-icon" aria-hidden="true">
@@ -1961,7 +1985,7 @@
           <span id="balanceMeter">0%</span>
         </div>
       </article>
-      <article class="summary-card global transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl" id="globalCard">
+      <article class="summary-card global" id="globalCard">
         <div class="summary-top">
           <p class="summary-label">Total Global</p>
           <span class="summary-icon" aria-hidden="true">
@@ -1998,8 +2022,8 @@
       </article>
     </section>
 
-    <dialog class="new-project-dialog" id="editProjectDialog" aria-labelledby="editProjectDialogTitle">
-      <div class="new-project-shell">
+    <dialog id="editProjectDialog" aria-labelledby="editProjectDialogTitle">
+      <div>
         <div class="new-project-header">
           <div>
             <span>Proyecto activo</span>
@@ -2067,8 +2091,8 @@
       </div>
     </dialog>
 
-    <dialog class="new-project-dialog" id="newProjectDialog" aria-labelledby="newProjectDialogTitle">
-      <div class="new-project-shell">
+    <dialog id="newProjectDialog" aria-labelledby="newProjectDialogTitle">
+      <div>
         <div class="new-project-header">
           <div>
             <span>Nuevo registro</span>
@@ -2115,7 +2139,7 @@
     </dialog>
 
     <section class="workspace">
-      <aside class="form-panel transition-all duration-300" aria-labelledby="expenseFormTitle">
+      <aside class="form-panel" aria-labelledby="expenseFormTitle">
         <div class="panel-heading">
           <div>
             <h2 id="expenseFormTitle">Nuevo gasto</h2>
@@ -2135,7 +2159,7 @@
             </datalist>
           </div>
 
-          <div class="field expense-name-field">
+          <div class="field">
               <label for="expenseNameInput">Nombre / proveedor</label>
               <input id="expenseNameInput" type="text" placeholder="Restaurante, hotel o conductor" maxlength="90" list="providerSuggestions" autocomplete="off">
               <datalist id="providerSuggestions"></datalist>
@@ -2153,7 +2177,7 @@
 
           <div class="file-grid" id="fileGrid">
             <div class="field blue-voucher-field">
-              <label class="blue-voucher-option transition-all duration-200 hover:border-cyan-400" for="blueVoucherInput">
+              <label class="blue-voucher-option" for="blueVoucherInput">
                 <input id="blueVoucherInput" type="checkbox">
                 <span>Comprobar con vale azul</span>
               </label>
@@ -2183,11 +2207,11 @@
           </div>
 
           <div class="attachment-preview" id="attachmentPreview">
-            <section class="preview-section" id="ticketPreviewSection">
+            <section id="ticketPreviewSection">
               <p class="preview-title">Vista previa de tickets</p>
               <div class="ticket-preview-grid" id="ticketPreview"></div>
             </section>
-            <section class="preview-section" id="invoicePreviewSection">
+            <section id="invoicePreviewSection">
               <p class="preview-title">Vista previa de factura</p>
               <div id="invoicePreview"></div>
             </section>
@@ -2208,7 +2232,7 @@
       </aside>
     </section>
 
-    <section class="history-panel transition-all duration-300" aria-labelledby="historyTitle">
+    <section class="history-panel" aria-labelledby="historyTitle">
         <div class="panel-heading">
           <div>
             <h2 id="historyTitle">Historial de gastos</h2>
@@ -2255,7 +2279,7 @@
           </table>
         </div>
 
-        <section class="expense-report-panel history-secondary" aria-labelledby="expenseReportTitle">
+        <section class="history-secondary" aria-labelledby="expenseReportTitle">
           <div class="report-header">
             <div>
               <h3 id="expenseReportTitle">Resumen de gastos</h3>
@@ -2274,7 +2298,7 @@
           </div>
         </section>
 
-        <section class="project-tools-panel history-secondary" aria-labelledby="projectToolsTitle">
+        <section class="history-secondary" aria-labelledby="projectToolsTitle">
           <div class="project-tools-header">
             <div class="project-tools-headline">
               <h3 id="projectToolsTitle">Herramientas del proyecto</h3>
@@ -2282,7 +2306,7 @@
             </div>
           </div>
           <div class="project-tools-grid">
-            <article class="tools-card tools-card--signed">
+            <article class="tools-card">
               <header class="tools-card-header">
                 <span class="tools-card-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none"><path d="M9 12h6M9 16h3M7 3h10l2 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5l2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -2306,7 +2330,7 @@
               </div>
             </article>
 
-            <article class="tools-card tools-card--receipts">
+            <article class="tools-card">
               <header class="tools-card-header">
                 <span class="tools-card-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none"><path d="M17 2v8l-3-2-3 2V2H7a1 1 0 00-1 1v18a1 1 0 001 1h10a1 1 0 001-1V2h-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
@@ -2328,7 +2352,7 @@
               </div>
             </article>
 
-            <article class="tools-card tools-card--backup">
+            <article class="tools-card">
               <header class="tools-card-header">
                 <span class="tools-card-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z" stroke="currentColor" stroke-width="2"/><path d="M12 11v3M12 11l-3 2M12 11l3 2M8 7V5h8v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -2377,8 +2401,8 @@
     <div class="dialog-body" id="mediaDialogBody"></div>
   </dialog>
 
-  <dialog class="edit-expense-dialog" id="editExpenseDialog" aria-labelledby="editExpenseDialogTitle">
-    <div class="edit-dialog-shell">
+  <dialog id="editExpenseDialog" aria-labelledby="editExpenseDialogTitle">
+    <div>
       <div class="edit-dialog-header">
         <div>
           <span>Registro seleccionado</span>
@@ -2392,8 +2416,8 @@
     </div>
   </dialog>
 
-  <dialog class="date-dialog" id="dateDialog" aria-labelledby="dateDialogTitle">
-    <div class="date-dialog-shell">
+  <dialog id="dateDialog" aria-labelledby="dateDialogTitle">
+    <div>
       <div class="date-dialog-header">
         <h3 id="dateDialogTitle">Fecha de entrega del reporte</h3>
         <button class="date-dialog-close" id="closeDateDialog" type="button" aria-label="Cerrar">
@@ -2411,7 +2435,6 @@
     </div>
   </dialog>
 
-  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <script type="module">
     // 1) Pega aquí tus credenciales del proyecto Firebase.
     const firebaseConfig = {
@@ -4301,11 +4324,27 @@ pause
       if (typeof elements.dateDialog.close === "function") elements.dateDialog.close();
     }
 
-    async function exportProjectExcel() {
-      if (!window.ExcelJS) {
-        setMessage("error", "No se pudo cargar el generador de Excel. Revisa tu conexion e intenta nuevamente.");
-        return;
+    // exceljs pesa ~925KB: se descarga solo cuando se genera el reporte, no al
+    // abrir la pagina (antes era un <script> bloqueante en el <body>).
+    let excelJsPendiente = null;
+    function cargarExcelJs() {
+      if (window.ExcelJS) return Promise.resolve();
+      if (!excelJsPendiente) {
+        excelJsPendiente = new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src = "https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js";
+          script.onload = resolve;
+          script.onerror = () => {
+            excelJsPendiente = null;
+            reject(new Error("exceljs-no-cargo"));
+          };
+          document.head.appendChild(script);
+        });
       }
+      return excelJsPendiente;
+    }
+
+    async function exportProjectExcel() {
       if (!state.expenses.length) {
         setMessage("error", "Este proyecto no tiene gastos para exportar.");
         return;
@@ -4323,6 +4362,7 @@ pause
       setExcelButtonState("Generando Excel...");
       clearMessage();
       try {
+        await cargarExcelJs();
         const activeProject = getActiveProject();
         const invoiceFieldsById = new Map();
         const expensesWithInvoices = state.expenses.filter((expense) => !expense.valeAzul && getInvoiceData(expense));
@@ -4509,7 +4549,15 @@ pause
           : "Excel generado automaticamente con los datos de las facturas PDF.");
       } catch (error) {
         console.error(error);
-        setMessage("error", "No se pudo generar el Excel. Verifica que la plantilla este publicada junto a la pagina.");
+        if (error?.message === "exceljs-no-cargo") {
+          setMessage("error", "No se pudo cargar el generador de Excel. Revisa tu conexion e intenta nuevamente.");
+        } else if (window.location.protocol === "file:") {
+          setMessage("error", "Estas abriendo el archivo directamente (file://) y el navegador no deja leer la plantilla. Publica la pagina o sirvela por http.");
+        } else if (error?.message === "excel-template-not-found") {
+          setMessage("error", "No se encontro la plantilla \"Comprobacion - Viaticos.xlsx\" junto a la pagina. Debe estar publicada en la misma carpeta que el index.html.");
+        } else {
+          setMessage("error", `No se pudo generar el Excel: ${error?.message || "causa desconocida"}.`);
+        }
       } finally {
         elements.exportExcelBtn.disabled = false;
         setExcelButtonState();
