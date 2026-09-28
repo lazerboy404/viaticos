@@ -132,15 +132,19 @@
     }
 
     :root[data-theme="dark"] {
+      /* El fondo se queda obscuro; lo que sube es la superficie de los
+         contenedores: su separacion del fondo pasa de 1.12:1 a ~1.37:1 para
+         que las tarjetas resalten. --ink-mute sube tambien porque sobre una
+         superficie mas clara el texto tenue se caeria a 4.05:1. */
       --bg: #0a0f1c;
-      --surface: #131b2c;
-      --surface-2: #1a2437;
-      --surface-hover: #202b42;
+      --surface: #1e2b47;
+      --surface-2: #26334f;
+      --surface-hover: #2f3f60;
       --ink: #f1f5f9;
       --ink-soft: #cbd5e1;
-      --ink-mute: #7c8aa5;
-      --line: #263351;
-      --line-strong: #34456b;
+      --ink-mute: #8fa0bb;
+      --line: #344771;
+      --line-strong: #465a87;
 
       --brand: #60a5fa;
       --brand-dark: #3b82f6;
