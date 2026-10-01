@@ -6018,13 +6018,13 @@ pause
         ? await source.arrayBuffer()
         : await (await fetch(source)).arrayBuffer();
       const pdf = await pdfjs.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-      const pageTexts = [];
+      const pageDetails = [];
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
         const page = await pdf.getPage(pageNumber);
         const content = await page.getTextContent();
-        pageTexts.push(content.items.map((item) => item.str).join(" "));
+        pageDetails.push({ pageNumber, page, content });
       }
-      return pageTexts.join("\n").replace(/[ \t]+/g, " ");
+      return buildLineAwareTextFromDetails(pageDetails);
     }
 
     function detectInvoiceOrigin(text, projectName = "") {
@@ -6280,6 +6280,36 @@ pause
       return "";
     }
 
+    // Reconstruye lineas visuales del PDF agrupando fragmentos por
+    // coordenada Y (tolerancia de ~4.5pt) y ordenandolos por X. Sin esto,
+    // los CFDI con layout de columnas entregan todas las etiquetas primero
+    // ("Subtotal", "IVA 16%", "Total") y todos los montos despues, y los
+    // regex de etiqueta->monto capturan basura (ej. el "16" de la tasa de
+    // IVA como subtotal de un Cars Junior, o propinas fantasma de $274).
+    function clusterPdfItemsIntoLines(items) {
+      const clean = items.filter((item) => item.str && item.str.trim());
+      clean.sort((first, second) =>
+        second.transform[5] - first.transform[5] || first.transform[4] - second.transform[4]);
+      const lines = [];
+      for (const item of clean) {
+        const last = lines[lines.length - 1];
+        if (last && Math.abs(last.y - item.transform[5]) <= 4.5) {
+          last.items.push(item);
+        } else {
+          lines.push({ y: item.transform[5], items: [item] });
+        }
+      }
+      return lines.map((line) => line.items
+        .sort((first, second) => first.transform[4] - second.transform[4])
+        .map((item) => item.str.trim())
+        .join(" "));
+    }
+
+    function buildLineAwareTextFromDetails(pageDetails) {
+      return clusterPdfItemsIntoLines(pageDetails.flatMap((detail) => detail.content.items))
+        .join("\n");
+    }
+
     async function extractInvoiceFields(invoice, expense, projectName, includeEvidence = true) {
       if (!invoice?.dataUrl) return {};
       if (!pdfModulePromise) {
@@ -6289,15 +6319,13 @@ pause
       pdfjs.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
       const response = await fetch(invoice.dataUrl);
       const pdf = await pdfjs.getDocument({ data: new Uint8Array(await response.arrayBuffer()) }).promise;
-      const pageTexts = [];
       const pageDetails = [];
       for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
         const page = await pdf.getPage(pageNumber);
         const content = await page.getTextContent();
-        pageTexts.push(content.items.map((item) => item.str).join(" "));
         pageDetails.push({ pageNumber, page, content });
       }
-      const text = pageTexts.join("\n").replace(/[ \t]+/g, " ");
+      const text = buildLineAwareTextFromDetails(pageDetails);
       const folioPatterns = [
         /\bFACTURA\s*(?:N(?:O|[U\u00da]M(?:ERO)?)?\.?\s*)?[:#-]?\s*([A-Z0-9]{1,12}(?:\s*-\s*[A-Z0-9]{1,12})+)/i,
         /\bFACTURA\s*(?:N(?:O|[U\u00da]M(?:ERO)?)?\.?\s*)?[:#-]?\s*([A-Z0-9]{1,12}\s+\d{2,})\b/i,
