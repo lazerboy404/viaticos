@@ -5971,10 +5971,40 @@ pause
     }
 
     function findInvoiceTax(text) {
+      // Devuelve el IVA trasladoado real. Orden de confianza:
+      //   1) "IMPUESTO: IVA ... IMPORTE: $X" (formato CFDI estandar)
+      //   2) "$X IVA 16%" / "IVA 16% $X" (totales de ticket)
+      //   3) "IMPUESTOS TRASLADADOS ... $X" (bloque de totales)
+      // Se descartan a proposito:
+      //   - la TASA (16, 0.16, 0.160000): no es un monto
+      //   - la BASE del impuesto (es el subtotal, no el IVA)
+      //   - montos junto a "IMPUESTOS LOCALES"/"ISH"/"IEPS": son
+      //     impuestos que NO van en la columna IVA del reporte
+      const rejectAmount = (amountText) => {
+        const value = parseInvoiceMoney(amountText);
+        if (value === 16 || value === 0.16 || value === 0.160000) return true;
+        return false;
+      };
+      const nearLocalTax = (match, fullText) => {
+        // El monto capturado siempre queda al final del match.
+        const amountStart = match.index + match[0].length - match[1].length;
+        // 1) Palabra clave dentro del propio match: el patron cruzo
+        //    una mencion de impuesto local para llegar al importe.
+        const spanBefore = fullText.slice(match.index, amountStart);
+        // 2) Palabra clave justo antes del monto: la linea ES del
+        //    impuesto local ("ISH: $47.02", "IMPUESTOS LOCALES $X").
+        const justBefore = fullText.slice(Math.max(0, amountStart - 60), amountStart);
+        // NO se mira despues del monto: en hoteles el ISH se imprime
+        // justo despues del IVA y rechazarlo tiraria el IVA real.
+        return /\b(?:IMPUESTOS?\s+LOCALES?|ISH|IEPS|LOCALE?S?\s+TRASLADADOS?)\b/i.test(spanBefore + justBefore);
+      };
       const patterns = [
+        /\bI\.?\s*V\.?\s*A\.?\s*\((?:0\.16(?:0000)?|16(?:\.00)?%?)\)\s*:\s*\$?\s*([\d,]+\.\d{2})/ig,
+        /IMPUESTO\s*:\s*I\.?\s*V\.?\s*A\.?\b[^\n]{0,80}?IMPORTE\s*:\s*\$?\s*([\d,]+\.\d{2})/ig,
+        /\$\s*([\d,]+\.\d{2})\s+I\.?\s*V\.?\s*A\.?\s+16(?:\.0{1,4})?\s*%/ig,
+        /I\.?\s*V\.?\s*A\.?\s+16(?:\.0{1,4})?\s*%\s*\$\s*([\d,]+\.\d{2})/ig,
         /\$?\s*([\d,]+\.\d{2})\s+TOTAL\s+I\.?\s*V\.?\s*A\.?\s*:?/ig,
         /\bTOTAL\s+I\.?\s*V\.?\s*A\.?\s*:?\s*\$?\s*([\d,]+\.\d{2})/ig,
-        /\bI\.?\s*V\.?\s*A\.?\s*:?\s*\$?\s*([\d,]+\.\d{2})/ig,
         /\bIMPUESTO\s+0\.16(?:0000)?\s+TASA\s+\$?\s*([\d,]+\.\d{2})\s+IMPORTE\b/ig,
         /IVA.{0,90}?IMPORTE\s*[-:]?\s*\$\s*([\d,]+\.\d{2})/ig,
         /(?:IMPUESTOS\s+TRASLADADOS|IVA(?:T)?\s+0\.160000|IVA\s+16(?:\.00)?%|IVA\s+TRASLADADO\s+AL\s+16%)\s*(?:TASA\s*0\.160000\s*)?\s*(?:IMPORTE\s*:?)?\s*\$?\s*([\d,]+\.\d{2})/ig,
@@ -5984,13 +6014,23 @@ pause
       ];
       for (const pattern of patterns) {
         const matches = [...text.matchAll(pattern)];
-        if (matches.length) return parseInvoiceMoney(matches[matches.length - 1][1]);
+        const valid = matches.filter((match) => !rejectAmount(match[1]) && !nearLocalTax(match, text));
+        if (valid.length) return parseInvoiceMoney(valid[valid.length - 1][1]);
       }
       return 0;
     }
 
     function findInvoiceTotal(text) {
       const directMatches = [...text.matchAll(/\bTOTAL\s*:?[ \t]*\$?[ \t]*([\d,]+\.\d{2})(?:\s*MXN)?/ig)];
+      // Los CFDI 4.0 imprimen el gran total como "TOTAL COMPROBANTE:" o
+      // "TOTAL A PAGAR:" (con texto entre TOTAL y el monto), formatos que
+      // el patron generico de abajo no cubre y que dejaban el total en 0
+      // (de ahi subtotal+iva inventado y propinas fantasma).
+      const labeledTotals = [
+        ...text.matchAll(/\bTOTAL\s+COMPROBANTE\s*:?\s*\$?\s*([\d,]+\.\d{2})/ig),
+        ...text.matchAll(/\bTOTAL\s+A\s+PAGAR\s*:?\s*\$?\s*([\d,]+\.\d{2})/ig),
+      ];
+      if (labeledTotals.length) return parseInvoiceMoney(labeledTotals[labeledTotals.length - 1][1]);
       if (directMatches.length) return parseInvoiceMoney(directMatches[directMatches.length - 1][1]);
       // Algunas facturas ponen el monto ANTES de la palabra "Total" y sin
       // ":" despues (ej. "...M.N. $319.00 Total Moneda: MXN"), por lo que
@@ -6053,10 +6093,29 @@ pause
       if (routeOrigin) return routeOrigin;
 
       const issuePlaceMatch = normalized.match(
-        /(?:LUGAR(?:,\s*FECHA Y HORA)?\s+DE\s+(?:EXPEDICION|EMISION)|LUGAR,\s*FECHA Y HORA DE EMISION|CP,\s*FECHA Y HORA DE EXPEDICION)\s*[:#-]?\s*([^\n]{0,100})/
+        /(?:LUGAR(?:,\s*FECHA Y HORA)?\s+(?:DE\s+)?(?:EXPEDICION|EMISION)|LUGAR,\s*FECHA Y HORA DE EMISION|CP,\s*FECHA Y HORA DE EXPEDICION)\s*[:#-]?\s*([^\n]{0,100})/
       );
       const issueOrigin = classifyLocation(issuePlaceMatch?.[1]);
       if (issueOrigin) return issueOrigin;
+
+      // Formato "EXPEDIDO EN: 52000" (tickets con CP solo). El CP 52xxx
+      // es Toluca/Metepec (rango 50xxx-52xxx del EDOMEX).
+      const expedidoEnMatch = normalized.match(/\bEXPEDIDO\s+EN\s*:?\s*([^\n]{0,60})/);
+      const expedidoEnOrigin = classifyLocation(expedidoEnMatch?.[1]);
+      if (expedidoEnOrigin) return expedidoEnOrigin;
+
+      // Formato "CODIGO POSTAL DE EXPEDICION:" en su propio renglon:
+      // el CP puede quedar en la linea siguiente (Aquamatic).
+      const cpExpedMatch = normalized.match(/\bCODIGO\s+POSTAL\s+DE\s+EXPEDICION\s*:?\s*([^\n]{0,60})(?:\n([^\n]{0,30}))?/);
+      const cpExpedOrigin = classifyLocation(`${cpExpedMatch?.[1] || ""} ${cpExpedMatch?.[2] || ""}`.trim());
+      if (cpExpedOrigin) return cpExpedOrigin;
+
+      // Respaldo: el CP del EMISOR/receptor que aparezca junto a un
+      // domicilio (evita agarrar el CP del lugar de expedicion de otra
+      // seccion). Solo se usa si el proyecto no clasifica.
+      const domicilioCp = normalized.match(/\b(?:DOMICILIO[^\n]{0,30}?|LUGAR\s+EXPEDICION\s*:\s*)(\d{5})\b/);
+      const domicilioOrigin = classifyLocation(domicilioCp?.[1] || "");
+      if (domicilioOrigin) return domicilioOrigin;
 
       return classifyLocation(normalizedProject);
     }
@@ -6348,6 +6407,11 @@ pause
       ];
       const parts = getExpenseConceptParts(expense);
       const expenseTotal = parseMoney(expense.monto);
+      // Propina impresa que YA esta incluida en el total (recibos de
+      // Uber: "Monto propina $10.00" dentro de "Total $122.22"). Si se
+      // suma encima, la fila se infla; se descuenta del subtotal para
+      // que SUBTOTAL+PROPINA+IVA cuadre con lo pagado.
+      const tipIncludedInTotal = /\bMONTO\s+PROPINA\b/i.test(text);
       let subtotal = findInvoiceMoney(text, "SUBTOTAL");
       let iva = findInvoiceTax(text);
       let invoiceTotal = findInvoiceTotal(text);
@@ -6357,10 +6421,32 @@ pause
         subtotal = Math.max(invoiceTotal - iva, 0);
       }
       if (!invoiceTotal) invoiceTotal = subtotal + iva || expenseTotal;
+      // Descuento explicito del CFDI (Primera Plus): el subtotal impreso
+      // es posterior al descuento, pero el IVA se calculo sobre la base
+      // sin descuento. La fila debe cuadrar con el TOTAL pagado.
+      const discount = findInvoiceMoney(text, "DESCUENTO");
+      if (discount > 0 && invoiceTotal > 0 && subtotal > 0
+        && Math.abs(subtotal - discount + iva - invoiceTotal) <= Math.max(1, invoiceTotal * 0.02)) {
+        subtotal = Math.round((subtotal - discount) * 100) / 100;
+      }
       const taxDifference = Math.round(Math.max(invoiceTotal - subtotal, 0) * 100) / 100;
-      if (!isConvenienceStore && taxDifference > 0 && (!iva || (iva < 1 && taxDifference > 1))) iva = taxDifference;
+      // Solo con subtotal real: si no hay subtotal (recibos de Uber),
+      // inventar IVA = total dejaria el subtotal en 0 y el IVA con el
+      // importe completo del gasto.
+      if (subtotal > 0 && !isConvenienceStore && taxDifference > 0 && (!iva || (iva < 1 && taxDifference > 1))) iva = taxDifference;
       if (!subtotal) subtotal = Math.max(invoiceTotal - iva, 0);
-      const explicitTip = findInvoiceMoney(text, "PROPINA");
+      // Los impuestos locales (ISH, municipal) y el IEPS no van en la
+      // columna IVA del reporte: se absorben en el SUBTOTAL para que la
+      // fila cuadre contra el total pagado (SUBTOTAL+PROPINA+IVA=TOTAL).
+      const unexplained = Math.round((invoiceTotal - subtotal - iva) * 100) / 100;
+      if (unexplained > 0.01) subtotal = Math.round((subtotal + unexplained) * 100) / 100;
+      let explicitTip = findInvoiceMoney(text, "PROPINA");
+      if (explicitTip && tipIncludedInTotal && invoiceTotal > 0) {
+        // La propina ya viene dentro del total: se descuenta del subtotal
+        // (que la traia sumada) pero SE CONSERVA en su columna para que
+        // SUBTOTAL+PROPINA+IVA siga cuadrando con lo pagado.
+        subtotal = Math.round(Math.max(subtotal - explicitTip, 0) * 100) / 100;
+      }
       const derivedTip = invoiceTotal > 0 && expenseTotal - invoiceTotal > 0.5
         ? Math.round((expenseTotal - invoiceTotal) * 100) / 100
         : 0;
