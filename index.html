@@ -4550,7 +4550,7 @@ pause
           try {
             const signatureImage = workbook.addImage({ base64: EMPLOYEE_SIGNATURE_DATA_URL, extension: "png" });
             worksheet.addImage(signatureImage, {
-              tl: { col: 4.0, row: signatureImageRow - 1 },
+              tl: { col: 3.7, row: signatureImageRow - 1 },
               ext: { width: 118, height: 68 }
             });
             const nameCell = worksheet.getCell(signatureRow - 1, 4);
