@@ -6334,7 +6334,10 @@ pause
       };
       const beforeValue = beforeMatch?.[1]?.trim();
       const afterValue = afterMatch?.[1]?.trim();
-      if (isPlausible(beforeValue)) return beforeValue;
+      // El vecino de la izquierda del UUID suele ser el numero de serie del
+      // certificado (15+ digitos) o una fecha; el de la derecha, etiquetas.
+      // Solo aceptar candidatos con digito y tamano razonable.
+      if (isPlausible(beforeValue) && !/^\d{15,}$/.test(beforeValue.replace(/[\s\-/]/g, ""))) return beforeValue;
       if (isPlausible(afterValue)) return afterValue;
       return "";
     }
@@ -6347,6 +6350,12 @@ pause
     // IVA como subtotal de un Cars Junior, o propinas fantasma de $274).
     function clusterPdfItemsIntoLines(items) {
       const clean = items.filter((item) => item.str && item.str.trim());
+      // Normaliza guiones Unicode (U+2010/U+2011/U+2012/U+2013/U+2014) a
+      // ASCII: los CFDI de OXXO/Fogon los imprimen y sin esto los regex de
+      // folio (que esperan "-") no ven "Folio Q ‐ 51668" ni "Serie: 10TLC".
+      for (const item of clean) {
+        item.str = item.str.replace(/[\u2010\u2011\u2012\u2013\u2014]/g, "-");
+      }
       clean.sort((first, second) =>
         second.transform[5] - first.transform[5] || first.transform[4] - second.transform[4]);
       const lines = [];
@@ -6393,15 +6402,34 @@ pause
         // tickets/facturas simplificadas). Exige al menos un digito en el
         // valor capturado para no atrapar una palabra como "ELECTRONICA" si
         // "FACTURA" es parte de un encabezado en vez de ir seguido del folio.
-        /\bFACTURA\s*(?:N(?:O|[U\u00da]M(?:ERO)?)?\.?\s*)?[:#-]?\s*([A-Z]{0,4}\d[A-Z0-9-]{0,24})\b/i,
+        /\bFACTURA\s*(?:N(?:O|[U\u00da]M(?:ERO)?)?\.?\s*)?[:#-]?\s*([A-Z]{0,4}\d[A-Z0-9/-]{0,24})\b/i,
         /\b([A-Z]{2,12}\s+\d{2,})(?=\s+USO\s+CFDI\b)/i,
+        // "SERIE Y FOLIO:" con el valor en la columna vecina (layout de dos
+        // columnas): el PDF reconstruido lo deja como "SERIE Y FOLIO:\nDomicilo
+        // Receptor: ..." o "SERIE Y FOLIO: A*****". Si el valor inmediato es
+        // basura (texto sin digitos, o asteriscos de ofuscacion), seguir
+        // buscando; el folio real puede venir despues ("I- 4" en la esquina,
+        // "Folio Interno: E18057", "Folios -> 30/07/26: 35707").
         /SERIE\s*(?:Y\s*)?FOLIO\s*[:#-]?\s*([A-Z0-9]{1,12}(?:\s*-\s*[A-Z0-9]{1,12})*)/i,
+        /FOLIO\s+INTERNO\s*[:#-]?\s*([A-Z]{0,4}\d[A-Z0-9-]{0,24})/i,
+        /Folios\s*->\s*[0-9/]+\s*:\s*(\d{2,})/,
         /FOLIO\s+([A-Z]{1,5})\s*-\s*(\d{2,})/i,
         /\bFOLIO(?!\s+(?:FISCAL|SAT))\s*[:#-]\s*([A-Z0-9-]{2,})/i,
         // mismo caso que arriba pero para "FOLIO 42037" (solo espacio, sin
         // ":"/"-"/"#" de por medio) \u2014 antes quedaba sin cubrir y caia hasta
-        // el UUID de mas abajo.
+        // el UUID de mas abajo. Exige al menos un digito para no atrapar
+        // "FOLIO FISCAL" ni etiquetas sin numero.
         /\bFOLIO(?!\s+(?:FISCAL|SAT))\s+([A-Z]{0,4}\d[A-Z0-9-]{0,24})\b/i,
+        // Folio impreso en la esquina del ticket, sin etiqueta: el PDF
+        // acomoda "PC - 7454" (lavanderia) o "ES 1903" (estacionamiento
+        // Terminal Poniente) solos en la esquina superior derecha. En el
+        // texto reconstruido quedan como primera linea o pegados a la
+        // direccion del emisor ("... No. 232 ES 1903").
+        /\b([A-Z]{1,4})\s+(\d{2,6})\b(?=\s*(?:\n|$))/,
+        // Serie y folio corto tipo "I- 4" (Cocina Mexicana AJM / Potzocalli):
+        // el PDF lo imprime en la columna del receptor y el texto reconstruido
+        // lo deja entre el nombre del receptor y "TECHNOLOGIES MEXICO".
+        /\b([A-Z]{1,3})\s*-\s*(\d{1,4})\s*\n\s*TECHNOLOGIES MEXICO/,
         /(?:UUID|FOLIO\s+FISCAL)\s*[:#-]?\s*([A-F0-9-]{20,})/i,
         /\b([A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})\b/i
       ];
@@ -6467,6 +6495,10 @@ pause
         const match = text.match(pattern);
         const value = match?.[2] ? `${match[1]}-${match[2]}` : match?.[1] || "";
         const cleaned = value.replace(/\s*-\s*/g, "-").replace(/\s+/g, " ").trim();
+        // Un folio real siempre trae al menos un digito. Si el patron atrapo
+        // texto sin numeros ("Domicilo", "NO", "A") descartarlo para que la
+        // busqueda siga con el siguiente patron (el folio real viene despues).
+        if (cleaned && !/\d/.test(cleaned)) return "";
         if (index < uuidPatternStart && cleaned) {
           const compact = cleaned.replace(/[\s-]/g, "").toUpperCase();
           if (compact.length >= 6 && knownUuidCompact.startsWith(compact)) return "";
