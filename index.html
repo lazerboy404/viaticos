@@ -4550,8 +4550,8 @@ pause
           try {
             const signatureImage = workbook.addImage({ base64: EMPLOYEE_SIGNATURE_DATA_URL, extension: "png" });
             worksheet.addImage(signatureImage, {
-              tl: { col: 4.2, row: signatureImageRow - 1 },
-              ext: { width: 106, height: 61 }
+              tl: { col: 4.0, row: signatureImageRow - 1 },
+              ext: { width: 118, height: 68 }
             });
             const nameCell = worksheet.getCell(signatureRow - 1, 4);
             nameCell.value = "Einar Ulises Arenas Hernandez";
