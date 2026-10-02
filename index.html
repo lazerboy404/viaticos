@@ -4420,6 +4420,11 @@ pause
         workbook.calcProperties.forceFullCalc = true;
         workbook.calcProperties.calcMode = "auto";
         const worksheet = workbook.getWorksheet("Comprobacion") || workbook.worksheets[0];
+        worksheet.pageSetup.fitToPage = false;
+        worksheet.pageSetup.fitToWidth = 0;
+        worksheet.pageSetup.fitToHeight = 0;
+        worksheet.pageSetup.scale = 58;
+        worksheet.pageSetup.orientation = "landscape";
         const groups = {
           transport: sortExpensesByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "transport")),
           lodging: sortExpensesByDateAscending(state.expenses.filter((expense) => getExcelExpenseGroup(expense) === "lodging")),
