@@ -4547,15 +4547,13 @@ pause
           try {
             const signatureImage = workbook.addImage({ base64: EMPLOYEE_SIGNATURE_DATA_URL, extension: "png" });
             worksheet.addImage(signatureImage, {
-              tl: { col: 3.05, row: signatureImageRow - 1 },
+              tl: { col: 4.1, row: signatureImageRow - 1 },
               ext: { width: 106, height: 61 }
             });
-            const signatureLine = { style: "thin", color: { argb: "FF111827" } };
             const nameCell = worksheet.getCell(signatureRow - 1, 4);
             nameCell.value = "Einar Ulises Arenas Hernandez";
             nameCell.font = { name: "Arial", size: 9, italic: true, color: { argb: "FF374151" } };
             nameCell.alignment = { horizontal: "center", vertical: "middle" };
-            nameCell.border = { top: signatureLine, bottom: signatureLine };
           } catch (error) {
             console.warn("No se pudo estampar la firma del empleado:", error);
           }
