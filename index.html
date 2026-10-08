@@ -64,6 +64,19 @@
       --line: #e2e8f0;
       --line-strong: #cbd5e1;
 
+      /* --- Separacion por dia en el historial --- */
+      /* Todo lo de aqui se deriva con color-mix de la propia superficie,
+         no de --bg. Rellenos solidos oscuros o grises rompen la tarjeta;
+         un matiz del 4-5% se lee sin que se note el color. */
+      /* Dia alterno: 5% de marca mezclado en la superficie. Da un tinte
+         frio de ~4% de luminancia: suficiente para separar el dia, no
+         para que el bloque parezca otra tabla. */
+      --day-alt-bg: color-mix(in srgb, var(--brand) 5%, var(--surface));
+      /* El divisor no se rellena: solo filete de marca y filete inferior.
+         Un fondo aqui parte la tabla en dos Mitades. */
+      --day-divider-bg: transparent;
+      --day-divider-border: var(--line);
+
       --brand: #2563eb;
       --brand-dark: #1d4ed8;
       --brand-soft: #eff6ff;
@@ -108,6 +121,14 @@
       --ink-mute: #8fa0bb;
       --line: #344771;
       --line-strong: #465a87;
+
+      /* Equivalentes oscuros. En oscuro el dia alterno NO baja a --bg
+         (#0a0f1c): eso abria un agujero casi negro dentro de la tarjeta
+         #1e2b47. Aqui sube apenas 6% hacia el texto, y se queda dentro
+         de la misma familia de azul que la superficie. */
+      --day-alt-bg: color-mix(in srgb, var(--surface) 94%, var(--ink));
+      --day-divider-bg: transparent;
+      --day-divider-border: var(--line);
 
       --brand: #60a5fa;
       --brand-dark: #3b82f6;
@@ -1417,22 +1438,40 @@
 
     tbody tr:hover td { background: var(--surface-hover); }
 
-    /* fila divisoria con la fecha entre grupos de dia (reemplaza el
-       contorno de color por dia); una sola <td colspan> sin fondo/borde
-       de tarjeta, solo texto de seccion. */
+    /* Cebra por DIA completo, no por fila: el primer dia queda normal, el
+       segundo con --day-alt-bg, y asi. El tinte es un matiz del 5% de
+       marca sobre la superficie, suficiente para localizar el bloque sin
+       partir la tabla en dos mitades. Con un solo dia no se nota, porque
+       el grupo 0 nunca se atenua. El hover va despues y con mas
+       especificidad para seguir ganando sobre el cebra. */
+    tbody tr.day-alt td { background: var(--day-alt-bg); }
+    tbody tr.day-alt:hover td { background: var(--surface-hover); }
+
+    /* No hay filete lateral. Se probo una barra de 3px en la primera celda
+       (de marca en la primera fila del dia, lavada en el resto) y se leyo
+       como una pestana: parecia un gasto mas o un borde de tarjeta. La
+       separacion la hacen solo el tinte del dia alterno y la fila de fecha. */
+
+    /* Encabezado de dia. Es un titulo de seccion, no una fila mas: por eso
+       va en tamano de titulo, en tinta y no en tinta suave, y con aire
+       arriba que abajo para que la vista caiga en el texto y luego baje a
+       los gastos de ese dia. Sin relleno, sin filete lateral y sin barra de
+       color: eso se leia como pestana y se confundia con un gasto mas. */
     tbody tr.day-divider td {
-      background: none;
+      background: var(--day-divider-bg);
       border: none;
+      border-bottom: 1px solid var(--day-divider-border);
       border-radius: 0;
-      padding: var(--space-5) var(--space-2) var(--space-1);
-      color: var(--ink-mute);
-      font-size: var(--text-xs);
+      padding: var(--space-6) var(--space-3) var(--space-3);
+      color: var(--ink);
+      font-size: var(--text-lg);
       font-weight: 700;
+      line-height: 1.2;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
-    tbody tr.day-divider:first-child td { padding-top: 0; }
-    tbody tr.day-divider:hover td { background: none; }
+    tbody tr.day-divider:first-child td { padding-top: var(--space-2); }
+    tbody tr.day-divider:hover td { background: var(--day-divider-bg); }
 
     .date-cell { white-space: nowrap; font-weight: 600; color: var(--ink); }
 
@@ -1470,8 +1509,34 @@
       object-fit: cover;
     }
 
-    /* Exceso del dia: solo una etiqueta pequena junto al monto (no se pinta
-       la fila completa). */
+    /* Dato detectado impreso debajo de cada miniatura de recorte, como
+       etiqueta/chip a juego con el resto del sistema (period-chip,
+       voucher-badge, limit-badge son pills): el total en "Total factura"
+       lleva tinte de marca porque es el monto; el folio en "Docto" va
+       neutro (ver .document-cell mas abajo) para no competir de color.
+       Una sola linea siempre: el valor completo, la columna se ensancha
+       lo que el dato necesite (la tabla ya tiene scroll horizontal en
+       pantallas angostas). */
+    .fiscal-thumb-caption {
+      display: inline-flex;
+      align-items: center;
+      margin-top: var(--space-2);
+      padding: 2px var(--space-2);
+      border: 1px solid color-mix(in srgb, var(--brand), transparent 72%);
+      border-radius: var(--radius-full);
+      background: var(--brand-soft);
+      color: var(--ink);
+      font-size: 10px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+
+    /* Exceso del dia: etiqueta pequena ARRIBA del monto de la tarjeta (no se
+       pinta la fila completa). En la celda pasa a bloque propio para que
+       quede sobre el monto y no a su lado. */
     .limit-badge {
       display: inline-flex;
       padding: 1px var(--space-1);
@@ -1482,6 +1547,10 @@
       font-weight: 700;
       text-transform: uppercase;
       white-space: nowrap;
+    }
+    .amount-cell .limit-badge {
+      display: flex;
+      margin-bottom: var(--space-1);
     }
 
     /* Aviso de que el monto capturado no coincide con el total leido de la
@@ -1746,6 +1815,31 @@
        ============================================================ */
 
     .invoice-evidence-large { max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--line); }
+    /* Dato detectado (folio / total) impreso debajo del recorte ampliado
+       en el dialogo: mismo lenguaje de chip que la tabla pero en tamano
+       mayor, centrado bajo el recorte. El folio lleva la variante neutra
+       (--neutral), igual que en la tabla. */
+    .media-dialog-caption {
+      align-self: center;
+      display: inline-flex;
+      align-items: center;
+      max-width: 100%;
+      padding: var(--space-1) var(--space-3);
+      border: 1px solid color-mix(in srgb, var(--brand), transparent 72%);
+      border-radius: var(--radius-full);
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+    .media-dialog-caption--neutral {
+      border-color: var(--line-strong);
+      background: var(--surface-2);
+      color: var(--ink-soft);
+    }
     .invoice-evidence-button {
       display: block;
       padding: 0;
@@ -2495,6 +2589,7 @@
       projects: [],
       activeProjectId: localStorage.getItem("viaticos-active-project") || LEGACY_PROJECT_ID,
       allExpenses: [],
+      hasReceivedExpensesFromFirebase: false,
       expenses: [],
       historyOrder: "date",
       invoiceFiscalCache: new Map(),
@@ -4052,7 +4147,7 @@ pause
 
     async function downloadOrderedInvoicesPdf() {
       const expensesWithInvoices = getExpensesInExcelOrder(
-        state.expenses.filter((expense) => getInvoiceData(expense))
+        state.expenses.filter((expense) => getInvoiceData(expense) || expense.valeAzul)
       );
       if (!expensesWithInvoices.length) {
         setMessage("error", "Este proyecto no tiene facturas para descargar en PDF.");
@@ -4066,8 +4161,20 @@ pause
       try {
         const mergedPdf = await PDFDocument.create();
         let addedPages = 0;
+        // Tamano de la ultima hoja agregada: la hoja en blanco del vale usa el
+        // mismo para imprimir en el mismo papel que las facturas vecinas.
+        let lastPageSize = null;
 
         for (const expense of expensesWithInvoices) {
+          // Vale azul: no trae factura, va como hoja en blanco en su posicion
+          // del orden Excel — al imprimir el documento completo, la hoja
+          // vacia marca el lugar exacto donde se mete el vale fisico.
+          if (expense.valeAzul) {
+            const size = lastPageSize || [612, 792];
+            mergedPdf.addPage(size);
+            addedPages += 1;
+            continue;
+          }
           const invoice = getInvoiceData(expense);
           if (!invoice?.dataUrl) continue;
           const response = await fetch(invoice.dataUrl);
@@ -4076,6 +4183,8 @@ pause
           const copiedPages = await mergedPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
           copiedPages.forEach((page) => mergedPdf.addPage(page));
           addedPages += copiedPages.length;
+          const lastCopied = copiedPages[copiedPages.length - 1];
+          lastPageSize = [lastCopied.getWidth(), lastCopied.getHeight()];
         }
 
         if (!addedPages) {
@@ -5193,9 +5302,17 @@ pause
         : state.expenses;
 
       let previousExpenseDate = "";
+      // Grupo de dia (se incrementa en cada divisor): los grupos nones se
+      // marcan con day-alt para pintarlos tenues (cebra por dia en el CSS).
+      let dayGroupIndex = -1;
+      // Marca si la fila que se va a crear es la primera de su dia: se
+      //Apaga en cuanto el dia ya tiene al menos una fila previa.
+      let isFirstRowOfDay = false;
       displayedExpenses.forEach((expense) => {
         const isNewDay = expense.fecha !== previousExpenseDate;
+        isFirstRowOfDay = isNewDay;
         if (isNewDay) {
+          dayGroupIndex += 1;
           const divider = document.createElement("tr");
           divider.className = "day-divider";
           const dividerCell = document.createElement("td");
@@ -5208,6 +5325,11 @@ pause
 
         const row = document.createElement("tr");
         row.dataset.expenseId = expense.id;
+        // day-alt pinta el dia alterno entero con --day-alt-bg. day-first
+        // marca el inicio del grupo; hoy ninguna regla de CSS lo usa, se
+        // deja la clase por si hay que engancharle algo despues.
+        if (isFirstRowOfDay) row.classList.add("day-first");
+        if (dayGroupIndex % 2 === 1) row.classList.add("day-alt");
 
         row.innerHTML = `
           <td class="date-cell">${formatDate(expense.fecha)}</td>
@@ -5259,7 +5381,7 @@ pause
           const badge = document.createElement("span");
           badge.className = "limit-badge";
           badge.textContent = `Exceso: ${formatter.format(dailyLimit.excess)}`;
-          amountCell.appendChild(badge);
+          amountCell.prepend(badge);
         }
 
         const cells = row.querySelectorAll("td");
@@ -5344,10 +5466,11 @@ pause
     }
 
     function getInvoiceFiscalSignature(expense) {
-      return `evidence-v2|${expense.id}|${expense.updatedAt || ""}|${expense.invoiceName || ""}|${expense.invoiceSize || ""}`;
+      const projectName = getActiveProject()?.name || "";
+      return `evidence-v3|${expense.id || ""}|${expense.updatedAt || ""}|${expense.invoiceName || ""}|${expense.invoiceSize || ""}|${expense.invoiceType || ""}|${projectName}`;
     }
 
-    function openEvidenceCrop(dataUrl, title) {
+    function openEvidenceCrop(dataUrl, title, caption = "", variant = "") {
       if (!dataUrl) return;
       elements.mediaDialogTitle.textContent = title;
       elements.mediaDialogHeaderActions.innerHTML = "";
@@ -5357,28 +5480,51 @@ pause
       image.alt = title;
       image.className = "invoice-evidence-large";
       elements.mediaDialogBody.appendChild(image);
+      if (caption) {
+        const captionLine = document.createElement("p");
+        captionLine.className = variant
+          ? `media-dialog-caption media-dialog-caption--${variant}`
+          : "media-dialog-caption";
+        captionLine.textContent = caption;
+        elements.mediaDialogBody.appendChild(captionLine);
+      }
       elements.mediaDialog.showModal();
     }
 
-    function createEvidenceThumbnail(dataUrl, title) {
+    function createEvidenceThumbnail(dataUrl, title, caption = "", variant = "") {
       const button = document.createElement("button");
       button.className = "invoice-evidence-button";
       button.type = "button";
-      button.title = `${title}. Toca para ampliar`;
-      button.setAttribute("aria-label", `${title}. Ampliar recorte`);
+      const buttonTitle = caption ? `${title}: ${caption}. Toca para ampliar` : `${title}. Toca para ampliar`;
+      button.title = buttonTitle;
+      button.setAttribute("aria-label", caption ? `${title}: ${caption}. Ampliar recorte` : `${title}. Ampliar recorte`);
       const image = document.createElement("img");
       image.src = dataUrl;
       image.alt = title;
       button.appendChild(image);
-      button.addEventListener("click", () => openEvidenceCrop(dataUrl, title));
+      button.addEventListener("click", () => openEvidenceCrop(dataUrl, title, caption, variant));
       return button;
+    }
+
+    function appendEvidenceCaption(cell, text) {
+      if (!text) return;
+      const caption = document.createElement("span");
+      caption.className = "fiscal-thumb-caption";
+      caption.textContent = text;
+      caption.title = text;
+      cell.appendChild(caption);
     }
 
     function renderFiscalBreakdown(cell, fiscal) {
       cell.className = "fiscal-cell";
       cell.innerHTML = "";
       if (fiscal.totalsCrop) {
-        cell.appendChild(createEvidenceThumbnail(fiscal.totalsCrop, "Recorte de totales de la factura"));
+        const totalCaption = fiscal.invoiceTotal ? formatter.format(fiscal.invoiceTotal) : "";
+        cell.appendChild(createEvidenceThumbnail(fiscal.totalsCrop, "Recorte de totales de la factura", totalCaption));
+        appendEvidenceCaption(cell, totalCaption);
+      } else if (fiscal.invoiceTotal) {
+        cell.className = "fiscal-cell muted-cell";
+        cell.textContent = formatter.format(fiscal.invoiceTotal);
       } else {
         cell.className = "fiscal-cell muted-cell";
         cell.textContent = "Recorte no disponible";
@@ -5394,10 +5540,11 @@ pause
         return;
       }
       if (documentCrop) {
-        cell.appendChild(createEvidenceThumbnail(documentCrop, "Recorte del documento de la factura"));
+        cell.appendChild(createEvidenceThumbnail(documentCrop, "Recorte del documento de la factura", documentValue, "neutral"));
+        appendEvidenceCaption(cell, documentValue);
       } else {
         cell.className = "document-cell muted-cell";
-        cell.textContent = "Recorte no disponible";
+        cell.textContent = documentValue;
       }
     }
 
@@ -5424,6 +5571,147 @@ pause
 
     function fiscalCacheDelete(id) {
       state.invoiceFiscalCache.delete(id);
+    }
+
+    // Cachea solo resultados derivados (campos detectados y recortes), nunca
+    // los PDF ni los adjuntos originales. La firma de version (gasto, updatedAt,
+    // metadatos del PDF y proyecto) invalida resultados al cambiar la factura;
+    // IndexedDB evita el limite sincrono de localStorage.
+    const FISCAL_CACHE_DB_NAME = "viaticos-fiscal-cache";
+    const FISCAL_CACHE_STORE_NAME = "invoice-results";
+    const MAX_PERSISTED_FISCAL_CACHE_ITEMS = 60;
+    const MAX_CONCURRENT_INVOICE_EXTRACTIONS = 3;
+    let fiscalCacheDatabasePromise = null;
+    let fiscalCacheClock = Date.now();
+    const invoiceExtractionQueue = [];
+    let activeInvoiceExtractions = 0;
+
+    function nextFiscalCacheTime() {
+      fiscalCacheClock = Math.max(Date.now(), fiscalCacheClock + 1);
+      return fiscalCacheClock;
+    }
+
+    function openFiscalCacheDatabase() {
+      if (!window.indexedDB) return Promise.resolve(null);
+      if (!fiscalCacheDatabasePromise) {
+        fiscalCacheDatabasePromise = new Promise((resolve) => {
+          try {
+            const request = window.indexedDB.open(FISCAL_CACHE_DB_NAME, 1);
+            request.onupgradeneeded = () => {
+              const database = request.result;
+              if (!database.objectStoreNames.contains(FISCAL_CACHE_STORE_NAME)) {
+                const store = database.createObjectStore(FISCAL_CACHE_STORE_NAME, { keyPath: "id" });
+                store.createIndex("lastUsedAt", "lastUsedAt");
+              }
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => resolve(null);
+            request.onblocked = () => resolve(null);
+          } catch {
+            resolve(null);
+          }
+        });
+      }
+      return fiscalCacheDatabasePromise;
+    }
+
+    async function readPersistedInvoiceFiscalResult(id, signature) {
+      if (!id) return null;
+      const database = await openFiscalCacheDatabase();
+      if (!database) return null;
+      return new Promise((resolve) => {
+        let cachedData = null;
+        let transaction;
+        try {
+          transaction = database.transaction(FISCAL_CACHE_STORE_NAME, "readwrite");
+          const store = transaction.objectStore(FISCAL_CACHE_STORE_NAME);
+          const request = store.get(id);
+          request.onsuccess = () => {
+            const entry = request.result;
+            if (entry?.signature === signature && entry.data && typeof entry.data === "object") {
+              cachedData = entry.data;
+              entry.lastUsedAt = nextFiscalCacheTime();
+              store.put(entry);
+            } else if (entry) {
+              // Una firma distinta significa factura o gasto cambiado: no usar
+              // el resultado anterior y retirar ese registro.
+              store.delete(id);
+            }
+          };
+          transaction.oncomplete = () => resolve(cachedData);
+          transaction.onerror = () => resolve(null);
+          transaction.onabort = () => resolve(null);
+        } catch {
+          resolve(null);
+        }
+      });
+    }
+
+    async function persistInvoiceFiscalResult(id, signature, data) {
+      if (!id || !data || typeof data !== "object") return false;
+      const database = await openFiscalCacheDatabase();
+      if (!database) return false;
+      return new Promise((resolve) => {
+        let transaction;
+        try {
+          transaction = database.transaction(FISCAL_CACHE_STORE_NAME, "readwrite");
+          transaction.objectStore(FISCAL_CACHE_STORE_NAME).put({
+            id,
+            signature,
+            data,
+            lastUsedAt: nextFiscalCacheTime()
+          });
+          transaction.oncomplete = () => {
+            try {
+              const cleanup = database.transaction(FISCAL_CACHE_STORE_NAME, "readwrite");
+              const store = cleanup.objectStore(FISCAL_CACHE_STORE_NAME);
+              const countRequest = store.count();
+              countRequest.onsuccess = () => {
+                let removeCount = countRequest.result - MAX_PERSISTED_FISCAL_CACHE_ITEMS;
+                if (removeCount <= 0) return;
+                const cursorRequest = store.index("lastUsedAt").openCursor();
+                cursorRequest.onsuccess = () => {
+                  const cursor = cursorRequest.result;
+                  if (!cursor || removeCount <= 0) return;
+                  cursor.delete();
+                  removeCount -= 1;
+                  cursor.continue();
+                };
+              };
+              cleanup.oncomplete = () => resolve(true);
+              cleanup.onerror = () => resolve(false);
+              cleanup.onabort = () => resolve(false);
+            } catch {
+              resolve(false);
+            }
+          };
+          transaction.onerror = () => resolve(false);
+          transaction.onabort = () => resolve(false);
+        } catch {
+          resolve(false);
+        }
+      });
+    }
+
+    function scheduleInvoiceExtraction(task) {
+      return new Promise((resolve, reject) => {
+        invoiceExtractionQueue.push({ task, resolve, reject });
+        runNextInvoiceExtraction();
+      });
+    }
+
+    function runNextInvoiceExtraction() {
+      while (activeInvoiceExtractions < MAX_CONCURRENT_INVOICE_EXTRACTIONS && invoiceExtractionQueue.length) {
+        const job = invoiceExtractionQueue.shift();
+        activeInvoiceExtractions += 1;
+        Promise.resolve()
+          .then(job.task)
+          .then(job.resolve, job.reject)
+          .finally(() => {
+            activeInvoiceExtractions -= 1;
+            runNextInvoiceExtraction();
+          });
+      }
     }
 
     function applyAmountMismatchBadge(amountCell, expense, data) {
@@ -5455,9 +5743,11 @@ pause
       const invoice = getInvoiceData(expense);
       if (!invoice) {
         fiscalCell.className = "fiscal-cell muted-cell";
-        fiscalCell.textContent = "Sin factura";
+        const waitingForInvoiceSync = !state.hasReceivedExpensesFromFirebase
+          && Boolean(expense.invoiceName || expense.invoiceSize || expense.invoiceType);
+        fiscalCell.textContent = waitingForInvoiceSync ? "Verificando factura..." : "Sin factura";
         documentCell.className = "document-cell muted-cell";
-        documentCell.textContent = "Sin factura";
+        documentCell.textContent = waitingForInvoiceSync ? "Verificando..." : "Sin factura";
         return;
       }
 
@@ -5485,7 +5775,17 @@ pause
         return;
       }
 
-      const promise = extractInvoiceFields(invoice, expense, getActiveProject().name || "");
+      const projectName = getActiveProject().name || "";
+      const promise = readPersistedInvoiceFiscalResult(expense.id, signature).then((cachedData) => {
+        if (cachedData) return cachedData;
+        return scheduleInvoiceExtraction(() => {
+          return extractInvoiceFields(invoice, expense, projectName);
+        }).then((data) => {
+          // Persistir en segundo plano: la UI no espera a IndexedDB para pintar.
+          persistInvoiceFiscalResult(expense.id, signature, data).catch(() => {});
+          return data;
+        });
+      });
       fiscalCacheSet(expense.id, { signature, promise });
       promise.then((data) => {
         fiscalCacheSet(expense.id, { signature, data });
@@ -6227,7 +6527,7 @@ pause
         .filter((token) => token.length >= 2);
 
       for (const detail of pageDetails) {
-        const viewport = detail.page.getViewport({ scale: 2.4 });
+        const viewport = detail.page.getViewport({ scale: 1.6 });
         const boxes = detail.content.items
           .filter((item) => String(item.str || "").trim())
           .map((item) => getPdfTextBox(pdfjs, viewport, item));
@@ -6449,8 +6749,11 @@ pause
         // acomoda "PC - 7454" (lavanderia) o "ES 1903" (estacionamiento
         // Terminal Poniente) solos en la esquina superior derecha. En el
         // texto reconstruido quedan como primera linea o pegados a la
-        // direccion del emisor ("... No. 232 ES 1903").
-        /\b([A-Z]{1,4})\s+(\d{2,6})\b(?=\s*(?:\n|$))/,
+        // direccion del emisor ("... No. 232 ES 1903"). La palabra admite
+        // hasta 12 letras porque hay folios con palabra larga: "SENDERO
+        // 96403" (Cars Junior / Dragon Foods) — con {1,4} se quedaba fuera
+        // y caia al UUID del timbrado.
+        /\b([A-Z]{1,12})\s+(\d{2,6})\b(?=\s*(?:\n|$))/,
         // Serie y folio corto tipo "I- 4" (Cocina Mexicana AJM / Potzocalli):
         // el PDF lo imprime en la columna del receptor y el texto reconstruido
         // lo deja entre el nombre del receptor y "TECHNOLOGIES MEXICO".
@@ -6801,6 +7104,7 @@ pause
       const expensesRef = dbRef(state.db, EXPENSES_PATH);
 
       onValue(expensesRef, (snapshot) => {
+        state.hasReceivedExpensesFromFirebase = true;
         const data = snapshot.exists() ? snapshot.val() : {};
         state.allExpenses = Object.entries(data)
           .map(([id, expense]) => ({ id, ...expense }))
