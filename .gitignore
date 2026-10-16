@@ -1,3 +1,5 @@
 qa/
 *.log
 ~$*.xlsx
+node_modules/
+.perch/

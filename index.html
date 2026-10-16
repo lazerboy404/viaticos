@@ -681,15 +681,32 @@
       cursor: pointer;
       transition: background 120ms ease, color 120ms ease;
     }
-    .provider-suggestion-option::before {
-      content: "";
+    .provider-suggestion-icon {
       flex: none;
-      width: 7px;
-      height: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
       margin-right: var(--space-3);
-      border-radius: 50%;
-      background: var(--brand);
-      opacity: .72;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      overflow: hidden;
+    }
+    .provider-suggestion-icon img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      background: var(--surface);
+      border-radius: 3px;
+    }
+    .provider-suggestion-icon svg { width: 17px; height: 17px; }
+    .provider-suggestion-label {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .provider-suggestion-option:hover,
     .provider-suggestion-option.is-active {
@@ -1917,10 +1934,51 @@
     /* El cuerpo del dialogo es scrolleable (overflow-y:auto), asi que un
        calendario flotante ahi adentro quedaria recortado contra el borde.
        Dentro de un dialogo se despliega en linea y empuja el contenido. */
-    .new-project-body .day-picker-popover {
+    .new-project-body .day-picker-popover,
+    .edit-dialog-body .day-picker-popover {
       position: static;
       width: auto;
     }
+
+    /* Calendario de fecha del modal de gasto: seleccion de UN dia (no de
+       rango) y solo sobre los dias habilitados del proyecto. Los dias que no
+       son del periodo quedan visibles pero inertes, para que el usuario vea
+       por que no puede elegirlos en lugar de encontrarse casillas muertas. */
+    .expense-date-picker { margin-top: var(--space-2); }
+    /* El <input type="date"> se conserva solo como espejo del valor (todo el
+       codigo que lee elements.dateInput.value sigue igual). La eleccion real
+       se hace en el calendario de arriba, que si puede limitar dias sueltos;
+       el picker nativo no puede, solo rango min/max. */
+    .date-native-mirror { display: none; }
+    .day-calendar--single .day-calendar-cell { cursor: not-allowed; opacity: .4; }
+    /* El hover base no debe "animar" un dia inhabilitado, pero si conserva
+       punteros para que su tooltip ("fuera de los dias habilitados") se muestre. */
+    .day-calendar--single .day-calendar-cell:not(.is-allowed):hover {
+      border-color: var(--line);
+      background: var(--surface);
+      color: var(--ink-soft);
+    }
+    .day-calendar--single .day-calendar-cell.is-allowed { cursor: pointer; opacity: 1; }
+    .day-calendar--single .day-calendar-cell.is-allowed:hover {
+      border-color: var(--brand);
+      background: var(--brand-soft);
+      color: var(--brand);
+    }
+    .day-calendar--single .day-calendar-cell.is-selected,
+    .day-calendar--single .day-calendar-cell.is-selected.is-allowed {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+      opacity: 1;
+    }
+    .day-calendar--single .day-calendar-cell.is-selected.is-today { box-shadow: 0 0 0 2px var(--brand-soft-strong); }
+    .expense-date-hint {
+      margin: var(--space-2) 0 0;
+      color: var(--ink-mute);
+      font-size: var(--text-xs);
+      font-weight: 600;
+    }
+    .expense-date-hint.is-empty { color: var(--danger); }
 
     .dialog-ticket { display: flex; flex-direction: column; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md); }
     .dialog-ticket img { max-width: 100%; border-radius: var(--radius-sm); }
@@ -2571,8 +2629,20 @@
             </div>
 
             <div class="field">
-              <label for="dateInput">Fecha</label>
-              <input id="dateInput" type="date" required>
+              <label id="expenseDateLabel">Fecha</label>
+              <input id="dateInput" type="date" class="date-native-mirror" tabindex="-1" aria-hidden="true">
+              <div class="day-picker expense-date-picker">
+                <button type="button" class="day-picker-trigger" id="expenseDateTrigger" aria-haspopup="true" aria-expanded="false" aria-labelledby="expenseDateLabel expenseDateTriggerValue">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M8 3v3M16 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <span id="expenseDateTriggerValue">Seleccionar fecha</span>
+                </button>
+                <div class="day-picker-popover" id="expenseDatePopover" role="group" aria-labelledby="expenseDateLabel" hidden>
+                  <div class="day-calendar" id="expenseDateCalendar" aria-live="polite"></div>
+                  <p class="expense-date-hint" id="expenseDateHint"></p>
+                </div>
+              </div>
             </div>
 
             <div class="file-grid" id="fileGrid">
@@ -2786,6 +2856,11 @@
       providerSuggestions: document.querySelector("#providerSuggestions"),
       amountInput: document.querySelector("#amountInput"),
       dateInput: document.querySelector("#dateInput"),
+      expenseDateCalendar: document.querySelector("#expenseDateCalendar"),
+      expenseDateHint: document.querySelector("#expenseDateHint"),
+      expenseDatePopover: document.querySelector("#expenseDatePopover"),
+      expenseDateTrigger: document.querySelector("#expenseDateTrigger"),
+      expenseDateTriggerValue: document.querySelector("#expenseDateTriggerValue"),
       blueVoucherInput: document.querySelector("#blueVoucherInput"),
       fileGrid: document.querySelector("#fileGrid"),
       ticketInput: document.querySelector("#ticketInput"),
@@ -3060,7 +3135,15 @@
       return `${days.length} ${days.length === 1 ? "día" : "días"} · ${labels.join(", ")}`;
     }
 
-    function createDayCalendar(container) {
+    // options.single: un solo dia activo (modo "elegir fecha") en lugar de
+    // marcar/desmarcar rangos. options.isAllowed: filtro de dias habilitados;
+    // los que no pasan se muestran inertes, no desaparecen, para que el usuario
+    // entienda que el dia existe pero no es del periodo del proyecto.
+    function createDayCalendar(container, options = {}) {
+      const singleMode = Boolean(options.single);
+      const isDateAllowed = typeof options.isAllowed === "function"
+        ? options.isAllowed
+        : () => true;
       const today = new Date();
       const view = {
         selected: new Set(),
@@ -3100,6 +3183,7 @@
 
       const grid = document.createElement("div");
       grid.className = "day-calendar-grid";
+      if (singleMode) grid.classList.add("day-calendar--single");
 
       container.innerHTML = "";
       container.append(nav, weekdaysRow, grid);
@@ -3141,6 +3225,14 @@
           cell.textContent = String(day);
           cell.dataset.date = dateStr;
           if (dateStr === todayStr) cell.classList.add("is-today");
+          if (singleMode) {
+            const allowed = isDateAllowed(dateStr);
+            cell.classList.toggle("is-allowed", allowed);
+            // No se usa disabled: un boton deshabilitado no muestra su tooltip
+            // ni recibe eventos, y aqui interesa explicar POR QUE el dia no
+            // sirve. El bloqueo real ocurre en el click (isDateAllowed).
+            if (!allowed) cell.title = "Fuera de los dias habilitados del proyecto";
+          }
           if (view.selected.has(dateStr)) cell.classList.add("is-selected");
           if (previewDates.has(dateStr)) cell.classList.add(previewIsRemove ? "is-drag-remove-preview" : "is-drag-preview");
           grid.appendChild(cell);
@@ -3174,6 +3266,7 @@
       }
 
       grid.addEventListener("mousedown", (event) => {
+        if (singleMode) return;
         const cell = event.target.closest(".day-calendar-cell[data-date]");
         if (!cell) return;
         view.dragActive = true;
@@ -3197,12 +3290,19 @@
         const cell = event.target.closest(".day-calendar-cell[data-date]");
         if (!cell) return;
         const date = cell.dataset.date;
+        if (singleMode) {
+          if (!isDateAllowed(date)) return;
+          view.selected = new Set([date]);
+          render();
+          return;
+        }
         if (view.selected.has(date)) view.selected.delete(date);
         else view.selected.add(date);
         render();
       });
 
       grid.addEventListener("touchstart", (event) => {
+        if (singleMode) return;
         const cell = event.target.closest(".day-calendar-cell[data-date]");
         if (!cell) return;
         view.dragActive = true;
@@ -3316,13 +3416,93 @@
       return true;
     }
 
-    function syncExpenseDateConstraints() {
+    let expenseDateCalendar = null;
+    // El calendario del modal de gasto nace colapsado (igual que en "Editar
+    // proyecto"): solo se despliega al pulsar el boton de fecha. Se declara
+    // aqui, y se asigna hasta el cableado, porque syncExpenseDateConstraints
+    // puede correr antes de que el popover exista como control.
+    let expenseDatePopoverCtrl = null;
+
+    function renderExpenseDateTriggerLabel() {
+      if (!elements.expenseDateTriggerValue) return;
+      const selected = elements.dateInput.value;
+      elements.expenseDateTriggerValue.textContent = selected
+        ? formatReportPeriodDay(selected, false)
+        : "Seleccionar fecha";
+    }
+
+    function renderExpenseDateHint() {
+      if (!elements.expenseDateHint) return;
+      const allowedDays = getActivePeriodDays();
+      const selected = elements.dateInput.value;
       const project = getActiveProject();
-      elements.dateInput.min = project.periodStart || "";
-      elements.dateInput.max = project.periodEnd || "";
-      elements.dateInput.title = getActivePeriodDays().length
-        ? "Solo puedes registrar gastos en los días seleccionados del periodo."
-        : "La fecha debe estar dentro del periodo del proyecto.";
+
+      if (allowedDays.length) {
+        const dayList = allowedDays.map((day) => formatReportPeriodDay(day, false)).join(", ");
+        const invalid = Boolean(selected) && !allowedDays.includes(selected);
+        elements.expenseDateHint.textContent = invalid
+          ? `Esa fecha no está habilitada. Días disponibles: ${dayList}.`
+          : `Días habilitados: ${dayList}.`;
+        elements.expenseDateHint.classList.toggle("is-empty", invalid);
+        return;
+      }
+
+      if (project.periodStart || project.periodEnd) {
+        elements.expenseDateHint.textContent = `Fecha libre dentro del periodo: ${formatDate(project.periodStart || project.periodEnd)} al ${formatDate(project.periodEnd || project.periodStart)}.`;
+      } else {
+        elements.expenseDateHint.textContent = "El proyecto no tiene días definidos; cualquier fecha es válida.";
+      }
+      elements.expenseDateHint.classList.remove("is-empty");
+    }
+
+    function syncExpenseDateConstraints() {
+      if (!elements.expenseDateCalendar) return;
+      if (!expenseDateCalendar) {
+        expenseDateCalendar = createDayCalendar(elements.expenseDateCalendar, {
+          single: true,
+          isAllowed: isExpenseDateAllowed
+        });
+        expenseDateCalendar.onChange((days) => {
+          const nextDate = days[0] || "";
+          if (nextDate && nextDate !== elements.dateInput.value) {
+            elements.dateInput.value = nextDate;
+            // En seleccion de un dia, elegir ya es terminar: se colapsa el
+            // calendario para que el formulario vuelva a ser compacto. Se hace
+            // solo aqui (no en todo onChange) porque cambiar de mes tambien
+            // dispara el callback y no debe cerrar el popover.
+            if (expenseDatePopoverCtrl) expenseDatePopoverCtrl.close();
+          }
+          renderExpenseDateHint();
+          renderExpenseDateTriggerLabel();
+        });
+      }
+
+      const selected = elements.dateInput.value;
+      expenseDateCalendar.setSelection(selected && isExpenseDateAllowed(selected) ? [selected] : []);
+      renderExpenseDateHint();
+      renderExpenseDateTriggerLabel();
+    }
+
+    // Al abrir el formulario, "hoy" solo se conserva si es día hábil del
+    // proyecto; si no, se salta al primer día habilitado en lugar de dejar una
+    // fecha que el calendario muestra como inválida.
+    function seedExpenseDatePreference(preferredDate) {
+      if (preferredDate && isExpenseDateAllowed(preferredDate)) {
+        elements.dateInput.value = preferredDate;
+        return;
+      }
+      const allowedDays = getActivePeriodDays();
+      if (allowedDays.length) {
+        elements.dateInput.value = allowedDays.includes(getTodayLocalString())
+          ? getTodayLocalString()
+          : allowedDays[0];
+        return;
+      }
+      const project = getActiveProject();
+      const today = getTodayLocalString();
+      if (project.periodStart && today < project.periodStart) elements.dateInput.value = project.periodStart;
+      else if (project.periodEnd && today > project.periodEnd) elements.dateInput.value = project.periodEnd;
+      else elements.dateInput.value = today;
     }
 
     function getPeriodLabel(project) {
@@ -3512,6 +3692,7 @@
       renderPeriodSummary(activeProject);
 
       periodCalendar.setSelection(resolveProjectPeriodDays(activeProject));
+      if (expenseDatePopoverCtrl) expenseDatePopoverCtrl.close();
       syncExpenseDateConstraints();
       elements.saveProjectBtn.disabled = !state.isFirebaseReady;
       elements.deleteProjectBtn.disabled = !state.isFirebaseReady || activeProject.isLegacy;
@@ -3743,6 +3924,54 @@
         path: match?.path || "M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 0 1 0 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a2.999 2.999 0 0 1 0-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375Z",
         logoUrls
       };
+    }
+
+    function suggestionIconSvg(path) {
+      return `<svg viewBox="0 0 24 24" fill="none"><path d="${path}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+    }
+
+    // Icono de las listas de sugerencia. Los conceptos usan SIEMPRE el SVG de
+    // categoria (comida -> cubiertos, transporte -> auto) porque son categorias
+    // genericas, no marcas; ahi un logo de marca seria ruido. Los proveedores si
+    // usan el logo local/web de la marca cuando existe (uber, tren, g500) y
+    // caen al SVG de categoria cuando no se reconoce la marca.
+    function renderSuggestionIcon(text, { useLogo = true } = {}) {
+      const meta = getConceptMeta(text);
+      const logoUrls = useLogo ? meta.logoUrls : null;
+
+      const icon = document.createElement("span");
+      icon.className = "provider-suggestion-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.style.color = meta.color;
+
+      if (logoUrls && logoUrls.length) {
+        const img = document.createElement("img");
+        img.src = logoUrls[0];
+        img.alt = "";
+        img.loading = "lazy";
+        img.decoding = "async";
+        img.width = 22;
+        img.height = 22;
+        const fallback = document.createElement("span");
+        fallback.style.display = "none";
+        fallback.innerHTML = suggestionIconSvg(meta.path);
+        icon.append(img, fallback);
+        wireLogoFallbackChain(img, fallback, logoUrls);
+      } else {
+        icon.innerHTML = suggestionIconSvg(meta.path);
+      }
+
+      return icon;
+    }
+
+    function appendSuggestionOption(option, text, { useLogo = true } = {}) {
+      option.append(
+        renderSuggestionIcon(text, { useLogo }),
+        Object.assign(document.createElement("span"), {
+          className: "provider-suggestion-label",
+          textContent: text
+        })
+      );
     }
 
     function sanitizeFileName(fileName) {
@@ -5343,7 +5572,8 @@ pause
       restoreExpenseFormHome();
       state.editingId = null;
       elements.expenseForm.reset();
-      setDefaultDateInput();
+      seedExpenseDatePreference(getTodayLocalString());
+      syncExpenseDateConstraints();
       elements.ticketFileName.textContent = "Seleccionar fotos";
       elements.invoiceFileName.textContent = "Subir factura";
       syncBlueVoucherFields();
@@ -5356,6 +5586,7 @@ pause
     function openNewExpenseDialog() {
       resetExpenseForm();
       clearMessage();
+      if (expenseDatePopoverCtrl) expenseDatePopoverCtrl.close();
       elements.editExpenseDialogBody.appendChild(elements.formPanel);
       if (typeof elements.editExpenseDialog.showModal === "function") elements.editExpenseDialog.showModal();
       elements.conceptInput.focus();
@@ -5379,7 +5610,9 @@ pause
       elements.expenseDialogEyebrow.textContent = "Registro seleccionado";
       elements.cancelEditBtn.classList.add("show");
       elements.saveExpenseBtn.innerHTML = getSubmitButtonContent();
+      syncExpenseDateConstraints();
       clearMessage();
+      if (expenseDatePopoverCtrl) expenseDatePopoverCtrl.close();
       elements.editExpenseDialogBody.appendChild(elements.formPanel);
       if (typeof elements.editExpenseDialog.showModal === "function") elements.editExpenseDialog.showModal();
     }
@@ -5654,7 +5887,7 @@ pause
         option.setAttribute("role", "option");
         option.setAttribute("aria-selected", "false");
         option.dataset.providerName = name;
-        option.textContent = name;
+        appendSuggestionOption(option, name);
         list.appendChild(option);
       });
 
@@ -5754,7 +5987,7 @@ pause
         option.setAttribute("role", "option");
         option.setAttribute("aria-selected", "false");
         option.dataset.concept = concept;
-        option.textContent = concept;
+        appendSuggestionOption(option, concept, { useLogo: false });
         list.appendChild(option);
       });
 
@@ -7570,13 +7803,20 @@ pause
     const newPeriodDaysPopoverCtrl = wireDayPickerPopover(elements.newPeriodDaysTrigger, elements.newPeriodDaysPopover);
     elements.newPeriodDaysSaveBtn.addEventListener("click", () => newPeriodDaysPopoverCtrl.close());
     elements.dateInput.addEventListener("change", syncExpenseDateConstraints);
+    if (elements.expenseDateTrigger && elements.expenseDatePopover) {
+      expenseDatePopoverCtrl = wireDayPickerPopover(elements.expenseDateTrigger, elements.expenseDatePopover);
+    }
     elements.projectSelect.addEventListener("change", () => {
       setActiveProject(elements.projectSelect.value, true);
       clearMessage();
     });
     elements.themeToggle.addEventListener("click", toggleTheme);
     elements.expenseForm.addEventListener("submit", saveExpense);
-    elements.conceptInput.addEventListener("focus", renderConceptSuggestions);
+    elements.conceptInput.addEventListener("focus", () => {
+      // El foco automatico al abrir el dialogo NO despliega la lista.
+      closeConceptSuggestions();
+    });
+    elements.conceptInput.addEventListener("click", renderConceptSuggestions);
     elements.conceptInput.addEventListener("input", () => {
       renderConceptSuggestions();
       if (window.__conceptFilterTimer) clearTimeout(window.__conceptFilterTimer);
