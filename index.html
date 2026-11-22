@@ -567,6 +567,56 @@
     .notice.show { display: block; }
 
     /* ============================================================
+       COMPUERTA DE ACCESO (solo escritura)
+       ============================================================ */
+
+    .login-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+      background: color-mix(in srgb, var(--bg), transparent 12%);
+      backdrop-filter: blur(6px);
+    }
+    .login-gate[hidden] { display: none; }
+
+    .login-gate-card {
+      width: 100%;
+      max-width: 420px;
+      padding: var(--space-5);
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+    }
+
+    .login-gate-title {
+      margin: 0 0 var(--space-2);
+      font-size: var(--text-lg);
+      font-weight: 700;
+    }
+
+    .login-gate-text {
+      margin: 0 0 var(--space-4);
+      font-size: var(--text-sm);
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .login-gate-card .button { width: 100%; margin-bottom: var(--space-2); }
+
+    .login-gate-message {
+      min-height: 1.2em;
+      margin: var(--space-2) 0 0;
+      font-size: var(--text-sm);
+      color: var(--danger);
+    }
+
+    /* ============================================================
        BOTONES
        ============================================================ */
 
@@ -2191,6 +2241,19 @@
       Pega tus credenciales en el objeto <strong>firebaseConfig</strong> dentro del script para activar Realtime Database.
     </p>
 
+    <div class="login-gate" id="loginGate" hidden>
+      <div class="login-gate-card">
+        <h2 class="login-gate-title">Acceso restringido</h2>
+        <p class="login-gate-text">
+          Los viáticos se pueden consultar, pero para <strong>capturar, editar o borrar</strong>
+          necesitas iniciar sesión con una cuenta autorizada.
+        </p>
+        <button class="button primary" id="loginBtn" type="button">Iniciar sesión con Google</button>
+        <button class="button ghost" id="loginSkipBtn" type="button">Solo consultar</button>
+        <p class="login-gate-message" id="loginMessage" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+
     <section class="summary-grid" aria-label="Resumen de viáticos">
       <article class="summary-card">
         <div class="summary-top">
@@ -2736,6 +2799,12 @@
       measurementId: "G-TVCML14S7W"
     };
 
+    // Correos con permiso para capturar, editar y borrar. Debe coincidir con
+    // la lista blanca de las reglas de la base de datos (database.rules.json).
+    const ALLOWED_WRITER_EMAILS = [
+      "ntcrckrs@gmail.com"
+    ];
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-analytics.js";
     import { PDFDocument } from "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm";
@@ -2749,6 +2818,13 @@
       remove,
       onValue
     } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-database.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithPopup,
+      GoogleAuthProvider,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
     const BUDGET_PATH = "settings/viaticos";
     const PROJECTS_PATH = "settings/viaticos/projects";
@@ -2790,6 +2866,9 @@
       editingId: null,
       db: null,
       isFirebaseReady: false,
+      auth: null,
+      user: null,
+      canWrite: false,
       objectUrls: [],
       isSaving: false
     };
@@ -2797,6 +2876,10 @@
     const elements = {
       firebaseStatus: document.querySelector("#firebaseStatus"),
       firebaseStatusText: document.querySelector("#firebaseStatusText"),
+      loginGate: document.querySelector("#loginGate"),
+      loginBtn: document.querySelector("#loginBtn"),
+      loginSkipBtn: document.querySelector("#loginSkipBtn"),
+      loginMessage: document.querySelector("#loginMessage"),
       themeToggle: document.querySelector("#themeToggle"),
       themeToggleText: document.querySelector("#themeToggleText"),
       configNotice: document.querySelector("#configNotice"),
@@ -3026,6 +3109,100 @@
       elements.exportBackupBtn.disabled = disableActions;
       elements.exportExcelBtn.disabled = disableActions;
       elements.importBackupBtn.disabled = disableActions;
+      applyWriteGate();
+    }
+
+    /* ============================================================
+       CONTROL DE ESCRITURA
+       La lectura es publica; escribir exige sesion iniciada y estar
+       en la lista blanca de correos. Las reglas de la base de datos
+       son la autoridad final: esto solo evita que el usuario llegue
+       a un error de permisos sin explicacion.
+       ============================================================ */
+
+    function isAllowedWriter(user) {
+      if (!user || !user.email) return false;
+      const allowed = Array.isArray(ALLOWED_WRITER_EMAILS) ? ALLOWED_WRITER_EMAILS : [];
+      return allowed.some((email) => email.toLowerCase() === user.email.toLowerCase());
+    }
+
+    function applyWriteGate() {
+      const canWrite = state.isFirebaseReady && state.canWrite;
+      const writeButtons = [
+        elements.saveExpenseBtn,
+        elements.saveProjectBtn,
+        elements.createExpenseBtn,
+        elements.createProjectBtn,
+        elements.editProjectBtn,
+        elements.deleteProjectBtn,
+        elements.uploadSignedSheetBtn,
+        elements.importBackupBtn
+      ];
+      writeButtons.forEach((button) => {
+        if (button) button.disabled = !canWrite;
+      });
+      if (elements.loginGate) {
+        elements.loginGate.hidden = !(state.isFirebaseReady && !state.canWrite);
+      }
+      renderAuthBadge();
+    }
+
+    function renderAuthBadge() {
+      if (!elements.firebaseStatusText) return;
+      if (!state.isFirebaseReady) return;
+      const label = state.canWrite
+        ? `Firebase conectado · ${state.user.email}`
+        : "Firebase conectado · solo lectura";
+      elements.firebaseStatusText.textContent = label;
+      elements.firebaseStatus.title = label;
+    }
+
+    function setLoginMessage(text) {
+      if (elements.loginMessage) elements.loginMessage.textContent = text || "";
+    }
+
+    async function signInWriter() {
+      if (!state.auth) return;
+      setLoginMessage("");
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(state.auth, provider);
+      } catch (error) {
+        console.error(error);
+        const code = error && error.code ? error.code : "";
+        if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
+          setLoginMessage("Cancelaste el inicio de sesión.");
+        } else if (code === "auth/unauthorized-domain") {
+          setLoginMessage("Este dominio no está autorizado en Firebase Authentication.");
+        } else {
+          setLoginMessage("No se pudo iniciar sesión. Intenta de nuevo.");
+        }
+      }
+    }
+
+    async function signOutWriter() {
+      if (!state.auth) return;
+      try {
+        await signOut(state.auth);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function handleAuthState(user) {
+      state.user = user || null;
+      state.canWrite = isAllowedWriter(state.user);
+      applyWriteGate();
+      if (state.user && !state.canWrite) {
+        setLoginMessage(`La cuenta ${state.user.email} no tiene permiso para capturar.`);
+      } else if (state.canWrite) {
+        setLoginMessage("");
+      }
+      // Las filas se pintan antes de que llegue la sesion, asi que hay que
+      // repintarlas para que sus botones reflejen el permiso actual.
+      if (state.isFirebaseReady && state.allExpenses.length) {
+        renderExpenses();
+      }
     }
 
     function parseMoney(value) {
@@ -3694,8 +3871,8 @@
       periodCalendar.setSelection(resolveProjectPeriodDays(activeProject));
       if (expenseDatePopoverCtrl) expenseDatePopoverCtrl.close();
       syncExpenseDateConstraints();
-      elements.saveProjectBtn.disabled = !state.isFirebaseReady;
-      elements.deleteProjectBtn.disabled = !state.isFirebaseReady || activeProject.isLegacy;
+      elements.saveProjectBtn.disabled = !state.isFirebaseReady || !state.canWrite;
+      elements.deleteProjectBtn.disabled = !state.isFirebaseReady || !state.canWrite || activeProject.isLegacy;
       elements.deleteProjectBtn.title = activeProject.isLegacy
         ? "El proyecto general conserva los gastos originales y no se puede eliminar."
         : `Eliminar ${activeProject.name || "proyecto"}`;
@@ -4337,7 +4514,7 @@
       elements.viewSignedSheetBtn.hidden = !hasSheet;
       elements.downloadSignedSheetBtn.hidden = !hasSheet;
       elements.deleteSignedSheetBtn.hidden = !hasSheet;
-      elements.uploadSignedSheetBtn.disabled = !state.isFirebaseReady;
+      elements.uploadSignedSheetBtn.disabled = !state.isFirebaseReady || !state.canWrite;
       elements.signedSheetStatus.textContent = hasSheet
         ? `Hoja guardada: ${sheet.name || "archivo firmado"}`
         : "Sin hoja firmada";
@@ -4352,6 +4529,10 @@
 
     async function saveSignedSheet(file) {
       if (!file || !state.isFirebaseReady) return;
+      if (!state.canWrite) {
+        setMessage("error", "Necesitas iniciar sesión con una cuenta autorizada para subir la hoja firmada.");
+        return;
+      }
       const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name || "");
       const isImage = !file.type || file.type.startsWith("image/");
       if (!isPdf && !isImage) {
@@ -4381,7 +4562,7 @@
         setMessage("error", "No se pudo guardar la hoja firmada. Revisa su tamaño y los permisos de Firebase.");
       } finally {
         elements.signedSheetInput.value = "";
-        elements.uploadSignedSheetBtn.disabled = false;
+        elements.uploadSignedSheetBtn.disabled = !state.canWrite;
         renderSignedSheetControls();
       }
     }
@@ -4406,6 +4587,10 @@
     }
 
     async function deleteSignedSheet() {
+      if (!state.canWrite) {
+        setMessage("error", "Necesitas iniciar sesión con una cuenta autorizada para borrar la hoja firmada.");
+        return;
+      }
       const sheet = getSignedSheet();
       if (!sheet?.dataUrl || !window.confirm("¿Eliminar la hoja firmada de este proyecto?")) return;
       elements.deleteSignedSheetBtn.disabled = true;
@@ -5183,6 +5368,10 @@ pause
 
     async function importBackup(file) {
       if (!file || !state.db) return;
+      if (!state.canWrite) {
+        setMessage("error", "Necesitas iniciar sesión con una cuenta autorizada para importar respaldos.");
+        return;
+      }
       if (file.size > 50 * 1024 * 1024) {
         setMessage("error", "El respaldo supera el limite de 50 MB.");
         return;
@@ -6503,6 +6692,7 @@ pause
         </svg>
       `;
       editButton.addEventListener("click", () => setEditingExpense(expenseId));
+      editButton.disabled = !state.canWrite;
 
       const deleteButton = document.createElement("button");
       deleteButton.className = "button danger";
@@ -6516,6 +6706,7 @@ pause
         </svg>
       `;
       deleteButton.addEventListener("click", () => deleteExpense(expenseId));
+      deleteButton.disabled = !state.canWrite;
 
       wrapper.append(editButton, deleteButton);
       cell.appendChild(wrapper);
@@ -6543,8 +6734,8 @@ pause
       elements.transportLimitInput.value = limits.transport;
       periodCalendar.setSelection(resolveProjectPeriodDays(project));
 
-      elements.saveProjectBtn.disabled = false;
-      elements.deleteProjectBtn.disabled = project.isLegacy;
+      elements.saveProjectBtn.disabled = !state.canWrite;
+      elements.deleteProjectBtn.disabled = !state.canWrite || project.isLegacy;
       elements.deleteProjectBtn.title = project.isLegacy
         ? "El proyecto general conserva los gastos originales y no se puede eliminar."
         : `Eliminar ${project.name || "proyecto"}`;
@@ -6564,6 +6755,10 @@ pause
     // separados sobre la misma rama.
     async function saveProjectSettings() {
       if (!state.isFirebaseReady) return;
+      if (!state.canWrite) {
+        setMessage("error", "Necesitas iniciar sesión con una cuenta autorizada para guardar.");
+        return;
+      }
 
       const name = elements.projectNameInput.value.trim().toUpperCase();
       if (!name) {
@@ -6596,12 +6791,16 @@ pause
         console.error(error);
         setDialogMessage("error", "No se pudo guardar el proyecto. Revisa permisos de Realtime Database.");
       } finally {
-        elements.saveProjectBtn.disabled = false;
+        elements.saveProjectBtn.disabled = !state.canWrite;
       }
     }
 
     async function createProject() {
       if (!state.isFirebaseReady) return;
+      if (!state.canWrite) {
+        setMessage("error", "Necesitas iniciar sesión con una cuenta autorizada para crear proyectos.");
+        return;
+      }
 
       const name = elements.newProjectNameInput.value.trim().toUpperCase();
       const periodDays = newPeriodCalendar.getSelection();
@@ -6671,6 +6870,10 @@ pause
 
     async function deleteActiveProject() {
       if (!state.isFirebaseReady) return;
+      if (!state.canWrite) {
+        setMessage("error", "Necesitas iniciar sesión con una cuenta autorizada para borrar proyectos.");
+        return;
+      }
       const project = getActiveProject();
       if (!project || project.isLegacy || project.id === LEGACY_PROJECT_ID) {
         setMessage("error", "El proyecto general conserva los gastos originales y no se puede eliminar.");
@@ -6709,13 +6912,17 @@ pause
       } catch (error) {
         console.error(error);
         setMessage("error", "No se pudo eliminar el proyecto. Revisa los permisos de Realtime Database.");
-        elements.deleteProjectBtn.disabled = false;
+        elements.deleteProjectBtn.disabled = !state.canWrite;
       }
     }
 
     async function saveExpense(event) {
       event.preventDefault();
       if (!state.isFirebaseReady || state.isSaving) return;
+      if (!state.canWrite) {
+        setMessage("error", "Necesitas iniciar sesión con una cuenta autorizada para guardar.");
+        return;
+      }
       clearMessage();
 
       const concepto = elements.conceptInput.value.trim().toUpperCase();
@@ -7489,6 +7696,10 @@ pause
     }
 
     async function deleteExpense(expenseId) {
+      if (!state.canWrite) {
+        setMessage("error", "Necesitas iniciar sesión con una cuenta autorizada para borrar.");
+        return;
+      }
       const expense = state.expenses.find((item) => item.id === expenseId);
       if (!expense) return;
 
@@ -7728,6 +7939,9 @@ pause
       const app = initializeApp(firebaseConfig);
       getAnalytics(app);
       state.db = getDatabase(app);
+      state.auth = getAuth(app);
+
+      onAuthStateChanged(state.auth, handleAuthState);
 
       try {
         await loadBudgetOnce();
@@ -7742,6 +7956,11 @@ pause
         setMessage("error", "Firebase inició, pero hubo un problema leyendo los datos.");
       }
     }
+
+    elements.loginBtn.addEventListener("click", signInWriter);
+    elements.loginSkipBtn.addEventListener("click", () => {
+      if (elements.loginGate) elements.loginGate.hidden = true;
+    });
 
     elements.downloadReceiptsBtn.addEventListener("click", downloadAllReceipts);
     elements.downloadInvoicesPdfBtn.addEventListener("click", downloadOrderedInvoicesPdf);
