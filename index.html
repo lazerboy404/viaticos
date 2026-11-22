@@ -1041,6 +1041,31 @@
     }
     .project-picker-option.is-active .project-picker-option-check { color: #fff; }
 
+    /* Marca de impresion: cuadrito hueco = sin imprimir, relleno = impreso.
+       Distinto del circulo de hoja firmada para que no se confundan. */
+    .project-picker-option-printed {
+      flex: none;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      border: 1.5px solid var(--line-strong);
+      background: transparent;
+      opacity: 0.5;
+    }
+    .project-picker-option-printed.is-printed {
+      background: var(--brand);
+      border-color: var(--brand);
+      opacity: 1;
+    }
+    .project-picker-option.is-active .project-picker-option-printed:not(.is-printed) {
+      border-color: rgba(255, 255, 255, 0.6);
+      opacity: 1;
+    }
+    .project-picker-option.is-active .project-picker-option-printed.is-printed {
+      background: #fff;
+      border-color: #fff;
+    }
+
     /* Calendario de dias sueltos (arrastrar = rango completo, tocar = un
        dia suelto) que reemplaza al viejo picker de checkboxes. */
     .day-calendar {
@@ -1824,6 +1849,16 @@
     .tools-card-header span:not(.tools-card-icon) { font-size: var(--text-xs); color: var(--ink-mute); }
     .signed-sheet-status { font-weight: 600; color: var(--ink-mute); }
 
+    .printed-status { font-weight: 600; color: var(--ink-mute); }
+    .printed-status.is-printed { color: var(--ok); }
+    .printed-note {
+      margin: 0;
+      font-size: var(--text-sm);
+      color: var(--ink-mute);
+      line-height: 1.45;
+    }
+    .printed-note.is-printed { color: var(--ok); }
+
     .tools-card-body { display: flex; flex-direction: column; gap: var(--space-2); }
     .project-tools-signed-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
@@ -2584,6 +2619,25 @@
             <article class="tools-card">
               <header class="tools-card-header">
                 <span class="tools-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-4a2 2 0 012-2h16a2 2 0 012 2v4a2 2 0 01-2 2h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 14h12v7H6z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                </span>
+                <div>
+                  <h4>Impresión</h4>
+                  <span class="printed-status" id="printedStatus">Sin imprimir</span>
+                </div>
+              </header>
+              <div class="tools-card-body">
+                <button class="button secondary" id="togglePrintedBtn" type="button" data-ripple-light="true">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6H4a1 1 0 00-1 1v9a1 1 0 001 1h3v4h10v-4h3a1 1 0 001-1V7a1 1 0 00-1-1z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7 11h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Marcar como impreso
+                </button>
+                <p class="printed-note" id="printedNote">Marca el proyecto cuando ya hayas impreso la hoja de viáticos.</p>
+              </div>
+            </article>
+
+            <article class="tools-card">
+              <header class="tools-card-header">
+                <span class="tools-card-icon" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none"><path d="M17 2v8l-3-2-3 2V2H7a1 1 0 00-1 1v18a1 1 0 001 1h10a1 1 0 001-1V2h-5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
                 </span>
                 <div>
@@ -2854,6 +2908,7 @@
       legacyPeriodEnd: "",
       legacyPeriodDays: [],
       legacySignedSheet: null,
+      legacyPrintedAt: 0,
       legacyDailyLimits: { ...DEFAULT_DAILY_LIMITS },
       dailyLimits: { ...DEFAULT_DAILY_LIMITS },
       projects: [],
@@ -2975,6 +3030,9 @@
       deleteSignedSheetBtn: document.querySelector("#deleteSignedSheetBtn"),
       signedSheetInput: document.querySelector("#signedSheetInput"),
       signedSheetStatus: document.querySelector("#signedSheetStatus"),
+      printedStatus: document.querySelector("#printedStatus"),
+      printedNote: document.querySelector("#printedNote"),
+      togglePrintedBtn: document.querySelector("#togglePrintedBtn"),
       exportBackupBtn: document.querySelector("#exportBackupBtn"),
       exportExcelBtn: document.querySelector("#exportExcelBtn"),
       importBackupBtn: document.querySelector("#importBackupBtn"),
@@ -3136,6 +3194,7 @@
         elements.editProjectBtn,
         elements.deleteProjectBtn,
         elements.uploadSignedSheetBtn,
+        elements.togglePrintedBtn,
         elements.importBackupBtn
       ];
       writeButtons.forEach((button) => {
@@ -3710,6 +3769,7 @@
         periodEnd: state.legacyPeriodEnd,
         periodDays: state.legacyPeriodDays,
         signedSheet: state.legacySignedSheet,
+        printedAt: state.legacyPrintedAt,
         isLegacy: true
       };
     }
@@ -3821,6 +3881,8 @@
         const projectBudget = parseMoney(project.budget);
         const projectName = (project.name || "Proyecto sin nombre").toUpperCase();
         const isComplete = Boolean(project.signedSheet?.dataUrl);
+        const projectPrintedAt = parseMoney(project.printedAt);
+        const isPrinted = projectPrintedAt > 0;
         const label = projectBudget > 0
           ? `${projectName} · ${formatter.format(projectBudget)}`
           : projectName;
@@ -3842,8 +3904,10 @@
         pickerOption.innerHTML = `
           <span class="project-picker-option-name"></span>
           <span class="project-picker-option-budget"></span>
+          <span class="project-picker-option-printed${isPrinted ? " is-printed" : ""}" title="${isPrinted ? "Impreso" : "Sin imprimir"}" aria-hidden="true"></span>
           <span class="project-picker-option-status${isComplete ? " is-ok" : ""}" title="${isComplete ? "Hoja firmada" : "Sin hoja firmada"}" aria-hidden="true"></span>
           ${isComplete ? '<span class="visually-hidden">Hoja firmada</span>' : ""}
+          ${isPrinted ? '<span class="visually-hidden">Impreso</span>' : ""}
         `;
         pickerOption.querySelector(".project-picker-option-name").append(projectName);
         pickerOption.querySelector(".project-picker-option-budget").textContent = formatter.format(projectBudget);
@@ -3880,6 +3944,7 @@
         ? `${getPeriodLabel(activeProject)} Este proyecto conserva todos los gastos anteriores sin cambiar sus registros.`
         : `${getPeriodLabel(activeProject)} ${state.expenses.length} ${state.expenses.length === 1 ? "gasto" : "gastos"} en este proyecto.`;
       renderSignedSheetControls();
+      renderPrintedControls();
     }
 
     function makeIconHorseUrl(domain) {
@@ -4502,6 +4567,73 @@
       return getActiveProject()?.signedSheet || null;
     }
 
+    function getPrintedAt(project = getActiveProject()) {
+      if (!project) return 0;
+      if (project.isLegacy || project.id === LEGACY_PROJECT_ID) {
+        return parseMoney(state.legacyPrintedAt);
+      }
+      return parseMoney(project.printedAt);
+    }
+
+    function formatPrintedAt(value) {
+      const stamp = parseMoney(value);
+      if (!stamp) return "";
+      try {
+        return new Intl.DateTimeFormat("es-MX", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        }).format(new Date(stamp));
+      } catch {
+        return "";
+      }
+    }
+
+    function renderPrintedControls() {
+      const printedAt = getPrintedAt();
+      const isPrinted = printedAt > 0;
+      const when = formatPrintedAt(printedAt);
+      if (elements.printedStatus) {
+        elements.printedStatus.textContent = isPrinted ? "Impreso" : "Sin imprimir";
+        elements.printedStatus.classList.toggle("is-printed", isPrinted);
+      }
+      if (elements.togglePrintedBtn) {
+        elements.togglePrintedBtn.textContent = isPrinted ? "Quitar marca de impreso" : "Marcar como impreso";
+        elements.togglePrintedBtn.disabled = !state.isFirebaseReady || !state.canWrite;
+      }
+      if (elements.printedNote) {
+        elements.printedNote.textContent = isPrinted
+          ? `Impreso el ${when}.`
+          : "Marca el proyecto cuando ya hayas impreso la hoja de viáticos.";
+        elements.printedNote.classList.toggle("is-printed", isPrinted);
+      }
+    }
+
+    async function togglePrinted() {
+      if (!state.isFirebaseReady) return;
+      if (!state.canWrite) {
+        setMessage("error", "Necesitas iniciar sesión con una cuenta autorizada para cambiar el estado de impresión.");
+        return;
+      }
+      const isLegacy = state.activeProjectId === LEGACY_PROJECT_ID;
+      const targetPath = isLegacy ? BUDGET_PATH : `${PROJECTS_PATH}/${state.activeProjectId}`;
+      const nextValue = getPrintedAt() > 0 ? null : Date.now();
+
+      if (elements.togglePrintedBtn) elements.togglePrintedBtn.disabled = true;
+      try {
+        await update(dbRef(state.db, targetPath), { printedAt: nextValue, updatedAt: Date.now() });
+        if (isLegacy) state.legacyPrintedAt = nextValue || 0;
+        setMessage("success", nextValue ? "Proyecto marcado como impreso." : "Se quitó la marca de impreso.");
+      } catch (error) {
+        console.error(error);
+        setMessage("error", "No se pudo guardar el estado de impresión. Revisa permisos de Realtime Database.");
+      } finally {
+        renderPrintedControls();
+      }
+    }
+
     function getSignedSheetDownloadName(sheet = getSignedSheet()) {
       const extension = getFileExtension(sheet?.name, sheet?.type?.includes("pdf") ? "pdf" : "jpg");
       return `hoja-firmada-${slugifyFilePart(getActiveProject().name)}.${extension}`;
@@ -4806,7 +4938,8 @@ pause
             periodDays: state.legacyPeriodDays,
             totalDeposit: state.legacyBudget,
             dailyLimits: state.legacyDailyLimits,
-            signedSheet: state.legacySignedSheet
+            signedSheet: state.legacySignedSheet,
+            printedAt: state.legacyPrintedAt
           },
           projects: Object.fromEntries(state.projects.map(({ id, ...project }) => [id, project]))
         },
@@ -5345,6 +5478,8 @@ pause
         periodEnd: validateDateString(project.periodEnd),
         periodDays: normalizePeriodDays(project.periodDays)
       };
+      const printedAt = parseMoney(project.printedAt);
+      if (printedAt > 0) clean.printedAt = printedAt;
       if (isValidDataUrl(project.signedSheet?.dataUrl)) {
         clean.signedSheet = {
           dataUrl: project.signedSheet.dataUrl,
@@ -7813,6 +7948,7 @@ pause
         state.legacyPeriodEnd = cachedBudget.legacyPeriodEnd;
         state.legacyPeriodDays = cachedBudget.legacyPeriodDays;
         state.legacyDailyLimits = cachedBudget.legacyDailyLimits;
+        state.legacyPrintedAt = parseMoney(cachedBudget.legacyPrintedAt);
         hydrated = true;
       }
 
@@ -7842,6 +7978,7 @@ pause
         state.legacyPeriodEnd = data.periodEnd || "";
         state.legacyPeriodDays = normalizePeriodDays(data.periodDays);
         state.legacySignedSheet = data.signedSheet || null;
+        state.legacyPrintedAt = parseMoney(data.printedAt);
         state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) {
           state.activeProjectId = data.selectedProjectId;
@@ -7853,7 +7990,8 @@ pause
           legacyPeriodStart: state.legacyPeriodStart,
           legacyPeriodEnd: state.legacyPeriodEnd,
           legacyPeriodDays: state.legacyPeriodDays,
-          legacyDailyLimits: state.legacyDailyLimits
+          legacyDailyLimits: state.legacyDailyLimits,
+          legacyPrintedAt: state.legacyPrintedAt
         });
         rerenderActiveProject();
       }, (error) => {
@@ -7872,6 +8010,7 @@ pause
         state.legacyPeriodEnd = data.periodEnd || "";
         state.legacyPeriodDays = normalizePeriodDays(data.periodDays);
         state.legacySignedSheet = data.signedSheet || null;
+        state.legacyPrintedAt = parseMoney(data.printedAt);
         state.legacyDailyLimits = normalizeDailyLimits(data.dailyLimits);
         if (data.selectedProjectId) state.activeProjectId = data.selectedProjectId;
       }
@@ -7970,6 +8109,7 @@ pause
         renderExpenses();
       });
     });
+    elements.togglePrintedBtn.addEventListener("click", togglePrinted);
     elements.uploadSignedSheetBtn.addEventListener("click", () => elements.signedSheetInput.click());
     elements.signedSheetInput.addEventListener("change", () => saveSignedSheet(elements.signedSheetInput.files[0]));
     elements.viewSignedSheetBtn.addEventListener("click", viewSignedSheet);
